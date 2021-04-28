@@ -1,13 +1,15 @@
 //! Abstractions over the proving system and parameters.
 
-use crate::primitives::{Diversifier, PaymentAddress, ProofGenerationKey, Rseed};
-
 use crate::{
     merkle_tree::MerklePath,
-    redjubjub::{PublicKey, Signature},
-    sapling::Node,
+    sapling::{
+        redjubjub::{PublicKey, Signature},
+        Node,
+    },
     transaction::components::{Amount, GROTH_PROOF_SIZE},
 };
+
+use super::{Diversifier, PaymentAddress, ProofGenerationKey, Rseed};
 
 /// Interface for creating zero-knowledge proofs for shielded transactions.
 pub trait TxProver {
@@ -22,6 +24,7 @@ pub trait TxProver {
     /// the context for later use.
     ///
     /// [`SpendDescription`]: crate::transaction::components::SpendDescription
+    #[allow(clippy::too_many_arguments)]
     fn spend_proof(
         &self,
         ctx: &mut Self::SaplingProvingContext,
@@ -59,28 +62,25 @@ pub trait TxProver {
     ) -> Result<Signature, ()>;
 }
 
-#[cfg(test)]
+#[cfg(any(test, feature = "test-dependencies"))]
 pub mod mock {
     use ff::Field;
     use rand_core::OsRng;
 
     use crate::{
         constants::SPENDING_KEY_GENERATOR,
-        primitives::{Diversifier, PaymentAddress, ProofGenerationKey, Rseed, ValueCommitment},
-    };
-
-    use crate::{
         merkle_tree::MerklePath,
-        redjubjub::{PublicKey, Signature},
-        sapling::Node,
+        sapling::{
+            redjubjub::{PublicKey, Signature},
+            Diversifier, Node, PaymentAddress, ProofGenerationKey, Rseed, ValueCommitment,
+        },
         transaction::components::{Amount, GROTH_PROOF_SIZE},
     };
 
     use super::TxProver;
 
-    pub(crate) struct MockTxProver;
+    pub struct MockTxProver;
 
-    #[cfg(test)]
     impl TxProver for MockTxProver {
         type SaplingProvingContext = ();
 

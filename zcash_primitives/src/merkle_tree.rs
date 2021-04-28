@@ -3,7 +3,6 @@
 use byteorder::{LittleEndian, ReadBytesExt};
 use std::collections::VecDeque;
 use std::io::{self, Read, Write};
-use std::iter;
 
 use crate::sapling::SAPLING_COMMITMENT_TREE_DEPTH;
 use crate::serialize::{Optional, Vector};
@@ -57,7 +56,7 @@ pub struct CommitmentTree<Node: Hashable> {
 
 impl<Node: Hashable> CommitmentTree<Node> {
     /// Creates an empty tree.
-    pub fn new() -> Self {
+    pub fn empty() -> Self {
         CommitmentTree {
             left: None,
             right: None,
@@ -66,6 +65,7 @@ impl<Node: Hashable> CommitmentTree<Node> {
     }
 
     /// Reads a `CommitmentTree` from its serialized form.
+    #[allow(clippy::redundant_closure)]
     pub fn read<R: Read>(mut reader: R) -> io::Result<Self> {
         let left = Optional::read(&mut reader, |r| Node::read(r))?;
         let right = Optional::read(&mut reader, |r| Node::read(r))?;
@@ -203,7 +203,7 @@ impl<Node: Hashable> CommitmentTree<Node> {
 ///
 /// let mut rng = OsRng;
 ///
-/// let mut tree = CommitmentTree::<Node>::new();
+/// let mut tree = CommitmentTree::<Node>::empty();
 ///
 /// tree.append(Node::new(bls12_381::Scalar::random(&mut rng).to_repr()));
 /// tree.append(Node::new(bls12_381::Scalar::random(&mut rng).to_repr()));
@@ -237,6 +237,7 @@ impl<Node: Hashable> IncrementalWitness<Node> {
     }
 
     /// Reads an `IncrementalWitness` from its serialized form.
+    #[allow(clippy::redundant_closure)]
     pub fn read<R: Read>(mut reader: R) -> io::Result<Self> {
         let tree = CommitmentTree::read(&mut reader)?;
         let filled = Vector::read(&mut reader, |r| Node::read(r))?;
@@ -272,17 +273,9 @@ impl<Node: Hashable> IncrementalWitness<Node> {
             .as_ref()
             .map(|c| c.root_inner(self.cursor_depth, PathFiller::empty()));
 
-        let queue = if let Some(node) = cursor_root {
-            self.filled
-                .iter()
-                .cloned()
-                .chain(iter::once(node))
-                .collect()
-        } else {
-            self.filled.iter().cloned().collect()
-        };
-
-        PathFiller { queue }
+        PathFiller {
+            queue: self.filled.iter().cloned().chain(cursor_root).collect(),
+        }
     }
 
     /// Finds the next "depth" of an unfilled subtree.
@@ -348,7 +341,7 @@ impl<Node: Hashable> IncrementalWitness<Node> {
             if self.cursor_depth == 0 {
                 self.filled.push(node);
             } else {
-                let mut cursor = CommitmentTree::new();
+                let mut cursor = CommitmentTree::empty();
                 cursor
                     .append_inner(node, depth)
                     .expect("cursor should not be full");
@@ -505,7 +498,6 @@ mod tests {
     use super::{CommitmentTree, Hashable, IncrementalWitness, MerklePath, PathFiller};
     use crate::sapling::Node;
 
-    use hex;
     use std::convert::TryInto;
     use std::io::{self, Read, Write};
 
@@ -551,7 +543,7 @@ mod tests {
 
     impl TestCommitmentTree {
         fn new() -> Self {
-            TestCommitmentTree(CommitmentTree::new())
+            TestCommitmentTree(CommitmentTree::empty())
         }
 
         pub fn read<R: Read>(reader: R) -> io::Result<Self> {
@@ -608,18 +600,18 @@ mod tests {
     #[test]
     fn empty_root_test_vectors() {
         let mut tmp = [0u8; 32];
-        for i in 0..HEX_EMPTY_ROOTS.len() {
+        for (i, &expected) in HEX_EMPTY_ROOTS.iter().enumerate() {
             Node::empty_root(i)
                 .write(&mut tmp[..])
                 .expect("length is 32 bytes");
-            assert_eq!(hex::encode(tmp), HEX_EMPTY_ROOTS[i]);
+            assert_eq!(hex::encode(tmp), expected);
         }
     }
 
     #[test]
     fn sapling_empty_root() {
         let mut tmp = [0u8; 32];
-        CommitmentTree::<Node>::new()
+        CommitmentTree::<Node>::empty()
             .root()
             .write(&mut tmp[..])
             .expect("length is 32 bytes");
@@ -631,13 +623,13 @@ mod tests {
 
     #[test]
     fn empty_commitment_tree_roots() {
-        let tree = CommitmentTree::<Node>::new();
+        let tree = CommitmentTree::<Node>::empty();
         let mut tmp = [0u8; 32];
-        for i in 1..HEX_EMPTY_ROOTS.len() {
+        for (i, &expected) in HEX_EMPTY_ROOTS.iter().enumerate().skip(1) {
             tree.root_inner(i, PathFiller::empty())
                 .write(&mut tmp[..])
                 .expect("length is 32 bytes");
-            assert_eq!(hex::encode(tmp), HEX_EMPTY_ROOTS[i]);
+            assert_eq!(hex::encode(tmp), expected);
         }
     }
 
@@ -1035,7 +1027,7 @@ mod tests {
                 if let Some(leaf) = leaf {
                     let path = witness.path().expect("should be able to create a path");
                     let expected = MerklePath::from_slice_with_depth(
-                        &mut hex::decode(paths[paths_i]).unwrap(),
+                        &hex::decode(paths[paths_i]).unwrap(),
                         TESTING_DEPTH,
                     )
                     .unwrap();

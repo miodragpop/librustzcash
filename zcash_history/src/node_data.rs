@@ -155,8 +155,10 @@ impl NodeData {
 
     /// Read from the byte representation.
     pub fn read<R: std::io::Read>(consensus_branch_id: u32, r: &mut R) -> std::io::Result<Self> {
-        let mut data = Self::default();
-        data.consensus_branch_id = consensus_branch_id;
+        let mut data = NodeData {
+            consensus_branch_id,
+            ..Default::default()
+        };
         r.read_exact(&mut data.subtree_commitment)?;
         data.start_time = r.read_u32::<LittleEndian>()?;
         data.end_time = r.read_u32::<LittleEndian>()?;
@@ -205,8 +207,10 @@ impl NodeData {
 #[cfg(test)]
 impl quickcheck::Arbitrary for NodeData {
     fn arbitrary<G: quickcheck::Gen>(gen: &mut G) -> Self {
-        let mut node_data = NodeData::default();
-        node_data.consensus_branch_id = 0;
+        let mut node_data = NodeData {
+            consensus_branch_id: 0,
+            ..Default::default()
+        };
         gen.fill_bytes(&mut node_data.subtree_commitment[..]);
         node_data.start_time = gen.next_u32();
         node_data.end_time = gen.next_u32();

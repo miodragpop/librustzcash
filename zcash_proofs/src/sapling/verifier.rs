@@ -6,7 +6,7 @@ use bls12_381::Bls12;
 use group::{Curve, GroupEncoding};
 use zcash_primitives::{
     constants::{SPENDING_KEY_GENERATOR, VALUE_COMMITMENT_RANDOMNESS_GENERATOR},
-    redjubjub::{PublicKey, Signature},
+    sapling::redjubjub::{PublicKey, Signature},
     transaction::components::Amount,
 };
 
@@ -16,6 +16,12 @@ use super::compute_value_balance;
 pub struct SaplingVerificationContext {
     // (sum of the Spend value commitments) - (sum of the Output value commitments)
     cv_sum: jubjub::ExtendedPoint,
+}
+
+impl Default for SaplingVerificationContext {
+    fn default() -> Self {
+        SaplingVerificationContext::new()
+    }
 }
 
 impl SaplingVerificationContext {
@@ -28,6 +34,7 @@ impl SaplingVerificationContext {
 
     /// Perform consensus checks on a Sapling SpendDescription, while
     /// accumulating its value commitment inside the context for later use.
+    #[allow(clippy::too_many_arguments)]
     pub fn check_spend(
         &mut self,
         cv: jubjub::ExtendedPoint,
@@ -137,7 +144,7 @@ impl SaplingVerificationContext {
         binding_sig: Signature,
     ) -> bool {
         // Obtain current cv_sum from the context
-        let mut bvk = PublicKey(self.cv_sum.clone());
+        let mut bvk = PublicKey(self.cv_sum);
 
         // Compute value balance
         let value_balance = match compute_value_balance(value_balance) {

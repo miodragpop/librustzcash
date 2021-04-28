@@ -10,11 +10,11 @@ use std::ops::AddAssign;
 
 use crate::{
     constants::{PROOF_GENERATION_KEY_GENERATOR, SPENDING_KEY_GENERATOR},
-    primitives::{Diversifier, PaymentAddress, ViewingKey},
+    sapling::{Diversifier, PaymentAddress, ViewingKey},
 };
 use std::io::{self, Read, Write};
 
-use crate::keys::{
+use crate::sapling::keys::{
     prf_expand, prf_expand_vec, ExpandedSpendingKey, FullViewingKey, OutgoingViewingKey,
 };
 
@@ -32,9 +32,9 @@ fn derive_child_ovk(parent: &OutgoingViewingKey, i_l: &[u8]) -> OutgoingViewingK
 // ZIP 32 structures
 
 /// A Sapling full viewing key fingerprint
-struct FVKFingerprint([u8; 32]);
+struct FvkFingerprint([u8; 32]);
 
-impl From<&FullViewingKey> for FVKFingerprint {
+impl From<&FullViewingKey> for FvkFingerprint {
     fn from(fvk: &FullViewingKey) -> Self {
         let mut h = Blake2bParams::new()
             .hash_length(32)
@@ -43,25 +43,25 @@ impl From<&FullViewingKey> for FVKFingerprint {
         h.update(&fvk.to_bytes());
         let mut fvfp = [0u8; 32];
         fvfp.copy_from_slice(h.finalize().as_bytes());
-        FVKFingerprint(fvfp)
+        FvkFingerprint(fvfp)
     }
 }
 
 /// A Sapling full viewing key tag
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct FVKTag([u8; 4]);
+struct FvkTag([u8; 4]);
 
-impl FVKFingerprint {
-    fn tag(&self) -> FVKTag {
+impl FvkFingerprint {
+    fn tag(&self) -> FvkTag {
         let mut tag = [0u8; 4];
         tag.copy_from_slice(&self.0[..4]);
-        FVKTag(tag)
+        FvkTag(tag)
     }
 }
 
-impl FVKTag {
+impl FvkTag {
     fn master() -> Self {
-        FVKTag([0u8; 4])
+        FvkTag([0u8; 4])
     }
 }
 
@@ -98,6 +98,12 @@ struct ChainCode([u8; 32]);
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DiversifierIndex(pub [u8; 11]);
+
+impl Default for DiversifierIndex {
+    fn default() -> Self {
+        DiversifierIndex::new()
+    }
+}
 
 impl DiversifierIndex {
     pub fn new() -> Self {
@@ -168,7 +174,7 @@ impl DiversifierKey {
 #[derive(Clone)]
 pub struct ExtendedSpendingKey {
     depth: u8,
-    parent_fvk_tag: FVKTag,
+    parent_fvk_tag: FvkTag,
     child_index: ChildIndex,
     chain_code: ChainCode,
     pub expsk: ExpandedSpendingKey,
@@ -179,7 +185,7 @@ pub struct ExtendedSpendingKey {
 #[derive(Clone)]
 pub struct ExtendedFullViewingKey {
     depth: u8,
-    parent_fvk_tag: FVKTag,
+    parent_fvk_tag: FvkTag,
     child_index: ChildIndex,
     chain_code: ChainCode,
     pub fvk: FullViewingKey,
@@ -245,7 +251,7 @@ impl ExtendedSpendingKey {
 
         ExtendedSpendingKey {
             depth: 0,
-            parent_fvk_tag: FVKTag::master(),
+            parent_fvk_tag: FvkTag::master(),
             child_index: ChildIndex::master(),
             chain_code: ChainCode(c_m),
             expsk: ExpandedSpendingKey::from_spending_key(sk_m),
@@ -266,7 +272,7 @@ impl ExtendedSpendingKey {
 
         Ok(ExtendedSpendingKey {
             depth,
-            parent_fvk_tag: FVKTag(tag),
+            parent_fvk_tag: FvkTag(tag),
             child_index: ChildIndex::from_index(i),
             chain_code: ChainCode(c),
             expsk,
@@ -320,7 +326,7 @@ impl ExtendedSpendingKey {
 
         ExtendedSpendingKey {
             depth: self.depth + 1,
-            parent_fvk_tag: FVKFingerprint::from(&fvk).tag(),
+            parent_fvk_tag: FvkFingerprint::from(&fvk).tag(),
             child_index: i,
             chain_code: ChainCode(c_i),
             expsk: {
@@ -367,7 +373,7 @@ impl ExtendedFullViewingKey {
 
         Ok(ExtendedFullViewingKey {
             depth,
-            parent_fvk_tag: FVKTag(tag),
+            parent_fvk_tag: FvkTag(tag),
             child_index: ChildIndex::from_index(i),
             chain_code: ChainCode(c),
             fvk,
@@ -404,7 +410,7 @@ impl ExtendedFullViewingKey {
 
         Ok(ExtendedFullViewingKey {
             depth: self.depth + 1,
-            parent_fvk_tag: FVKFingerprint::from(&self.fvk).tag(),
+            parent_fvk_tag: FvkFingerprint::from(&self.fvk).tag(),
             child_index: i,
             chain_code: ChainCode(c_i),
             fvk: {
@@ -423,10 +429,7 @@ impl ExtendedFullViewingKey {
     }
 
     pub fn address(&self, j: DiversifierIndex) -> Result<(DiversifierIndex, PaymentAddress), ()> {
-        let (j, d_j) = match self.dk.diversifier(j) {
-            Ok(ret) => ret,
-            Err(()) => return Err(()),
-        };
+        let (j, d_j) = self.dk.diversifier(j)?;
         match self.fvk.vk.to_payment_address(d_j) {
             Some(addr) => Ok((j, addr)),
             None => Err(()),
@@ -583,7 +586,7 @@ mod tests {
             d1: Option<[u8; 11]>,
             d2: Option<[u8; 11]>,
             dmax: Option<[u8; 11]>,
-        };
+        }
 
         // From https://github.com/zcash-hackworks/zcash-test-vectors/blob/master/sapling_zip32.py
         let test_vectors = vec![
@@ -1032,14 +1035,14 @@ mod tests {
             let mut ser = vec![];
             xfvk.write(&mut ser).unwrap();
             assert_eq!(&ser[..], &tv.xfvk[..]);
-            assert_eq!(FVKFingerprint::from(&xfvk.fvk).0, tv.fp);
+            assert_eq!(FvkFingerprint::from(&xfvk.fvk).0, tv.fp);
 
             // d0
             let mut di = DiversifierIndex::new();
             match xfvk.dk.diversifier(di) {
                 Ok((l, d)) if l == di => assert_eq!(d.0, tv.d0.unwrap()),
                 Ok((_, _)) => assert!(tv.d0.is_none()),
-                Err(_) => panic!(),
+                Err(()) => panic!(),
             }
 
             // d1
@@ -1047,7 +1050,7 @@ mod tests {
             match xfvk.dk.diversifier(di) {
                 Ok((l, d)) if l == di => assert_eq!(d.0, tv.d1.unwrap()),
                 Ok((_, _)) => assert!(tv.d1.is_none()),
-                Err(_) => panic!(),
+                Err(()) => panic!(),
             }
 
             // d2
@@ -1055,7 +1058,7 @@ mod tests {
             match xfvk.dk.diversifier(di) {
                 Ok((l, d)) if l == di => assert_eq!(d.0, tv.d2.unwrap()),
                 Ok((_, _)) => assert!(tv.d2.is_none()),
-                Err(_) => panic!(),
+                Err(()) => panic!(),
             }
 
             // dmax

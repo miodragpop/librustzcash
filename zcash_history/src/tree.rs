@@ -84,15 +84,14 @@ impl Tree {
     ///
     /// Will panic if `peaks` is empty.
     pub fn new(length: u32, peaks: Vec<(u32, Entry)>, extra: Vec<(u32, Entry)>) -> Self {
-        assert!(peaks.len() > 0);
+        assert!(!peaks.is_empty());
 
         let mut result = Tree::invalid();
 
         result.stored_count = length;
 
-        let mut gen = 0;
         let mut root = EntryLink::Stored(peaks[0].0);
-        for (idx, node) in peaks.into_iter() {
+        for (gen, (idx, node)) in peaks.into_iter().enumerate() {
             result.stored.insert(idx, node);
             if gen != 0 {
                 let next_generated = combine_nodes(
@@ -105,7 +104,6 @@ impl Tree {
                 );
                 root = result.push_generated(next_generated);
             }
-            gen += 1;
         }
 
         for (idx, node) in extra {
@@ -140,14 +138,12 @@ impl Tree {
     pub fn append_leaf(&mut self, new_leaf: NodeData) -> Result<Vec<EntryLink>, Error> {
         let root = self.root;
         let new_leaf_link = self.push(new_leaf.into());
-        let mut appended = Vec::new();
-        appended.push(new_leaf_link);
+        let mut appended = vec![new_leaf_link];
 
         let mut peaks = Vec::new();
         self.get_peaks(root, &mut peaks)?;
 
-        let mut merge_stack = Vec::new();
-        merge_stack.push(new_leaf_link);
+        let mut merge_stack = vec![new_leaf_link];
 
         // Scan the peaks right-to-left, merging together equal-sized adjacent
         // complete subtrees. After this, merge_stack only contains peaks of
@@ -209,7 +205,7 @@ impl Tree {
 
     fn pop(&mut self) {
         self.stored.remove(&(self.stored_count - 1));
-        self.stored_count = self.stored_count - 1;
+        self.stored_count -= 1;
     }
 
     /// Truncate one leaf from the end of the tree.
@@ -368,8 +364,7 @@ mod tests {
         assert!(length >= 3);
         let mut tree = initial();
         for i in 2..length {
-            tree.append_leaf(leaf(i + 1).into())
-                .expect("Failed to append");
+            tree.append_leaf(leaf(i + 1)).expect("Failed to append");
         }
 
         tree
@@ -651,12 +646,12 @@ mod tests {
                     tree.truncate_leaf().expect("Failed to truncate");
                 }
 
-                TestResult::from_bool(if let EntryLink::Stored(2) = tree.root() { true } else { false })
+                TestResult::from_bool(matches!(tree.root(), EntryLink::Stored(2)))
             }
         }
 
         fn leaf_count(number: u32) -> TestResult {
-            if number > 1024 * 1024 || number < 3 {
+            if !(3..=1024 * 1024).contains(&number) {
                 TestResult::discard()
             } else {
                 let mut tree = initial();
@@ -671,7 +666,7 @@ mod tests {
         }
 
         fn parity(number: u32) -> TestResult {
-            if number > 2048 * 2048 || number < 3 {
+            if !(3..=2048 * 2048).contains(&number) {
                 TestResult::discard()
             } else {
                 let mut tree = initial();
@@ -681,11 +676,9 @@ mod tests {
 
                 TestResult::from_bool(
                     if number & (number - 1) == 0 {
-                        if let EntryLink::Stored(_) = tree.root() { true }
-                        else { false }
+                        matches!(tree.root(), EntryLink::Stored(_))
                     } else {
-                        if let EntryLink::Generated(_) = tree.root() { true }
-                        else { false }
+                        matches!(tree.root(), EntryLink::Generated(_))
                     }
                 )
             }
@@ -708,12 +701,10 @@ mod tests {
                 let total = add - delete + 2;
 
                 TestResult::from_bool(
-                    if total & total - 1 == 0 {
-                        if let EntryLink::Stored(_) = tree.root() { true }
-                        else { false }
+                    if total & (total - 1) == 0 {
+                        matches!(tree.root(), EntryLink::Stored(_))
                     } else {
-                        if let EntryLink::Generated(_) = tree.root() { true }
-                        else { false }
+                        matches!(tree.root(), EntryLink::Generated(_))
                     }
                 )
             }

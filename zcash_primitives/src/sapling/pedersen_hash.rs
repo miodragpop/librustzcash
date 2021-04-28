@@ -1,5 +1,8 @@
 //! Implementation of the Pedersen hash function used in Sapling.
 
+#[cfg(test)]
+pub(crate) mod test_vectors;
+
 use byteorder::{ByteOrder, LittleEndian};
 use ff::PrimeField;
 use group::Group;
@@ -124,7 +127,6 @@ pub mod test {
     use group::Curve;
 
     use super::*;
-    use crate::test_vectors::pedersen_hash_vectors;
 
     pub struct TestVector<'a> {
         pub personalization: Personalization,
@@ -135,9 +137,9 @@ pub mod test {
 
     #[test]
     fn test_pedersen_hash_points() {
-        let test_vectors = pedersen_hash_vectors::get_vectors();
+        let test_vectors = test_vectors::get_vectors();
 
-        assert!(test_vectors.len() > 0);
+        assert!(!test_vectors.is_empty());
 
         for v in test_vectors.iter() {
             let input_bools: Vec<bool> = v.input_bits.iter().map(|&i| i == 1).collect();

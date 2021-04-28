@@ -258,7 +258,7 @@ fn generate_pedersen_hash_exp_table() -> Vec<Vec<Vec<SubgroupPoint>>> {
                 let mut base = SubgroupPoint::identity();
 
                 for _ in 0..(1 << window) {
-                    table.push(base.clone());
+                    table.push(base);
                     base += g;
                 }
 
@@ -280,7 +280,7 @@ mod tests {
     use jubjub::SubgroupPoint;
 
     use super::*;
-    use crate::group_hash::group_hash;
+    use crate::sapling::group_hash::group_hash;
 
     fn find_group_hash(m: &[u8], personalization: &[u8; 8]) -> SubgroupPoint {
         let mut tag = m.to_vec();

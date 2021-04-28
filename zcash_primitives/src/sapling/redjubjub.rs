@@ -10,7 +10,7 @@ use rand_core::RngCore;
 use std::io::{self, Read, Write};
 use std::ops::{AddAssign, MulAssign, Neg};
 
-use crate::util::hash_to_scalar;
+use super::util::hash_to_scalar;
 
 fn read_scalar<R: Read>(mut reader: R) -> io::Result<jubjub::Fr> {
     let mut s_repr = [0u8; 32];
@@ -184,16 +184,14 @@ pub fn batch_verify<'a, R: RngCore>(
         s.mul_assign(&z);
         s = s.neg();
 
-        r = r * z;
+        r *= z;
 
         c.mul_assign(&z);
 
-        acc = acc + r + (&entry.vk.0 * c) + (p_g * s);
+        acc = acc + r + (entry.vk.0 * c) + (p_g * s);
     }
 
-    acc = acc.mul_by_cofactor().into();
-
-    acc.is_identity().into()
+    acc.mul_by_cofactor().is_identity().into()
 }
 
 #[cfg(test)]
