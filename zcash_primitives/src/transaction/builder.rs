@@ -419,15 +419,18 @@ impl<'a, P: consensus::Parameters, R: RngCore + CryptoRng> Builder<'a, P, R> {
         mtx.expiry_height = height + DEFAULT_TX_EXPIRY_DELTA;
 
         const ZIP313_GRACE_PERIOD_BLOCKS: u64 = 33_600;
-        let canopy_height: u64 = params
-            .activation_height(NetworkUpgrade::Canopy)
-            .unwrap()
-            .into();
-        let fee = if height >= BlockHeight::from(ZIP313_GRACE_PERIOD_BLOCKS + canopy_height) {
-            Amount::from_u64(1000).unwrap()
-        } else {
-            Amount::from_u64(10000).unwrap()
-        };
+        
+        let mut fee: Amount = Amount::from_u64(10000).unwrap(); // default pre-Canopy fee
+
+        if params.activation_height(NetworkUpgrade::Canopy).is_some() {
+            let canopy_height: u64 = params
+                .activation_height(NetworkUpgrade::Canopy)
+                .unwrap()
+                .into();
+            if height >= BlockHeight::from(ZIP313_GRACE_PERIOD_BLOCKS + canopy_height) {
+                fee = Amount::from_u64(1000).unwrap();
+            }
+        }
 
         Builder {
             params,

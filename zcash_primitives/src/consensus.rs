@@ -159,11 +159,11 @@ pub const MAIN_NETWORK: MainNetwork = MainNetwork;
 impl Parameters for MainNetwork {
     fn activation_height(&self, nu: NetworkUpgrade) -> Option<BlockHeight> {
         match nu {
-            NetworkUpgrade::Overwinter => Some(BlockHeight(347_500)),
-            NetworkUpgrade::Sapling => Some(BlockHeight(419_200)),
-            NetworkUpgrade::Blossom => Some(BlockHeight(653_600)),
-            NetworkUpgrade::Heartwood => Some(BlockHeight(903_000)),
-            NetworkUpgrade::Canopy => Some(BlockHeight(1_046_400)),
+            NetworkUpgrade::Overwinter => Some(BlockHeight(501_000)),
+            NetworkUpgrade::Sapling => Some(BlockHeight(501_000)),
+            NetworkUpgrade::Blossom => None,
+            NetworkUpgrade::Heartwood => None,
+            NetworkUpgrade::Canopy => None,
             NetworkUpgrade::ZFuture => None,
         }
     }
@@ -194,11 +194,11 @@ pub const TEST_NETWORK: TestNetwork = TestNetwork;
 impl Parameters for TestNetwork {
     fn activation_height(&self, nu: NetworkUpgrade) -> Option<BlockHeight> {
         match nu {
-            NetworkUpgrade::Overwinter => Some(BlockHeight(207_500)),
-            NetworkUpgrade::Sapling => Some(BlockHeight(280_000)),
-            NetworkUpgrade::Blossom => Some(BlockHeight(584_000)),
-            NetworkUpgrade::Heartwood => Some(BlockHeight(903_800)),
-            NetworkUpgrade::Canopy => Some(BlockHeight(1_028_500)),
+            NetworkUpgrade::Overwinter => Some(BlockHeight(50)),
+            NetworkUpgrade::Sapling => Some(BlockHeight(50)),
+            NetworkUpgrade::Blossom => None,
+            NetworkUpgrade::Heartwood => Some(BlockHeight(1_000)),
+            NetworkUpgrade::Canopy => Some(BlockHeight(1_200)),
             NetworkUpgrade::ZFuture => None,
         }
     }
@@ -375,11 +375,11 @@ impl TryFrom<u32> for BranchId {
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(BranchId::Sprout),
-            0x5ba8_1b19 => Ok(BranchId::Overwinter),
-            0x76b8_09bb => Ok(BranchId::Sapling),
-            0x2bb4_0e60 => Ok(BranchId::Blossom),
-            0xf5b9_230b => Ok(BranchId::Heartwood),
-            0xe9ff_75a6 => Ok(BranchId::Canopy),
+            0x5c7b_7d2f => Ok(BranchId::Overwinter),
+            0x7a73_7763 => Ok(BranchId::Sapling),
+            0x624c_536d => Ok(BranchId::Blossom),
+            0x4874_5764 => Ok(BranchId::Heartwood),
+            0x634e_7059 => Ok(BranchId::Canopy),
             0xffff_ffff => Ok(BranchId::ZFuture),
             _ => Err("Unknown consensus branch ID"),
         }
@@ -390,11 +390,11 @@ impl From<BranchId> for u32 {
     fn from(consensus_branch_id: BranchId) -> u32 {
         match consensus_branch_id {
             BranchId::Sprout => 0,
-            BranchId::Overwinter => 0x5ba8_1b19,
-            BranchId::Sapling => 0x76b8_09bb,
-            BranchId::Blossom => 0x2bb4_0e60,
-            BranchId::Heartwood => 0xf5b9_230b,
-            BranchId::Canopy => 0xe9ff_75a6,
+            BranchId::Overwinter => 0x5c7b_7d2f,
+            BranchId::Sapling => 0x7a73_7763,
+            BranchId::Blossom => 0x624c_536d,
+            BranchId::Heartwood => 0x4874_5764,
+            BranchId::Canopy => 0x634e_7059,
             BranchId::ZFuture => 0xffff_ffff,
         }
     }
