@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["consensus",""],["transparent","Zcash transparent extensions."]]});
+window.SIDEBAR_ITEMS = {"mod":[["consensus",""],["transparent","Zcash transparent extensions."]]};

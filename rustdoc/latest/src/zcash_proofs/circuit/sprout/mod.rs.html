@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_proofs&#x2F;src&#x2F;circuit&#x2F;sprout&#x2F;mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../zcash_proofs/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_proofs/src/circuit/sprout/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../zcash_proofs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../zcash_proofs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../zcash_proofs/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -468,477 +468,475 @@
 <span id="468">468</span>
 <span id="469">469</span>
 <span id="470">470</span>
-</pre><pre class="rust"><code><span class="doccomment">//! The &quot;hybrid Sprout&quot; circuit.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! &quot;Hybrid Sprout&quot; refers to the implementation of the [Sprout statement] in</span>
-<span class="doccomment">//! `bellman` for [`groth16`], instead of the [original implementation][oldimpl]</span>
-<span class="doccomment">//! using [`libsnark`] for [BCTV14].</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [Sprout statement]: https://zips.z.cash/protocol/protocol.pdf#joinsplitstatement</span>
-<span class="doccomment">//! [`groth16`]: bellman::groth16</span>
-<span class="doccomment">//! [oldimpl]: https://github.com/zcash/zcash/tree/v2.0.7/src/zcash/circuit</span>
-<span class="doccomment">//! [`libsnark`]: https://github.com/scipr-lab/libsnark</span>
-<span class="doccomment">//! [BCTV14]: https://eprint.iacr.org/2013/879</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The &quot;hybrid Sprout&quot; circuit.
+//!
+//! &quot;Hybrid Sprout&quot; refers to the implementation of the [Sprout statement] in
+//! `bellman` for [`groth16`], instead of the [original implementation][oldimpl]
+//! using [`libsnark`] for [BCTV14].
+//!
+//! [Sprout statement]: https://zips.z.cash/protocol/protocol.pdf#joinsplitstatement
+//! [`groth16`]: bellman::groth16
+//! [oldimpl]: https://github.com/zcash/zcash/tree/v2.0.7/src/zcash/circuit
+//! [`libsnark`]: https://github.com/scipr-lab/libsnark
+//! [BCTV14]: https://eprint.iacr.org/2013/879
 
-<span class="kw">use</span> <span class="ident">bellman::gadgets::boolean</span>::{<span class="ident">AllocatedBit</span>, <span class="ident">Boolean</span>};
-<span class="kw">use</span> <span class="ident">bellman::gadgets::multipack::pack_into_inputs</span>;
-<span class="kw">use</span> <span class="ident">bellman</span>::{<span class="ident">Circuit</span>, <span class="ident">ConstraintSystem</span>, <span class="ident">LinearCombination</span>, <span class="ident">SynthesisError</span>};
-<span class="kw">use</span> <span class="ident">ff::PrimeField</span>;
+</span><span class="kw">use </span>bellman::gadgets::boolean::{AllocatedBit, Boolean};
+<span class="kw">use </span>bellman::gadgets::multipack::pack_into_inputs;
+<span class="kw">use </span>bellman::{Circuit, ConstraintSystem, LinearCombination, SynthesisError};
+<span class="kw">use </span>ff::PrimeField;
 
-<span class="kw">mod</span> <span class="ident">commitment</span>;
-<span class="kw">mod</span> <span class="ident">input</span>;
-<span class="kw">mod</span> <span class="ident">output</span>;
-<span class="kw">mod</span> <span class="ident">prfs</span>;
+<span class="kw">mod </span>commitment;
+<span class="kw">mod </span>input;
+<span class="kw">mod </span>output;
+<span class="kw">mod </span>prfs;
 
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::input</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::output</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="self">self</span>::input::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="self">self</span>::output::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TREE_DEPTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">29</span>;
+<span class="kw">pub const </span>TREE_DEPTH: usize = <span class="number">29</span>;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SpendingKey</span>(<span class="kw">pub</span> [<span class="ident">u8</span>; <span class="number">32</span>]);
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PayingKey</span>(<span class="kw">pub</span> [<span class="ident">u8</span>; <span class="number">32</span>]);
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UniqueRandomness</span>(<span class="kw">pub</span> [<span class="ident">u8</span>; <span class="number">32</span>]);
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CommitmentRandomness</span>(<span class="kw">pub</span> [<span class="ident">u8</span>; <span class="number">32</span>]);
+<span class="kw">pub struct </span>SpendingKey(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
+<span class="kw">pub struct </span>PayingKey(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
+<span class="kw">pub struct </span>UniqueRandomness(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
+<span class="kw">pub struct </span>CommitmentRandomness(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JoinSplit</span> {
-    <span class="kw">pub</span> <span class="ident">vpub_old</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">vpub_new</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">h_sig</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">32</span>]<span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">phi</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">32</span>]<span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">inputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JsInput</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">outputs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JsOutput</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">rt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>[<span class="ident">u8</span>; <span class="number">32</span>]<span class="op">&gt;</span>,
+<span class="kw">pub struct </span>JoinSplit {
+    <span class="kw">pub </span>vpub_old: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="kw">pub </span>vpub_new: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="kw">pub </span>h_sig: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">32</span>]&gt;,
+    <span class="kw">pub </span>phi: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">32</span>]&gt;,
+    <span class="kw">pub </span>inputs: Vec&lt;JsInput&gt;,
+    <span class="kw">pub </span>outputs: Vec&lt;JsOutput&gt;,
+    <span class="kw">pub </span>rt: <span class="prelude-ty">Option</span>&lt;[u8; <span class="number">32</span>]&gt;,
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JsInput</span> {
-    <span class="kw">pub</span> <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">a_sk</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SpendingKey</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">rho</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">UniqueRandomness</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">r</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CommitmentRandomness</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">auth_path</span>: [<span class="prelude-ty">Option</span><span class="op">&lt;</span>([<span class="ident">u8</span>; <span class="number">32</span>], <span class="ident">bool</span>)<span class="op">&gt;</span>; <span class="ident">TREE_DEPTH</span>],
+<span class="kw">pub struct </span>JsInput {
+    <span class="kw">pub </span>value: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="kw">pub </span>a_sk: <span class="prelude-ty">Option</span>&lt;SpendingKey&gt;,
+    <span class="kw">pub </span>rho: <span class="prelude-ty">Option</span>&lt;UniqueRandomness&gt;,
+    <span class="kw">pub </span>r: <span class="prelude-ty">Option</span>&lt;CommitmentRandomness&gt;,
+    <span class="kw">pub </span>auth_path: [<span class="prelude-ty">Option</span>&lt;([u8; <span class="number">32</span>], bool)&gt;; TREE_DEPTH],
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JsOutput</span> {
-    <span class="kw">pub</span> <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">a_pk</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PayingKey</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">r</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CommitmentRandomness</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>JsOutput {
+    <span class="kw">pub </span>value: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="kw">pub </span>a_pk: <span class="prelude-ty">Option</span>&lt;PayingKey&gt;,
+    <span class="kw">pub </span>r: <span class="prelude-ty">Option</span>&lt;CommitmentRandomness&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Scalar</span>: <span class="ident">PrimeField</span><span class="op">&gt;</span> <span class="ident">Circuit</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">JoinSplit</span> {
-    <span class="kw">fn</span> <span class="ident">synthesize</span><span class="op">&lt;</span><span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">cs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">CS</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SynthesisError</span><span class="op">&gt;</span> {
-        <span class="macro">assert_eq!</span>(<span class="self">self</span>.<span class="ident">inputs</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="self">self</span>.<span class="ident">outputs</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+<span class="kw">impl</span>&lt;Scalar: PrimeField&gt; Circuit&lt;Scalar&gt; <span class="kw">for </span>JoinSplit {
+    <span class="kw">fn </span>synthesize&lt;CS: ConstraintSystem&lt;Scalar&gt;&gt;(<span class="self">self</span>, cs: <span class="kw-2">&amp;mut </span>CS) -&gt; <span class="prelude-ty">Result</span>&lt;(), SynthesisError&gt; {
+        <span class="macro">assert_eq!</span>(<span class="self">self</span>.inputs.len(), <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(<span class="self">self</span>.outputs.len(), <span class="number">2</span>);
 
-        <span class="comment">// vpub_old is the value entering the</span>
-        <span class="comment">// JoinSplit from the &quot;outside&quot; value</span>
-        <span class="comment">// pool</span>
-        <span class="kw">let</span> <span class="ident">vpub_old</span> <span class="op">=</span> <span class="ident">NoteValue::new</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;vpub_old&quot;</span>), <span class="self">self</span>.<span class="ident">vpub_old</span>)<span class="question-mark">?</span>;
+        <span class="comment">// vpub_old is the value entering the
+        // JoinSplit from the &quot;outside&quot; value
+        // pool
+        </span><span class="kw">let </span>vpub_old = NoteValue::new(cs.namespace(|| <span class="string">&quot;vpub_old&quot;</span>), <span class="self">self</span>.vpub_old)<span class="question-mark">?</span>;
 
-        <span class="comment">// vpub_new is the value leaving the</span>
-        <span class="comment">// JoinSplit into the &quot;outside&quot; value</span>
-        <span class="comment">// pool</span>
-        <span class="kw">let</span> <span class="ident">vpub_new</span> <span class="op">=</span> <span class="ident">NoteValue::new</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;vpub_new&quot;</span>), <span class="self">self</span>.<span class="ident">vpub_new</span>)<span class="question-mark">?</span>;
+        <span class="comment">// vpub_new is the value leaving the
+        // JoinSplit into the &quot;outside&quot; value
+        // pool
+        </span><span class="kw">let </span>vpub_new = NoteValue::new(cs.namespace(|| <span class="string">&quot;vpub_new&quot;</span>), <span class="self">self</span>.vpub_new)<span class="question-mark">?</span>;
 
-        <span class="comment">// The left hand side of the balance equation</span>
-        <span class="comment">// vpub_old + inputs[0].value + inputs[1].value</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">vpub_old</span>.<span class="ident">lc</span>();
+        <span class="comment">// The left hand side of the balance equation
+        // vpub_old + inputs[0].value + inputs[1].value
+        </span><span class="kw">let </span><span class="kw-2">mut </span>lhs = vpub_old.lc();
 
-        <span class="comment">// The right hand side of the balance equation</span>
-        <span class="comment">// vpub_old + inputs[0].value + inputs[1].value</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">vpub_new</span>.<span class="ident">lc</span>();
+        <span class="comment">// The right hand side of the balance equation
+        // vpub_old + inputs[0].value + inputs[1].value
+        </span><span class="kw">let </span><span class="kw-2">mut </span>rhs = vpub_new.lc();
 
-        <span class="comment">// Witness rt (merkle tree root)</span>
-        <span class="kw">let</span> <span class="ident">rt</span> <span class="op">=</span> <span class="ident">witness_u256</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;rt&quot;</span>), <span class="self">self</span>.<span class="ident">rt</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">v</span>[..]))<span class="question-mark">?</span>;
+        <span class="comment">// Witness rt (merkle tree root)
+        </span><span class="kw">let </span>rt = witness_u256(cs.namespace(|| <span class="string">&quot;rt&quot;</span>), <span class="self">self</span>.rt.as_ref().map(|v| <span class="kw-2">&amp;</span>v[..]))<span class="question-mark">?</span>;
 
-        <span class="comment">// Witness h_sig</span>
-        <span class="kw">let</span> <span class="ident">h_sig</span> <span class="op">=</span> <span class="ident">witness_u256</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;h_sig&quot;</span>),
-            <span class="self">self</span>.<span class="ident">h_sig</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">v</span>[..]),
+        <span class="comment">// Witness h_sig
+        </span><span class="kw">let </span>h_sig = witness_u256(
+            cs.namespace(|| <span class="string">&quot;h_sig&quot;</span>),
+            <span class="self">self</span>.h_sig.as_ref().map(|v| <span class="kw-2">&amp;</span>v[..]),
         )
-        .<span class="ident">unwrap</span>();
+        .unwrap();
 
-        <span class="comment">// Witness phi</span>
-        <span class="kw">let</span> <span class="ident">phi</span> <span class="op">=</span> <span class="ident">witness_u252</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;phi&quot;</span>), <span class="self">self</span>.<span class="ident">phi</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">v</span>[..]))<span class="question-mark">?</span>;
+        <span class="comment">// Witness phi
+        </span><span class="kw">let </span>phi = witness_u252(cs.namespace(|| <span class="string">&quot;phi&quot;</span>), <span class="self">self</span>.phi.as_ref().map(|v| <span class="kw-2">&amp;</span>v[..]))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_notes</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs_total</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">vpub_old</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>input_notes = <span class="macro">vec!</span>[];
+        <span class="kw">let </span><span class="kw-2">mut </span>lhs_total = <span class="self">self</span>.vpub_old;
 
-        <span class="comment">// Iterate over the JoinSplit inputs</span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">input</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">inputs</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">cs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;input {}&quot;</span>, <span class="ident">i</span>));
+        <span class="comment">// Iterate over the JoinSplit inputs
+        </span><span class="kw">for </span>(i, input) <span class="kw">in </span><span class="self">self</span>.inputs.into_iter().enumerate() {
+            <span class="kw">let </span>cs = <span class="kw-2">&amp;mut </span>cs.namespace(|| <span class="macro">format!</span>(<span class="string">&quot;input {}&quot;</span>, i));
 
-            <span class="comment">// Accumulate the value of the left hand side</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">input</span>.<span class="ident">value</span> {
-                <span class="ident">lhs_total</span> <span class="op">=</span> <span class="ident">lhs_total</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">wrapping_add</span>(<span class="ident">value</span>));
+            <span class="comment">// Accumulate the value of the left hand side
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(value) = input.value {
+                lhs_total = lhs_total.map(|v| v.wrapping_add(value));
             }
 
-            <span class="comment">// Allocate the value of the note</span>
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">NoteValue::new</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;value&quot;</span>), <span class="ident">input</span>.<span class="ident">value</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Allocate the value of the note
+            </span><span class="kw">let </span>value = NoteValue::new(cs.namespace(|| <span class="string">&quot;value&quot;</span>), input.value)<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the nonce (for PRF inputs) which is false</span>
-            <span class="comment">// for the first input, and true for the second input.</span>
-            <span class="kw">let</span> <span class="ident">nonce</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">i</span> {
-                <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-                <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable!</span>(),
+            <span class="comment">// Compute the nonce (for PRF inputs) which is false
+            // for the first input, and true for the second input.
+            </span><span class="kw">let </span>nonce = <span class="kw">match </span>i {
+                <span class="number">0 </span>=&gt; <span class="bool-val">false</span>,
+                <span class="number">1 </span>=&gt; <span class="bool-val">true</span>,
+                <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
             };
 
-            <span class="comment">// Perform input note computations</span>
-            <span class="ident">input_notes</span>.<span class="ident">push</span>(<span class="ident">InputNote::compute</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;note&quot;</span>),
-                <span class="ident">input</span>.<span class="ident">a_sk</span>,
-                <span class="ident">input</span>.<span class="ident">rho</span>,
-                <span class="ident">input</span>.<span class="ident">r</span>,
-                <span class="kw-2">&amp;</span><span class="ident">value</span>,
-                <span class="kw-2">&amp;</span><span class="ident">h_sig</span>,
-                <span class="ident">nonce</span>,
-                <span class="ident">input</span>.<span class="ident">auth_path</span>,
-                <span class="kw-2">&amp;</span><span class="ident">rt</span>,
+            <span class="comment">// Perform input note computations
+            </span>input_notes.push(InputNote::compute(
+                cs.namespace(|| <span class="string">&quot;note&quot;</span>),
+                input.a_sk,
+                input.rho,
+                input.r,
+                <span class="kw-2">&amp;</span>value,
+                <span class="kw-2">&amp;</span>h_sig,
+                nonce,
+                input.auth_path,
+                <span class="kw-2">&amp;</span>rt,
             )<span class="question-mark">?</span>);
 
-            <span class="comment">// Add the note value to the left hand side of</span>
-            <span class="comment">// the balance equation</span>
-            <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">lhs</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">lc</span>();
+            <span class="comment">// Add the note value to the left hand side of
+            // the balance equation
+            </span>lhs = lhs + <span class="kw-2">&amp;</span>value.lc();
         }
 
-        <span class="comment">// Rebind lhs so that it isn&#39;t mutable anymore</span>
-        <span class="kw">let</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">lhs</span>;
+        <span class="comment">// Rebind lhs so that it isn&#39;t mutable anymore
+        </span><span class="kw">let </span>lhs = lhs;
 
-        <span class="comment">// See zcash/zcash/issues/854</span>
-        {
-            <span class="comment">// Expected sum of the left hand side of the balance</span>
-            <span class="comment">// equation, expressed as a 64-bit unsigned integer</span>
-            <span class="kw">let</span> <span class="ident">lhs_total</span> <span class="op">=</span>
-                <span class="ident">NoteValue::new</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;total value of left hand side&quot;</span>), <span class="ident">lhs_total</span>)<span class="question-mark">?</span>;
+        <span class="comment">// See zcash/zcash/issues/854
+        </span>{
+            <span class="comment">// Expected sum of the left hand side of the balance
+            // equation, expressed as a 64-bit unsigned integer
+            </span><span class="kw">let </span>lhs_total =
+                NoteValue::new(cs.namespace(|| <span class="string">&quot;total value of left hand side&quot;</span>), lhs_total)<span class="question-mark">?</span>;
 
-            <span class="comment">// Enforce that the left hand side can be expressed as a 64-bit</span>
-            <span class="comment">// integer</span>
-            <span class="ident">cs</span>.<span class="ident">enforce</span>(
-                <span class="op">|</span><span class="op">|</span> <span class="string">&quot;left hand side can be expressed as a 64-bit unsigned integer&quot;</span>,
-                <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">lhs</span>.<span class="ident">clone</span>(),
-                <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span> <span class="op">+</span> <span class="ident">CS::one</span>(),
-                <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">lhs_total</span>.<span class="ident">lc</span>(),
+            <span class="comment">// Enforce that the left hand side can be expressed as a 64-bit
+            // integer
+            </span>cs.enforce(
+                || <span class="string">&quot;left hand side can be expressed as a 64-bit unsigned integer&quot;</span>,
+                |<span class="kw">_</span>| lhs.clone(),
+                |lc| lc + CS::one(),
+                |<span class="kw">_</span>| lhs_total.lc(),
             );
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output_notes</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="kw">let </span><span class="kw-2">mut </span>output_notes = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Iterate over the JoinSplit outputs</span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">output</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">outputs</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">cs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;output {}&quot;</span>, <span class="ident">i</span>));
+        <span class="comment">// Iterate over the JoinSplit outputs
+        </span><span class="kw">for </span>(i, output) <span class="kw">in </span><span class="self">self</span>.outputs.into_iter().enumerate() {
+            <span class="kw">let </span>cs = <span class="kw-2">&amp;mut </span>cs.namespace(|| <span class="macro">format!</span>(<span class="string">&quot;output {}&quot;</span>, i));
 
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">NoteValue::new</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;value&quot;</span>), <span class="ident">output</span>.<span class="ident">value</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>value = NoteValue::new(cs.namespace(|| <span class="string">&quot;value&quot;</span>), output.value)<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the nonce (for PRF inputs) which is false</span>
-            <span class="comment">// for the first output, and true for the second output.</span>
-            <span class="kw">let</span> <span class="ident">nonce</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">i</span> {
-                <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-                <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable!</span>(),
+            <span class="comment">// Compute the nonce (for PRF inputs) which is false
+            // for the first output, and true for the second output.
+            </span><span class="kw">let </span>nonce = <span class="kw">match </span>i {
+                <span class="number">0 </span>=&gt; <span class="bool-val">false</span>,
+                <span class="number">1 </span>=&gt; <span class="bool-val">true</span>,
+                <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
             };
 
-            <span class="comment">// Perform output note computations</span>
-            <span class="ident">output_notes</span>.<span class="ident">push</span>(<span class="ident">OutputNote::compute</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;note&quot;</span>),
-                <span class="ident">output</span>.<span class="ident">a_pk</span>,
-                <span class="kw-2">&amp;</span><span class="ident">value</span>,
-                <span class="ident">output</span>.<span class="ident">r</span>,
-                <span class="kw-2">&amp;</span><span class="ident">phi</span>,
-                <span class="kw-2">&amp;</span><span class="ident">h_sig</span>,
-                <span class="ident">nonce</span>,
+            <span class="comment">// Perform output note computations
+            </span>output_notes.push(OutputNote::compute(
+                cs.namespace(|| <span class="string">&quot;note&quot;</span>),
+                output.a_pk,
+                <span class="kw-2">&amp;</span>value,
+                output.r,
+                <span class="kw-2">&amp;</span>phi,
+                <span class="kw-2">&amp;</span>h_sig,
+                nonce,
             )<span class="question-mark">?</span>);
 
-            <span class="comment">// Add the note value to the right hand side of</span>
-            <span class="comment">// the balance equation</span>
-            <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">rhs</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">value</span>.<span class="ident">lc</span>();
+            <span class="comment">// Add the note value to the right hand side of
+            // the balance equation
+            </span>rhs = rhs + <span class="kw-2">&amp;</span>value.lc();
         }
 
-        <span class="comment">// Enforce that balance is equal</span>
-        <span class="ident">cs</span>.<span class="ident">enforce</span>(
-            <span class="op">|</span><span class="op">|</span> <span class="string">&quot;balance equation&quot;</span>,
-            <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">lhs</span>.<span class="ident">clone</span>(),
-            <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span> <span class="op">+</span> <span class="ident">CS::one</span>(),
-            <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">rhs</span>,
+        <span class="comment">// Enforce that balance is equal
+        </span>cs.enforce(
+            || <span class="string">&quot;balance equation&quot;</span>,
+            |<span class="kw">_</span>| lhs.clone(),
+            |lc| lc + CS::one(),
+            |<span class="kw">_</span>| rhs,
         );
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">public_inputs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">rt</span>);
-        <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">h_sig</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>public_inputs = <span class="macro">vec!</span>[];
+        public_inputs.extend(rt);
+        public_inputs.extend(h_sig);
 
-        <span class="kw">for</span> <span class="ident">note</span> <span class="kw">in</span> <span class="ident">input_notes</span> {
-            <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">note</span>.<span class="ident">nf</span>);
-            <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">note</span>.<span class="ident">mac</span>);
+        <span class="kw">for </span>note <span class="kw">in </span>input_notes {
+            public_inputs.extend(note.nf);
+            public_inputs.extend(note.mac);
         }
 
-        <span class="kw">for</span> <span class="ident">note</span> <span class="kw">in</span> <span class="ident">output_notes</span> {
-            <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">note</span>.<span class="ident">cm</span>);
+        <span class="kw">for </span>note <span class="kw">in </span>output_notes {
+            public_inputs.extend(note.cm);
         }
 
-        <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">vpub_old</span>.<span class="ident">bits_le</span>());
-        <span class="ident">public_inputs</span>.<span class="ident">extend</span>(<span class="ident">vpub_new</span>.<span class="ident">bits_le</span>());
+        public_inputs.extend(vpub_old.bits_le());
+        public_inputs.extend(vpub_new.bits_le());
 
-        <span class="ident">pack_into_inputs</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;input packing&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">public_inputs</span>)
+        pack_into_inputs(cs.namespace(|| <span class="string">&quot;input packing&quot;</span>), <span class="kw-2">&amp;</span>public_inputs)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NoteValue</span> {
-    <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
-    <span class="comment">// Least significant digit first</span>
-    <span class="ident">bits</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AllocatedBit</span><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>NoteValue {
+    value: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="comment">// Least significant digit first
+    </span>bits: Vec&lt;AllocatedBit&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">NoteValue</span> {
-    <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">Scalar</span>, <span class="ident">CS</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">cs</span>: <span class="ident">CS</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NoteValue</span>, <span class="ident">SynthesisError</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">Scalar</span>: <span class="ident">PrimeField</span>,
-        <span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span>,
+<span class="kw">impl </span>NoteValue {
+    <span class="kw">fn </span>new&lt;Scalar, CS&gt;(<span class="kw-2">mut </span>cs: CS, value: <span class="prelude-ty">Option</span>&lt;u64&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;NoteValue, SynthesisError&gt;
+    <span class="kw">where
+        </span>Scalar: PrimeField,
+        CS: ConstraintSystem&lt;Scalar&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span>;
-        <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">values</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-                <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">64</span> {
-                    <span class="ident">values</span>.<span class="ident">push</span>(<span class="prelude-val">Some</span>(<span class="ident">val</span> <span class="op">&amp;</span> <span class="number">1</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>));
-                    <span class="ident">val</span> <span class="op">&gt;</span><span class="op">&gt;</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>values;
+        <span class="kw">match </span>value {
+            <span class="prelude-val">Some</span>(<span class="kw-2">mut </span>val) =&gt; {
+                values = <span class="macro">vec!</span>[];
+                <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">64 </span>{
+                    values.push(<span class="prelude-val">Some</span>(val &amp; <span class="number">1 </span>== <span class="number">1</span>));
+                    val &gt;&gt;= <span class="number">1</span>;
                 }
             }
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">values</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="number">64</span>];
+            <span class="prelude-val">None </span>=&gt; {
+                values = <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="number">64</span>];
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bits</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">values</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="ident">bits</span>.<span class="ident">push</span>(<span class="ident">AllocatedBit::alloc</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;bit {}&quot;</span>, <span class="ident">i</span>)),
-                <span class="ident">value</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>bits = <span class="macro">vec!</span>[];
+        <span class="kw">for </span>(i, value) <span class="kw">in </span>values.into_iter().enumerate() {
+            bits.push(AllocatedBit::alloc(
+                cs.namespace(|| <span class="macro">format!</span>(<span class="string">&quot;bit {}&quot;</span>, i)),
+                value,
             )<span class="question-mark">?</span>);
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">NoteValue</span> { <span class="ident">value</span>, <span class="ident">bits</span> })
+        <span class="prelude-val">Ok</span>(NoteValue { value, bits })
     }
 
-    <span class="doccomment">/// Encodes the bits of the value into little-endian</span>
-    <span class="doccomment">/// byte order.</span>
-    <span class="kw">fn</span> <span class="ident">bits_le</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Boolean</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">bits</span>
-            .<span class="ident">chunks</span>(<span class="number">8</span>)
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">iter</span>().<span class="ident">rev</span>())
-            .<span class="ident">cloned</span>()
-            .<span class="ident">map</span>(<span class="ident">Boolean::from</span>)
-            .<span class="ident">collect</span>()
+    <span class="doccomment">/// Encodes the bits of the value into little-endian
+    /// byte order.
+    </span><span class="kw">fn </span>bits_le(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;Boolean&gt; {
+        <span class="self">self</span>.bits
+            .chunks(<span class="number">8</span>)
+            .flat_map(|v| v.iter().rev())
+            .cloned()
+            .map(Boolean::from)
+            .collect()
     }
 
-    <span class="doccomment">/// Computes this value as a linear combination of</span>
-    <span class="doccomment">/// its bits.</span>
-    <span class="kw">fn</span> <span class="ident">lc</span><span class="op">&lt;</span><span class="ident">Scalar</span>: <span class="ident">PrimeField</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">LinearCombination</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">LinearCombination::zero</span>();
+    <span class="doccomment">/// Computes this value as a linear combination of
+    /// its bits.
+    </span><span class="kw">fn </span>lc&lt;Scalar: PrimeField&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; LinearCombination&lt;Scalar&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>tmp = LinearCombination::zero();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">Scalar::one</span>();
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">bits</span> {
-            <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">tmp</span> <span class="op">+</span> (<span class="ident">coeff</span>, <span class="ident">b</span>.<span class="ident">get_variable</span>());
-            <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">coeff</span>.<span class="ident">double</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>coeff = Scalar::one();
+        <span class="kw">for </span>b <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.bits {
+            tmp = tmp + (coeff, b.get_variable());
+            coeff = coeff.double();
         }
 
-        <span class="ident">tmp</span>
+        tmp
     }
 
-    <span class="kw">fn</span> <span class="ident">get_value</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">value</span>
+    <span class="kw">fn </span>get_value(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt; {
+        <span class="self">self</span>.value
     }
 }
 
-<span class="doccomment">/// Witnesses some bytes in the constraint system,</span>
-<span class="doccomment">/// skipping the first `skip_bits`.</span>
-<span class="kw">fn</span> <span class="ident">witness_bits</span><span class="op">&lt;</span><span class="ident">Scalar</span>, <span class="ident">CS</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">cs</span>: <span class="ident">CS</span>,
-    <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
-    <span class="ident">num_bits</span>: <span class="ident">usize</span>,
-    <span class="ident">skip_bits</span>: <span class="ident">usize</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Boolean</span><span class="op">&gt;</span>, <span class="ident">SynthesisError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Scalar</span>: <span class="ident">PrimeField</span>,
-    <span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Witnesses some bytes in the constraint system,
+/// skipping the first `skip_bits`.
+</span><span class="kw">fn </span>witness_bits&lt;Scalar, CS&gt;(
+    <span class="kw-2">mut </span>cs: CS,
+    value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt;,
+    num_bits: usize,
+    skip_bits: usize,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Boolean&gt;, SynthesisError&gt;
+<span class="kw">where
+    </span>Scalar: PrimeField,
+    CS: ConstraintSystem&lt;Scalar&gt;,
 {
-    <span class="kw">let</span> <span class="ident">bit_values</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) <span class="op">=</span> <span class="ident">value</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">value</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">m</span><span class="op">|</span> (<span class="number">0</span>..<span class="number">8</span>).<span class="ident">rev</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">m</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">i</span> <span class="op">&amp;</span> <span class="number">1</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>))
-            .<span class="ident">skip</span>(<span class="ident">skip_bits</span>)
+    <span class="kw">let </span>bit_values = <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = value {
+        <span class="kw">let </span><span class="kw-2">mut </span>tmp = <span class="macro">vec!</span>[];
+        <span class="kw">for </span>b <span class="kw">in </span>value
+            .iter()
+            .flat_map(|<span class="kw-2">&amp;</span>m| (<span class="number">0</span>..<span class="number">8</span>).rev().map(<span class="kw">move </span>|i| m &gt;&gt; i &amp; <span class="number">1 </span>== <span class="number">1</span>))
+            .skip(skip_bits)
         {
-            <span class="ident">tmp</span>.<span class="ident">push</span>(<span class="prelude-val">Some</span>(<span class="ident">b</span>));
+            tmp.push(<span class="prelude-val">Some</span>(b));
         }
-        <span class="ident">tmp</span>
-    } <span class="kw">else</span> {
-        <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="ident">num_bits</span>]
+        tmp
+    } <span class="kw">else </span>{
+        <span class="macro">vec!</span>[<span class="prelude-val">None</span>; num_bits]
     };
-    <span class="macro">assert_eq!</span>(<span class="ident">bit_values</span>.<span class="ident">len</span>(), <span class="ident">num_bits</span>);
+    <span class="macro">assert_eq!</span>(bit_values.len(), num_bits);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bits</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let </span><span class="kw-2">mut </span>bits = <span class="macro">vec!</span>[];
 
-    <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">bit_values</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-        <span class="ident">bits</span>.<span class="ident">push</span>(<span class="ident">Boolean::from</span>(<span class="ident">AllocatedBit::alloc</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;bit {}&quot;</span>, <span class="ident">i</span>)),
-            <span class="ident">value</span>,
+    <span class="kw">for </span>(i, value) <span class="kw">in </span>bit_values.into_iter().enumerate() {
+        bits.push(Boolean::from(AllocatedBit::alloc(
+            cs.namespace(|| <span class="macro">format!</span>(<span class="string">&quot;bit {}&quot;</span>, i)),
+            value,
         )<span class="question-mark">?</span>));
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">bits</span>)
+    <span class="prelude-val">Ok</span>(bits)
 }
 
-<span class="kw">fn</span> <span class="ident">witness_u256</span><span class="op">&lt;</span><span class="ident">Scalar</span>, <span class="ident">CS</span><span class="op">&gt;</span>(<span class="ident">cs</span>: <span class="ident">CS</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Boolean</span><span class="op">&gt;</span>, <span class="ident">SynthesisError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Scalar</span>: <span class="ident">PrimeField</span>,
-    <span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span>,
+<span class="kw">fn </span>witness_u256&lt;Scalar, CS&gt;(cs: CS, value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Boolean&gt;, SynthesisError&gt;
+<span class="kw">where
+    </span>Scalar: PrimeField,
+    CS: ConstraintSystem&lt;Scalar&gt;,
 {
-    <span class="ident">witness_bits</span>(<span class="ident">cs</span>, <span class="ident">value</span>, <span class="number">256</span>, <span class="number">0</span>)
+    witness_bits(cs, value, <span class="number">256</span>, <span class="number">0</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">witness_u252</span><span class="op">&lt;</span><span class="ident">Scalar</span>, <span class="ident">CS</span><span class="op">&gt;</span>(<span class="ident">cs</span>: <span class="ident">CS</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Boolean</span><span class="op">&gt;</span>, <span class="ident">SynthesisError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">Scalar</span>: <span class="ident">PrimeField</span>,
-    <span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span>,
+<span class="kw">fn </span>witness_u252&lt;Scalar, CS&gt;(cs: CS, value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Boolean&gt;, SynthesisError&gt;
+<span class="kw">where
+    </span>Scalar: PrimeField,
+    CS: ConstraintSystem&lt;Scalar&gt;,
 {
-    <span class="ident">witness_bits</span>(<span class="ident">cs</span>, <span class="ident">value</span>, <span class="number">252</span>, <span class="number">4</span>)
+    witness_bits(cs, value, <span class="number">252</span>, <span class="number">4</span>)
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="attribute">#[<span class="ident">ignore</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_sprout_constraints</span>() {
-    <span class="kw">use</span> <span class="ident">bellman::gadgets::test</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">bls12_381::Scalar</span>;
+<span class="attribute">#[test]
+#[ignore]
+</span><span class="kw">fn </span>test_sprout_constraints() {
+    <span class="kw">use </span>bellman::gadgets::test::<span class="kw-2">*</span>;
+    <span class="kw">use </span>bls12_381::Scalar;
 
-    <span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
+    <span class="kw">use </span>byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 
-    <span class="kw">let</span> <span class="ident">test_vector</span> <span class="op">=</span> <span class="macro">include_bytes!</span>(<span class="string">&quot;test_vectors.dat&quot;</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">test_vector</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">test_vector</span>[..];
+    <span class="kw">let </span>test_vector = <span class="macro">include_bytes!</span>(<span class="string">&quot;test_vectors.dat&quot;</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>test_vector = <span class="kw-2">&amp;</span>test_vector[..];
 
-    <span class="kw">fn</span> <span class="ident">get_u256</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">ReadBytesExt</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> [<span class="ident">u8</span>; <span class="number">32</span>] {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">32</span>];
+    <span class="kw">fn </span>get_u256&lt;R: ReadBytesExt&gt;(<span class="kw-2">mut </span>reader: R) -&gt; [u8; <span class="number">32</span>] {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = [<span class="number">0u8</span>; <span class="number">32</span>];
 
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">result</span> {
-            <span class="kw-2">*</span><span class="ident">b</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_u8</span>().<span class="ident">unwrap</span>();
+        <span class="kw">for </span>b <span class="kw">in </span><span class="kw-2">&amp;mut </span>result {
+            <span class="kw-2">*</span>b = reader.read_u8().unwrap();
         }
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="kw">while</span> <span class="op">!</span><span class="ident">test_vector</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">TestConstraintSystem</span>::<span class="op">&lt;</span><span class="ident">Scalar</span><span class="op">&gt;</span><span class="ident">::new</span>();
+    <span class="kw">while </span>!test_vector.is_empty() {
+        <span class="kw">let </span><span class="kw-2">mut </span>cs = TestConstraintSystem::&lt;Scalar&gt;::new();
 
-        <span class="kw">let</span> <span class="ident">phi</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>));
-        <span class="kw">let</span> <span class="ident">rt</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>));
-        <span class="kw">let</span> <span class="ident">h_sig</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>));
+        <span class="kw">let </span>phi = <span class="prelude-val">Some</span>(get_u256(<span class="kw-2">&amp;mut </span>test_vector));
+        <span class="kw">let </span>rt = <span class="prelude-val">Some</span>(get_u256(<span class="kw-2">&amp;mut </span>test_vector));
+        <span class="kw">let </span>h_sig = <span class="prelude-val">Some</span>(get_u256(<span class="kw-2">&amp;mut </span>test_vector));
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inputs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-            <span class="ident">test_vector</span>.<span class="ident">read_u8</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>inputs = <span class="macro">vec!</span>[];
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+            test_vector.read_u8().unwrap();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">auth_path</span> <span class="op">=</span> [<span class="prelude-val">None</span>; <span class="ident">TREE_DEPTH</span>];
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">TREE_DEPTH</span>).<span class="ident">rev</span>() {
-                <span class="ident">test_vector</span>.<span class="ident">read_u8</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>auth_path = [<span class="prelude-val">None</span>; TREE_DEPTH];
+            <span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..TREE_DEPTH).rev() {
+                test_vector.read_u8().unwrap();
 
-                <span class="kw">let</span> <span class="ident">sibling</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
+                <span class="kw">let </span>sibling = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
 
-                <span class="ident">auth_path</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="prelude-val">Some</span>((<span class="ident">sibling</span>, <span class="bool-val">false</span>));
+                auth_path[i] = <span class="prelude-val">Some</span>((sibling, <span class="bool-val">false</span>));
             }
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">position</span> <span class="op">=</span> <span class="ident">test_vector</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>();
-            <span class="kw">for</span> <span class="ident">sibling</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">auth_path</span> {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">sibling</span> {
-                    <span class="ident">p</span>.<span class="number">1</span> <span class="op">=</span> (<span class="ident">position</span> <span class="op">&amp;</span> <span class="number">1</span>) <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>position = test_vector.read_u64::&lt;LittleEndian&gt;().unwrap();
+            <span class="kw">for </span>sibling <span class="kw">in </span><span class="kw-2">&amp;mut </span>auth_path {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = sibling {
+                    p.<span class="number">1 </span>= (position &amp; <span class="number">1</span>) == <span class="number">1</span>;
                 }
 
-                <span class="ident">position</span> <span class="op">&gt;</span><span class="op">&gt;</span><span class="op">=</span> <span class="number">1</span>;
+                position &gt;&gt;= <span class="number">1</span>;
             }
 
-            <span class="comment">// a_pk</span>
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">SpendingKey</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">test_vector</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
-            <span class="kw">let</span> <span class="ident">rho</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">UniqueRandomness</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
-            <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">CommitmentRandomness</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
-            <span class="kw">let</span> <span class="ident">a_sk</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">SpendingKey</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
+            <span class="comment">// a_pk
+            </span><span class="kw">let _ </span>= <span class="prelude-val">Some</span>(SpendingKey(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
+            <span class="kw">let </span>value = <span class="prelude-val">Some</span>(test_vector.read_u64::&lt;LittleEndian&gt;().unwrap());
+            <span class="kw">let </span>rho = <span class="prelude-val">Some</span>(UniqueRandomness(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
+            <span class="kw">let </span>r = <span class="prelude-val">Some</span>(CommitmentRandomness(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
+            <span class="kw">let </span>a_sk = <span class="prelude-val">Some</span>(SpendingKey(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
 
-            <span class="ident">inputs</span>.<span class="ident">push</span>(<span class="ident">JsInput</span> {
-                <span class="ident">value</span>,
-                <span class="ident">a_sk</span>,
-                <span class="ident">rho</span>,
-                <span class="ident">r</span>,
-                <span class="ident">auth_path</span>,
+            inputs.push(JsInput {
+                value,
+                a_sk,
+                rho,
+                r,
+                auth_path,
             });
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">outputs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="kw">let </span><span class="kw-2">mut </span>outputs = <span class="macro">vec!</span>[];
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-            <span class="kw">let</span> <span class="ident">a_pk</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">PayingKey</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">test_vector</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
-            <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
-            <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">CommitmentRandomness</span>(<span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>)));
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+            <span class="kw">let </span>a_pk = <span class="prelude-val">Some</span>(PayingKey(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
+            <span class="kw">let </span>value = <span class="prelude-val">Some</span>(test_vector.read_u64::&lt;LittleEndian&gt;().unwrap());
+            get_u256(<span class="kw-2">&amp;mut </span>test_vector);
+            <span class="kw">let </span>r = <span class="prelude-val">Some</span>(CommitmentRandomness(get_u256(<span class="kw-2">&amp;mut </span>test_vector)));
 
-            <span class="ident">outputs</span>.<span class="ident">push</span>(<span class="ident">JsOutput</span> { <span class="ident">value</span>, <span class="ident">a_pk</span>, <span class="ident">r</span> });
+            outputs.push(JsOutput { value, a_pk, r });
         }
 
-        <span class="kw">let</span> <span class="ident">vpub_old</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">test_vector</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
-        <span class="kw">let</span> <span class="ident">vpub_new</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">test_vector</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>());
+        <span class="kw">let </span>vpub_old = <span class="prelude-val">Some</span>(test_vector.read_u64::&lt;LittleEndian&gt;().unwrap());
+        <span class="kw">let </span>vpub_new = <span class="prelude-val">Some</span>(test_vector.read_u64::&lt;LittleEndian&gt;().unwrap());
 
-        <span class="kw">let</span> <span class="ident">nf1</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
-        <span class="kw">let</span> <span class="ident">nf2</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
+        <span class="kw">let </span>nf1 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
+        <span class="kw">let </span>nf2 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
 
-        <span class="kw">let</span> <span class="ident">cm1</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
-        <span class="kw">let</span> <span class="ident">cm2</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
+        <span class="kw">let </span>cm1 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
+        <span class="kw">let </span>cm2 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
 
-        <span class="kw">let</span> <span class="ident">mac1</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
-        <span class="kw">let</span> <span class="ident">mac2</span> <span class="op">=</span> <span class="ident">get_u256</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">test_vector</span>);
+        <span class="kw">let </span>mac1 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
+        <span class="kw">let </span>mac2 = get_u256(<span class="kw-2">&amp;mut </span>test_vector);
 
-        <span class="kw">let</span> <span class="ident">js</span> <span class="op">=</span> <span class="ident">JoinSplit</span> {
-            <span class="ident">vpub_old</span>,
-            <span class="ident">vpub_new</span>,
-            <span class="ident">h_sig</span>,
-            <span class="ident">phi</span>,
-            <span class="ident">inputs</span>,
-            <span class="ident">outputs</span>,
-            <span class="ident">rt</span>,
+        <span class="kw">let </span>js = JoinSplit {
+            vpub_old,
+            vpub_new,
+            h_sig,
+            phi,
+            inputs,
+            outputs,
+            rt,
         };
 
-        <span class="ident">js</span>.<span class="ident">synthesize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>).<span class="ident">unwrap</span>();
+        js.synthesize(<span class="kw-2">&amp;mut </span>cs).unwrap();
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">cs</span>.<span class="ident">which_is_unsatisfied</span>() {
-            <span class="macro">panic!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">s</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = cs.which_is_unsatisfied() {
+            <span class="macro">panic!</span>(<span class="string">&quot;{:?}&quot;</span>, s);
         }
-        <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">is_satisfied</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_constraints</span>(), <span class="number">1989085</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_inputs</span>(), <span class="number">10</span>);
+        <span class="macro">assert!</span>(cs.is_satisfied());
+        <span class="macro">assert_eq!</span>(cs.num_constraints(), <span class="number">1989085</span>);
+        <span class="macro">assert_eq!</span>(cs.num_inputs(), <span class="number">10</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">cs</span>.<span class="ident">hash</span>(),
-            <span class="string">&quot;1a228d3c6377130d1778c7885811dc8b8864049cb5af8aff7e6cd46c5bc4b84c&quot;</span>
-        );
+            cs.hash(),
+            <span class="string">&quot;1a228d3c6377130d1778c7885811dc8b8864049cb5af8aff7e6cd46c5bc4b84c&quot;
+        </span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_inputs</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">rt</span>.<span class="ident">unwrap</span>().<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">h_sig</span>.<span class="ident">unwrap</span>().<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">nf1</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">mac1</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">nf2</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">mac2</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">cm1</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>.<span class="ident">extend</span>(<span class="ident">cm2</span>.<span class="ident">to_vec</span>());
-        <span class="ident">expected_inputs</span>
-            .<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">vpub_old</span>.<span class="ident">unwrap</span>())
-            .<span class="ident">unwrap</span>();
-        <span class="ident">expected_inputs</span>
-            .<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">vpub_new</span>.<span class="ident">unwrap</span>())
-            .<span class="ident">unwrap</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>expected_inputs = <span class="macro">vec!</span>[];
+        expected_inputs.extend(rt.unwrap().to_vec());
+        expected_inputs.extend(h_sig.unwrap().to_vec());
+        expected_inputs.extend(nf1.to_vec());
+        expected_inputs.extend(mac1.to_vec());
+        expected_inputs.extend(nf2.to_vec());
+        expected_inputs.extend(mac2.to_vec());
+        expected_inputs.extend(cm1.to_vec());
+        expected_inputs.extend(cm2.to_vec());
+        expected_inputs
+            .write_u64::&lt;LittleEndian&gt;(vpub_old.unwrap())
+            .unwrap();
+        expected_inputs
+            .write_u64::&lt;LittleEndian&gt;(vpub_new.unwrap())
+            .unwrap();
 
-        <span class="kw">use</span> <span class="ident">bellman::gadgets::multipack</span>;
+        <span class="kw">use </span>bellman::gadgets::multipack;
 
-        <span class="kw">let</span> <span class="ident">expected_inputs</span> <span class="op">=</span> <span class="ident">multipack::bytes_to_bits</span>(<span class="kw-2">&amp;</span><span class="ident">expected_inputs</span>);
-        <span class="kw">let</span> <span class="ident">expected_inputs</span> <span class="op">=</span> <span class="ident">multipack::compute_multipacking</span>(<span class="kw-2">&amp;</span><span class="ident">expected_inputs</span>);
+        <span class="kw">let </span>expected_inputs = multipack::bytes_to_bits(<span class="kw-2">&amp;</span>expected_inputs);
+        <span class="kw">let </span>expected_inputs = multipack::compute_multipacking(<span class="kw-2">&amp;</span>expected_inputs);
 
-        <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="ident">expected_inputs</span>));
+        <span class="macro">assert!</span>(cs.verify(<span class="kw-2">&amp;</span>expected_inputs));
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="zcash_proofs" data-search-index-js="../../../../search-index.js" data-search-js="../../../../search.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="zcash_proofs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

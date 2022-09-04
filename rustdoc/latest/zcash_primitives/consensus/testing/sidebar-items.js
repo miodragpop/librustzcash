@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["arb_branch_id",""],["arb_height",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["arb_branch_id",""],["arb_height",""]]};

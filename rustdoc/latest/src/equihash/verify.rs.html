@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `components&#x2F;equihash&#x2F;src&#x2F;verify.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../equihash/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `components/equihash/src/verify.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>verify.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../equihash/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../equihash/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../equihash/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -529,378 +529,378 @@
 <span id="529">529</span>
 <span id="530">530</span>
 <span id="531">531</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Verification functions for the [Equihash] proof-of-work algorithm.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [Equihash]: https://zips.z.cash/protocol/protocol.pdf#equihash</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Verification functions for the [Equihash] proof-of-work algorithm.
+//!
+//! [Equihash]: https://zips.z.cash/protocol/protocol.pdf#equihash
 
-<span class="kw">use</span> <span class="ident">blake2b_simd</span>::{<span class="ident">Hash</span> <span class="kw">as</span> <span class="ident">Blake2bHash</span>, <span class="ident">Params</span> <span class="kw">as</span> <span class="ident">Blake2bParams</span>, <span class="ident">State</span> <span class="kw">as</span> <span class="ident">Blake2bState</span>};
-<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">BigEndian</span>, <span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::io::Cursor</span>;
-<span class="kw">use</span> <span class="ident">std::mem::size_of</span>;
+</span><span class="kw">use </span>blake2b_simd::{Hash <span class="kw">as </span>Blake2bHash, Params <span class="kw">as </span>Blake2bParams, State <span class="kw">as </span>Blake2bState};
+<span class="kw">use </span>byteorder::{BigEndian, LittleEndian, ReadBytesExt, WriteBytesExt};
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::io::Cursor;
+<span class="kw">use </span>std::mem::size_of;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Params</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">n</span>: <span class="ident">u32</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">k</span>: <span class="ident">u32</span>,
+<span class="attribute">#[derive(Clone, Copy)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Params {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) n: u32,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) k: u32,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Node</span> {
-    <span class="ident">hash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
-    <span class="ident">indices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Clone)]
+</span><span class="kw">struct </span>Node {
+    hash: Vec&lt;u8&gt;,
+    indices: Vec&lt;u32&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Params</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">n</span>: <span class="ident">u32</span>, <span class="ident">k</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="comment">// We place the following requirements on the parameters:</span>
-        <span class="comment">// - n is a multiple of 8, so the hash output has an exact byte length.</span>
-        <span class="comment">// - k &gt;= 3 so the encoded solutions have an exact byte length.</span>
-        <span class="comment">// - k &lt; n, so the collision bit length is at least 1.</span>
-        <span class="comment">// - n is a multiple of k + 1, so we have an integer collision bit length.</span>
-        <span class="kw">if</span> (<span class="ident">n</span> <span class="op">%</span> <span class="number">8</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>) <span class="op">&amp;&amp;</span> (<span class="ident">k</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span>) <span class="op">&amp;&amp;</span> (<span class="ident">k</span> <span class="op">&lt;</span> <span class="ident">n</span>) <span class="op">&amp;&amp;</span> (<span class="ident">n</span> <span class="op">%</span> (<span class="ident">k</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">Params</span> { <span class="ident">n</span>, <span class="ident">k</span> })
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="ident">Kind::InvalidParams</span>))
+<span class="kw">impl </span>Params {
+    <span class="kw">fn </span>new(n: u32, k: u32) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+        <span class="comment">// We place the following requirements on the parameters:
+        // - n is a multiple of 8, so the hash output has an exact byte length.
+        // - k &gt;= 3 so the encoded solutions have an exact byte length.
+        // - k &lt; n, so the collision bit length is at least 1.
+        // - n is a multiple of k + 1, so we have an integer collision bit length.
+        </span><span class="kw">if </span>(n % <span class="number">8 </span>== <span class="number">0</span>) &amp;&amp; (k &gt;= <span class="number">3</span>) &amp;&amp; (k &lt; n) &amp;&amp; (n % (k + <span class="number">1</span>) == <span class="number">0</span>) {
+            <span class="prelude-val">Ok</span>(Params { n, k })
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Err</span>(Error(Kind::InvalidParams))
         }
     }
-    <span class="kw">fn</span> <span class="ident">indices_per_hash_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
-        <span class="number">512</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">n</span>
+    <span class="kw">fn </span>indices_per_hash_output(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="number">512 </span>/ <span class="self">self</span>.n
     }
-    <span class="kw">fn</span> <span class="ident">hash_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
-        (<span class="self">self</span>.<span class="ident">indices_per_hash_output</span>() <span class="op">*</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">/</span> <span class="number">8</span>) <span class="kw">as</span> <span class="ident">u8</span>
+    <span class="kw">fn </span>hash_output(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u8 {
+        (<span class="self">self</span>.indices_per_hash_output() * <span class="self">self</span>.n / <span class="number">8</span>) <span class="kw">as </span>u8
     }
-    <span class="kw">fn</span> <span class="ident">collision_bit_length</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        (<span class="self">self</span>.<span class="ident">n</span> <span class="op">/</span> (<span class="self">self</span>.<span class="ident">k</span> <span class="op">+</span> <span class="number">1</span>)) <span class="kw">as</span> <span class="ident">usize</span>
+    <span class="kw">fn </span>collision_bit_length(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        (<span class="self">self</span>.n / (<span class="self">self</span>.k + <span class="number">1</span>)) <span class="kw">as </span>usize
     }
-    <span class="kw">fn</span> <span class="ident">collision_byte_length</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        (<span class="self">self</span>.<span class="ident">collision_bit_length</span>() <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span>
-    }
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">hash_length</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        ((<span class="self">self</span>.<span class="ident">k</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> <span class="self">self</span>.<span class="ident">collision_byte_length</span>()
+    <span class="kw">fn </span>collision_byte_length(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        (<span class="self">self</span>.collision_bit_length() + <span class="number">7</span>) / <span class="number">8
+    </span>}
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">fn </span>hash_length(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        ((<span class="self">self</span>.k <span class="kw">as </span>usize) + <span class="number">1</span>) * <span class="self">self</span>.collision_byte_length()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Node</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Params</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">Blake2bState</span>, <span class="ident">i</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">hash</span> <span class="op">=</span> <span class="ident">generate_hash</span>(<span class="ident">state</span>, <span class="ident">i</span> <span class="op">/</span> <span class="ident">p</span>.<span class="ident">indices_per_hash_output</span>());
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> ((<span class="ident">i</span> <span class="op">%</span> <span class="ident">p</span>.<span class="ident">indices_per_hash_output</span>()) <span class="op">*</span> <span class="ident">p</span>.<span class="ident">n</span> <span class="op">/</span> <span class="number">8</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">start</span> <span class="op">+</span> (<span class="ident">p</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">/</span> <span class="number">8</span>;
-        <span class="ident">Node</span> {
-            <span class="ident">hash</span>: <span class="ident">expand_array</span>(<span class="kw-2">&amp;</span><span class="ident">hash</span>.<span class="ident">as_bytes</span>()[<span class="ident">start</span>..<span class="ident">end</span>], <span class="ident">p</span>.<span class="ident">collision_bit_length</span>(), <span class="number">0</span>),
-            <span class="ident">indices</span>: <span class="macro">vec!</span>[<span class="ident">i</span>],
+<span class="kw">impl </span>Node {
+    <span class="kw">fn </span>new(p: <span class="kw-2">&amp;</span>Params, state: <span class="kw-2">&amp;</span>Blake2bState, i: u32) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>hash = generate_hash(state, i / p.indices_per_hash_output());
+        <span class="kw">let </span>start = ((i % p.indices_per_hash_output()) * p.n / <span class="number">8</span>) <span class="kw">as </span>usize;
+        <span class="kw">let </span>end = start + (p.n <span class="kw">as </span>usize) / <span class="number">8</span>;
+        Node {
+            hash: expand_array(<span class="kw-2">&amp;</span>hash.as_bytes()[start..end], p.collision_bit_length(), <span class="number">0</span>),
+            indices: <span class="macro">vec!</span>[i],
         }
     }
 
-    <span class="comment">// Clippy incorrectly interprets the first argument as `self`.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::wrong_self_convention</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">from_children</span>(<span class="ident">a</span>: <span class="ident">Node</span>, <span class="ident">b</span>: <span class="ident">Node</span>, <span class="ident">trim</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">hash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">a</span>
-            .<span class="ident">hash</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">zip</span>(<span class="ident">b</span>.<span class="ident">hash</span>.<span class="ident">iter</span>())
-            .<span class="ident">skip</span>(<span class="ident">trim</span>)
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">^</span> <span class="ident">b</span>)
-            .<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="ident">indices</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">indices_before</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>) {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">indices</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">indices</span>;
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">b</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
-            <span class="ident">indices</span>
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">indices</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">indices</span>;
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">a</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
-            <span class="ident">indices</span>
+    <span class="comment">// Clippy incorrectly interprets the first argument as `self`.
+    </span><span class="attribute">#[allow(clippy::wrong_self_convention)]
+    </span><span class="kw">fn </span>from_children(a: Node, b: Node, trim: usize) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>hash: Vec&lt;<span class="kw">_</span>&gt; = a
+            .hash
+            .iter()
+            .zip(b.hash.iter())
+            .skip(trim)
+            .map(|(a, b)| a ^ b)
+            .collect();
+        <span class="kw">let </span>indices = <span class="kw">if </span>a.indices_before(<span class="kw-2">&amp;</span>b) {
+            <span class="kw">let </span><span class="kw-2">mut </span>indices = a.indices;
+            indices.extend(b.indices.iter());
+            indices
+        } <span class="kw">else </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>indices = b.indices;
+            indices.extend(a.indices.iter());
+            indices
         };
-        <span class="ident">Node</span> { <span class="ident">hash</span>, <span class="ident">indices</span> }
+        Node { hash, indices }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">from_children_ref</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">trim</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">hash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">a</span>
-            .<span class="ident">hash</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">zip</span>(<span class="ident">b</span>.<span class="ident">hash</span>.<span class="ident">iter</span>())
-            .<span class="ident">skip</span>(<span class="ident">trim</span>)
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">^</span> <span class="ident">b</span>)
-            .<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">indices</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">a</span>.<span class="ident">indices</span>.<span class="ident">len</span>() <span class="op">+</span> <span class="ident">b</span>.<span class="ident">indices</span>.<span class="ident">len</span>());
-        <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">indices_before</span>(<span class="ident">b</span>) {
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">a</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">b</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
-        } <span class="kw">else</span> {
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">b</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
-            <span class="ident">indices</span>.<span class="ident">extend</span>(<span class="ident">a</span>.<span class="ident">indices</span>.<span class="ident">iter</span>());
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">fn </span>from_children_ref(a: <span class="kw-2">&amp;</span>Node, b: <span class="kw-2">&amp;</span>Node, trim: usize) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>hash: Vec&lt;<span class="kw">_</span>&gt; = a
+            .hash
+            .iter()
+            .zip(b.hash.iter())
+            .skip(trim)
+            .map(|(a, b)| a ^ b)
+            .collect();
+        <span class="kw">let </span><span class="kw-2">mut </span>indices = Vec::with_capacity(a.indices.len() + b.indices.len());
+        <span class="kw">if </span>a.indices_before(b) {
+            indices.extend(a.indices.iter());
+            indices.extend(b.indices.iter());
+        } <span class="kw">else </span>{
+            indices.extend(b.indices.iter());
+            indices.extend(a.indices.iter());
         }
-        <span class="ident">Node</span> { <span class="ident">hash</span>, <span class="ident">indices</span> }
+        Node { hash, indices }
     }
 
-    <span class="kw">fn</span> <span class="ident">indices_before</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="comment">// Indices are serialized in big-endian so that integer</span>
-        <span class="comment">// comparison is equivalent to array comparison</span>
-        <span class="self">self</span>.<span class="ident">indices</span>[<span class="number">0</span>] <span class="op">&lt;</span> <span class="ident">other</span>.<span class="ident">indices</span>[<span class="number">0</span>]
+    <span class="kw">fn </span>indices_before(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Node) -&gt; bool {
+        <span class="comment">// Indices are serialized in big-endian so that integer
+        // comparison is equivalent to array comparison
+        </span><span class="self">self</span>.indices[<span class="number">0</span>] &lt; other.indices[<span class="number">0</span>]
     }
 
-    <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">hash</span>.<span class="ident">iter</span>().<span class="ident">take</span>(<span class="ident">len</span>).<span class="ident">all</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">v</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>)
-    }
-}
-
-<span class="doccomment">/// An Equihash solution failed to verify.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span>(<span class="ident">Kind</span>);
-
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Invalid solution: {}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>)
+    <span class="kw">fn </span>is_zero(<span class="kw-2">&amp;</span><span class="self">self</span>, len: usize) -&gt; bool {
+        <span class="self">self</span>.hash.iter().take(len).all(|v| <span class="kw-2">*</span>v == <span class="number">0</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">Error</span> {}
+<span class="doccomment">/// An Equihash solution failed to verify.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>Error(Kind);
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">Kind</span> {
-    <span class="ident">InvalidParams</span>,
-    <span class="ident">Collision</span>,
-    <span class="ident">OutOfOrder</span>,
-    <span class="ident">DuplicateIdxs</span>,
-    <span class="ident">NonZeroRootHash</span>,
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Error {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;Invalid solution: {}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>)
+    }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Kind</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Kind::InvalidParams</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;invalid parameters&quot;</span>),
-            <span class="ident">Kind::Collision</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;invalid collision length between StepRows&quot;</span>),
-            <span class="ident">Kind::OutOfOrder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Index tree incorrectly ordered&quot;</span>),
-            <span class="ident">Kind::DuplicateIdxs</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;duplicate indices&quot;</span>),
-            <span class="ident">Kind::NonZeroRootHash</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;root hash of tree is non-zero&quot;</span>),
+<span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {}
+
+<span class="attribute">#[derive(Debug, PartialEq)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Kind {
+    InvalidParams,
+    Collision,
+    OutOfOrder,
+    DuplicateIdxs,
+    NonZeroRootHash,
+}
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Kind {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            Kind::InvalidParams =&gt; f.write_str(<span class="string">&quot;invalid parameters&quot;</span>),
+            Kind::Collision =&gt; f.write_str(<span class="string">&quot;invalid collision length between StepRows&quot;</span>),
+            Kind::OutOfOrder =&gt; f.write_str(<span class="string">&quot;Index tree incorrectly ordered&quot;</span>),
+            Kind::DuplicateIdxs =&gt; f.write_str(<span class="string">&quot;duplicate indices&quot;</span>),
+            Kind::NonZeroRootHash =&gt; f.write_str(<span class="string">&quot;root hash of tree is non-zero&quot;</span>),
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">initialise_state</span>(<span class="ident">n</span>: <span class="ident">u32</span>, <span class="ident">k</span>: <span class="ident">u32</span>, <span class="ident">digest_len</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Blake2bState</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">personalization</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::from</span>(<span class="string">&quot;ZcashPoW&quot;</span>);
-    <span class="ident">personalization</span>.<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">n</span>).<span class="ident">unwrap</span>();
-    <span class="ident">personalization</span>.<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">k</span>).<span class="ident">unwrap</span>();
+<span class="kw">fn </span>initialise_state(n: u32, k: u32, digest_len: u8) -&gt; Blake2bState {
+    <span class="kw">let </span><span class="kw-2">mut </span>personalization: Vec&lt;u8&gt; = Vec::from(<span class="string">&quot;ZcashPoW&quot;</span>);
+    personalization.write_u32::&lt;LittleEndian&gt;(n).unwrap();
+    personalization.write_u32::&lt;LittleEndian&gt;(k).unwrap();
 
-    <span class="ident">Blake2bParams::new</span>()
-        .<span class="ident">hash_length</span>(<span class="ident">digest_len</span> <span class="kw">as</span> <span class="ident">usize</span>)
-        .<span class="ident">personal</span>(<span class="kw-2">&amp;</span><span class="ident">personalization</span>)
-        .<span class="ident">to_state</span>()
+    Blake2bParams::new()
+        .hash_length(digest_len <span class="kw">as </span>usize)
+        .personal(<span class="kw-2">&amp;</span>personalization)
+        .to_state()
 }
 
-<span class="kw">fn</span> <span class="ident">generate_hash</span>(<span class="ident">base_state</span>: <span class="kw-2">&amp;</span><span class="ident">Blake2bState</span>, <span class="ident">i</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Blake2bHash</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lei</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">4</span>];
-    (<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">lei</span>[..]).<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>();
+<span class="kw">fn </span>generate_hash(base_state: <span class="kw-2">&amp;</span>Blake2bState, i: u32) -&gt; Blake2bHash {
+    <span class="kw">let </span><span class="kw-2">mut </span>lei = [<span class="number">0u8</span>; <span class="number">4</span>];
+    (<span class="kw-2">&amp;mut </span>lei[..]).write_u32::&lt;LittleEndian&gt;(i).unwrap();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">base_state</span>.<span class="ident">clone</span>();
-    <span class="ident">state</span>.<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">lei</span>);
-    <span class="ident">state</span>.<span class="ident">finalize</span>()
+    <span class="kw">let </span><span class="kw-2">mut </span>state = base_state.clone();
+    state.update(<span class="kw-2">&amp;</span>lei);
+    state.finalize()
 }
 
-<span class="kw">fn</span> <span class="ident">expand_array</span>(<span class="ident">vin</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">bit_len</span>: <span class="ident">usize</span>, <span class="ident">byte_pad</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
-    <span class="macro">assert!</span>(<span class="ident">bit_len</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">8</span>);
-    <span class="macro">assert!</span>(<span class="number">8</span> <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">7</span> <span class="op">+</span> <span class="ident">bit_len</span>);
+<span class="kw">fn </span>expand_array(vin: <span class="kw-2">&amp;</span>[u8], bit_len: usize, byte_pad: usize) -&gt; Vec&lt;u8&gt; {
+    <span class="macro">assert!</span>(bit_len &gt;= <span class="number">8</span>);
+    <span class="macro">assert!</span>(<span class="number">8 </span>* size_of::&lt;u32&gt;() &gt;= <span class="number">7 </span>+ bit_len);
 
-    <span class="kw">let</span> <span class="ident">out_width</span> <span class="op">=</span> (<span class="ident">bit_len</span> <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span> <span class="op">+</span> <span class="ident">byte_pad</span>;
-    <span class="kw">let</span> <span class="ident">out_len</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">out_width</span> <span class="op">*</span> <span class="ident">vin</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="ident">bit_len</span>;
+    <span class="kw">let </span>out_width = (bit_len + <span class="number">7</span>) / <span class="number">8 </span>+ byte_pad;
+    <span class="kw">let </span>out_len = <span class="number">8 </span>* out_width * vin.len() / bit_len;
 
-    <span class="comment">// Shortcut for parameters where expansion is a no-op</span>
-    <span class="kw">if</span> <span class="ident">out_len</span> <span class="op">=</span><span class="op">=</span> <span class="ident">vin</span>.<span class="ident">len</span>() {
-        <span class="kw">return</span> <span class="ident">vin</span>.<span class="ident">to_vec</span>();
+    <span class="comment">// Shortcut for parameters where expansion is a no-op
+    </span><span class="kw">if </span>out_len == vin.len() {
+        <span class="kw">return </span>vin.to_vec();
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vout</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>; <span class="ident">out_len</span>];
-    <span class="kw">let</span> <span class="ident">bit_len_mask</span>: <span class="ident">u32</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">bit_len</span>) <span class="op">-</span> <span class="number">1</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>vout: Vec&lt;u8&gt; = <span class="macro">vec!</span>[<span class="number">0</span>; out_len];
+    <span class="kw">let </span>bit_len_mask: u32 = (<span class="number">1 </span>&lt;&lt; bit_len) - <span class="number">1</span>;
 
-    <span class="comment">// The acc_bits least-significant bits of acc_value represent a bit sequence</span>
-    <span class="comment">// in big-endian order.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc_bits</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc_value</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="comment">// The acc_bits least-significant bits of acc_value represent a bit sequence
+    // in big-endian order.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>acc_bits = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>acc_value: u32 = <span class="number">0</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">j</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">vin</span> {
-        <span class="ident">acc_value</span> <span class="op">=</span> (<span class="ident">acc_value</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>) <span class="op">|</span> <span class="ident">u32::from</span>(<span class="kw-2">*</span><span class="ident">b</span>);
-        <span class="ident">acc_bits</span> <span class="op">+</span><span class="op">=</span> <span class="number">8</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>j = <span class="number">0</span>;
+    <span class="kw">for </span>b <span class="kw">in </span>vin {
+        acc_value = (acc_value &lt;&lt; <span class="number">8</span>) | u32::from(<span class="kw-2">*</span>b);
+        acc_bits += <span class="number">8</span>;
 
-        <span class="comment">// When we have bit_len or more bits in the accumulator, write the next</span>
-        <span class="comment">// output element.</span>
-        <span class="kw">if</span> <span class="ident">acc_bits</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">bit_len</span> {
-            <span class="ident">acc_bits</span> <span class="op">-</span><span class="op">=</span> <span class="ident">bit_len</span>;
-            <span class="kw">for</span> <span class="ident">x</span> <span class="kw">in</span> <span class="ident">byte_pad</span>..<span class="ident">out_width</span> {
-                <span class="ident">vout</span>[<span class="ident">j</span> <span class="op">+</span> <span class="ident">x</span>] <span class="op">=</span> ((
-                    <span class="comment">// Big-endian</span>
-                    <span class="ident">acc_value</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="ident">acc_bits</span> <span class="op">+</span> (<span class="number">8</span> <span class="op">*</span> (<span class="ident">out_width</span> <span class="op">-</span> <span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>)))
-                ) <span class="op">&amp;</span> (
-                    <span class="comment">// Apply bit_len_mask across byte boundaries</span>
-                    (<span class="ident">bit_len_mask</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">8</span> <span class="op">*</span> (<span class="ident">out_width</span> <span class="op">-</span> <span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>))) <span class="op">&amp;</span> <span class="number">0xFF</span>
-                )) <span class="kw">as</span> <span class="ident">u8</span>;
+        <span class="comment">// When we have bit_len or more bits in the accumulator, write the next
+        // output element.
+        </span><span class="kw">if </span>acc_bits &gt;= bit_len {
+            acc_bits -= bit_len;
+            <span class="kw">for </span>x <span class="kw">in </span>byte_pad..out_width {
+                vout[j + x] = ((
+                    <span class="comment">// Big-endian
+                    </span>acc_value &gt;&gt; (acc_bits + (<span class="number">8 </span>* (out_width - x - <span class="number">1</span>)))
+                ) &amp; (
+                    <span class="comment">// Apply bit_len_mask across byte boundaries
+                    </span>(bit_len_mask &gt;&gt; (<span class="number">8 </span>* (out_width - x - <span class="number">1</span>))) &amp; <span class="number">0xFF
+                </span>)) <span class="kw">as </span>u8;
             }
-            <span class="ident">j</span> <span class="op">+</span><span class="op">=</span> <span class="ident">out_width</span>;
+            j += out_width;
         }
     }
 
-    <span class="ident">vout</span>
+    vout
 }
 
-<span class="kw">fn</span> <span class="ident">indices_from_minimal</span>(<span class="ident">p</span>: <span class="ident">Params</span>, <span class="ident">minimal</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">c_bit_len</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">collision_bit_length</span>();
-    <span class="comment">// Division is exact because k &gt;= 3.</span>
-    <span class="kw">if</span> <span class="ident">minimal</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> ((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">p</span>.<span class="ident">k</span>) <span class="op">*</span> (<span class="ident">c_bit_len</span> <span class="op">+</span> <span class="number">1</span>)) <span class="op">/</span> <span class="number">8</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="ident">Kind::InvalidParams</span>));
+<span class="kw">fn </span>indices_from_minimal(p: Params, minimal: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, Error&gt; {
+    <span class="kw">let </span>c_bit_len = p.collision_bit_length();
+    <span class="comment">// Division is exact because k &gt;= 3.
+    </span><span class="kw">if </span>minimal.len() != ((<span class="number">1 </span>&lt;&lt; p.k) * (c_bit_len + <span class="number">1</span>)) / <span class="number">8 </span>{
+        <span class="kw">return </span><span class="prelude-val">Err</span>(Error(Kind::InvalidParams));
     }
 
-    <span class="macro">assert!</span>(((<span class="ident">c_bit_len</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>());
-    <span class="kw">let</span> <span class="ident">len_indices</span> <span class="op">=</span> <span class="number">8</span> <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() <span class="op">*</span> <span class="ident">minimal</span>.<span class="ident">len</span>() <span class="op">/</span> (<span class="ident">c_bit_len</span> <span class="op">+</span> <span class="number">1</span>);
-    <span class="kw">let</span> <span class="ident">byte_pad</span> <span class="op">=</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() <span class="op">-</span> ((<span class="ident">c_bit_len</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">+</span> <span class="number">7</span>) <span class="op">/</span> <span class="number">8</span>;
+    <span class="macro">assert!</span>(((c_bit_len + <span class="number">1</span>) + <span class="number">7</span>) / <span class="number">8 </span>&lt;= size_of::&lt;u32&gt;());
+    <span class="kw">let </span>len_indices = <span class="number">8 </span>* size_of::&lt;u32&gt;() * minimal.len() / (c_bit_len + <span class="number">1</span>);
+    <span class="kw">let </span>byte_pad = size_of::&lt;u32&gt;() - ((c_bit_len + <span class="number">1</span>) + <span class="number">7</span>) / <span class="number">8</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">csr</span> <span class="op">=</span> <span class="ident">Cursor::new</span>(<span class="ident">expand_array</span>(<span class="ident">minimal</span>, <span class="ident">c_bit_len</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">byte_pad</span>));
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">len_indices</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>csr = Cursor::new(expand_array(minimal, c_bit_len + <span class="number">1</span>, byte_pad));
+    <span class="kw">let </span><span class="kw-2">mut </span>ret = Vec::with_capacity(len_indices);
 
-    <span class="comment">// Big-endian so that lexicographic array comparison is equivalent to integer</span>
-    <span class="comment">// comparison</span>
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">csr</span>.<span class="ident">read_u32</span>::<span class="op">&lt;</span><span class="ident">BigEndian</span><span class="op">&gt;</span>() {
-        <span class="ident">ret</span>.<span class="ident">push</span>(<span class="ident">i</span>);
+    <span class="comment">// Big-endian so that lexicographic array comparison is equivalent to integer
+    // comparison
+    </span><span class="kw">while let </span><span class="prelude-val">Ok</span>(i) = csr.read_u32::&lt;BigEndian&gt;() {
+        ret.push(i);
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+    <span class="prelude-val">Ok</span>(ret)
 }
 
-<span class="kw">fn</span> <span class="ident">has_collision</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="ident">a</span>.<span class="ident">hash</span>
-        .<span class="ident">iter</span>()
-        .<span class="ident">zip</span>(<span class="ident">b</span>.<span class="ident">hash</span>.<span class="ident">iter</span>())
-        .<span class="ident">take</span>(<span class="ident">len</span>)
-        .<span class="ident">all</span>(<span class="op">|</span>(<span class="ident">a</span>, <span class="ident">b</span>)<span class="op">|</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">b</span>)
+<span class="kw">fn </span>has_collision(a: <span class="kw-2">&amp;</span>Node, b: <span class="kw-2">&amp;</span>Node, len: usize) -&gt; bool {
+    a.hash
+        .iter()
+        .zip(b.hash.iter())
+        .take(len)
+        .all(|(a, b)| a == b)
 }
 
-<span class="kw">fn</span> <span class="ident">distinct_indices</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="kw-2">&amp;</span>(<span class="ident">a</span>.<span class="ident">indices</span>) {
-        <span class="kw">for</span> <span class="ident">j</span> <span class="kw">in</span> <span class="kw-2">&amp;</span>(<span class="ident">b</span>.<span class="ident">indices</span>) {
-            <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">j</span> {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="kw">fn </span>distinct_indices(a: <span class="kw-2">&amp;</span>Node, b: <span class="kw-2">&amp;</span>Node) -&gt; bool {
+    <span class="kw">for </span>i <span class="kw">in </span><span class="kw-2">&amp;</span>(a.indices) {
+        <span class="kw">for </span>j <span class="kw">in </span><span class="kw-2">&amp;</span>(b.indices) {
+            <span class="kw">if </span>i == j {
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
     }
-    <span class="bool-val">true</span>
-}
+    <span class="bool-val">true
+</span>}
 
-<span class="kw">fn</span> <span class="ident">validate_subtrees</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Params</span>, <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">Node</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Kind</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">has_collision</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">p</span>.<span class="ident">collision_byte_length</span>()) {
-        <span class="prelude-val">Err</span>(<span class="ident">Kind::Collision</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span>.<span class="ident">indices_before</span>(<span class="ident">a</span>) {
-        <span class="prelude-val">Err</span>(<span class="ident">Kind::OutOfOrder</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">distinct_indices</span>(<span class="ident">a</span>, <span class="ident">b</span>) {
-        <span class="prelude-val">Err</span>(<span class="ident">Kind::DuplicateIdxs</span>)
-    } <span class="kw">else</span> {
+<span class="kw">fn </span>validate_subtrees(p: <span class="kw-2">&amp;</span>Params, a: <span class="kw-2">&amp;</span>Node, b: <span class="kw-2">&amp;</span>Node) -&gt; <span class="prelude-ty">Result</span>&lt;(), Kind&gt; {
+    <span class="kw">if </span>!has_collision(a, b, p.collision_byte_length()) {
+        <span class="prelude-val">Err</span>(Kind::Collision)
+    } <span class="kw">else if </span>b.indices_before(a) {
+        <span class="prelude-val">Err</span>(Kind::OutOfOrder)
+    } <span class="kw">else if </span>!distinct_indices(a, b) {
+        <span class="prelude-val">Err</span>(Kind::DuplicateIdxs)
+    } <span class="kw">else </span>{
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">fn</span> <span class="ident">is_valid_solution_iterative</span>(
-    <span class="ident">p</span>: <span class="ident">Params</span>,
-    <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">nonce</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">indices</span>: <span class="kw-2">&amp;</span>[<span class="ident">u32</span>],
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">initialise_state</span>(<span class="ident">p</span>.<span class="ident">n</span>, <span class="ident">p</span>.<span class="ident">k</span>, <span class="ident">p</span>.<span class="ident">hash_output</span>());
-    <span class="ident">state</span>.<span class="ident">update</span>(<span class="ident">input</span>);
-    <span class="ident">state</span>.<span class="ident">update</span>(<span class="ident">nonce</span>);
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">fn </span>is_valid_solution_iterative(
+    p: Params,
+    input: <span class="kw-2">&amp;</span>[u8],
+    nonce: <span class="kw-2">&amp;</span>[u8],
+    indices: <span class="kw-2">&amp;</span>[u32],
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>state = initialise_state(p.n, p.k, p.hash_output());
+    state.update(input);
+    state.update(nonce);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">indices</span> {
-        <span class="ident">rows</span>.<span class="ident">push</span>(<span class="ident">Node::new</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">state</span>, <span class="kw-2">*</span><span class="ident">i</span>));
+    <span class="kw">let </span><span class="kw-2">mut </span>rows = Vec::new();
+    <span class="kw">for </span>i <span class="kw">in </span>indices {
+        rows.push(Node::new(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>state, <span class="kw-2">*</span>i));
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hash_len</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">hash_length</span>();
-    <span class="kw">while</span> <span class="ident">rows</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cur_rows</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="kw">for</span> <span class="ident">pair</span> <span class="kw">in</span> <span class="ident">rows</span>.<span class="ident">chunks</span>(<span class="number">2</span>) {
-            <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pair</span>[<span class="number">0</span>];
-            <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">pair</span>[<span class="number">1</span>];
-            <span class="ident">validate_subtrees</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="ident">a</span>, <span class="ident">b</span>).<span class="ident">map_err</span>(<span class="ident">Error</span>)<span class="question-mark">?</span>;
-            <span class="ident">cur_rows</span>.<span class="ident">push</span>(<span class="ident">Node::from_children_ref</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">p</span>.<span class="ident">collision_byte_length</span>()));
+    <span class="kw">let </span><span class="kw-2">mut </span>hash_len = p.hash_length();
+    <span class="kw">while </span>rows.len() &gt; <span class="number">1 </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>cur_rows = Vec::new();
+        <span class="kw">for </span>pair <span class="kw">in </span>rows.chunks(<span class="number">2</span>) {
+            <span class="kw">let </span>a = <span class="kw-2">&amp;</span>pair[<span class="number">0</span>];
+            <span class="kw">let </span>b = <span class="kw-2">&amp;</span>pair[<span class="number">1</span>];
+            validate_subtrees(<span class="kw-2">&amp;</span>p, a, b).map_err(Error)<span class="question-mark">?</span>;
+            cur_rows.push(Node::from_children_ref(a, b, p.collision_byte_length()));
         }
-        <span class="ident">rows</span> <span class="op">=</span> <span class="ident">cur_rows</span>;
-        <span class="ident">hash_len</span> <span class="op">-</span><span class="op">=</span> <span class="ident">p</span>.<span class="ident">collision_byte_length</span>();
+        rows = cur_rows;
+        hash_len -= p.collision_byte_length();
     }
 
-    <span class="macro">assert!</span>(<span class="ident">rows</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span>);
+    <span class="macro">assert!</span>(rows.len() == <span class="number">1</span>);
 
-    <span class="kw">if</span> <span class="ident">rows</span>[<span class="number">0</span>].<span class="ident">is_zero</span>(<span class="ident">hash_len</span>) {
+    <span class="kw">if </span>rows[<span class="number">0</span>].is_zero(hash_len) {
         <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="ident">Kind::NonZeroRootHash</span>))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Err</span>(Error(Kind::NonZeroRootHash))
     }
 }
 
-<span class="kw">fn</span> <span class="ident">tree_validator</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Params</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="ident">Blake2bState</span>, <span class="ident">indices</span>: <span class="kw-2">&amp;</span>[<span class="ident">u32</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Node</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">indices</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">indices</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">mid</span> <span class="op">=</span> <span class="ident">end</span> <span class="op">/</span> <span class="number">2</span>;
-        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">tree_validator</span>(<span class="ident">p</span>, <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">indices</span>[<span class="number">0</span>..<span class="ident">mid</span>])<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">tree_validator</span>(<span class="ident">p</span>, <span class="ident">state</span>, <span class="kw-2">&amp;</span><span class="ident">indices</span>[<span class="ident">mid</span>..<span class="ident">end</span>])<span class="question-mark">?</span>;
-        <span class="ident">validate_subtrees</span>(<span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>).<span class="ident">map_err</span>(<span class="ident">Error</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">Node::from_children</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">p</span>.<span class="ident">collision_byte_length</span>()))
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Node::new</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">state</span>, <span class="ident">indices</span>[<span class="number">0</span>]))
+<span class="kw">fn </span>tree_validator(p: <span class="kw-2">&amp;</span>Params, state: <span class="kw-2">&amp;</span>Blake2bState, indices: <span class="kw-2">&amp;</span>[u32]) -&gt; <span class="prelude-ty">Result</span>&lt;Node, Error&gt; {
+    <span class="kw">if </span>indices.len() &gt; <span class="number">1 </span>{
+        <span class="kw">let </span>end = indices.len();
+        <span class="kw">let </span>mid = end / <span class="number">2</span>;
+        <span class="kw">let </span>a = tree_validator(p, state, <span class="kw-2">&amp;</span>indices[<span class="number">0</span>..mid])<span class="question-mark">?</span>;
+        <span class="kw">let </span>b = tree_validator(p, state, <span class="kw-2">&amp;</span>indices[mid..end])<span class="question-mark">?</span>;
+        validate_subtrees(p, <span class="kw-2">&amp;</span>a, <span class="kw-2">&amp;</span>b).map_err(Error)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(Node::from_children(a, b, p.collision_byte_length()))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Ok</span>(Node::new(p, state, indices[<span class="number">0</span>]))
     }
 }
 
-<span class="kw">fn</span> <span class="ident">is_valid_solution_recursive</span>(
-    <span class="ident">p</span>: <span class="ident">Params</span>,
-    <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">nonce</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">indices</span>: <span class="kw-2">&amp;</span>[<span class="ident">u32</span>],
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">initialise_state</span>(<span class="ident">p</span>.<span class="ident">n</span>, <span class="ident">p</span>.<span class="ident">k</span>, <span class="ident">p</span>.<span class="ident">hash_output</span>());
-    <span class="ident">state</span>.<span class="ident">update</span>(<span class="ident">input</span>);
-    <span class="ident">state</span>.<span class="ident">update</span>(<span class="ident">nonce</span>);
+<span class="kw">fn </span>is_valid_solution_recursive(
+    p: Params,
+    input: <span class="kw-2">&amp;</span>[u8],
+    nonce: <span class="kw-2">&amp;</span>[u8],
+    indices: <span class="kw-2">&amp;</span>[u32],
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>state = initialise_state(p.n, p.k, p.hash_output());
+    state.update(input);
+    state.update(nonce);
 
-    <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">tree_validator</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">state</span>, <span class="ident">indices</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>root = tree_validator(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>state, indices)<span class="question-mark">?</span>;
 
-    <span class="comment">// Hashes were trimmed, so only need to check remaining length</span>
-    <span class="kw">if</span> <span class="ident">root</span>.<span class="ident">is_zero</span>(<span class="ident">p</span>.<span class="ident">collision_byte_length</span>()) {
+    <span class="comment">// Hashes were trimmed, so only need to check remaining length
+    </span><span class="kw">if </span>root.is_zero(p.collision_byte_length()) {
         <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="ident">Kind::NonZeroRootHash</span>))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Err</span>(Error(Kind::NonZeroRootHash))
     }
 }
 
-<span class="doccomment">/// Checks whether `soln` is a valid solution for `(input, nonce)` with the</span>
-<span class="doccomment">/// parameters `(n, k)`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_solution</span>(
-    <span class="ident">n</span>: <span class="ident">u32</span>,
-    <span class="ident">k</span>: <span class="ident">u32</span>,
-    <span class="ident">input</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">nonce</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    <span class="ident">soln</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Params::new</span>(<span class="ident">n</span>, <span class="ident">k</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">indices</span> <span class="op">=</span> <span class="ident">indices_from_minimal</span>(<span class="ident">p</span>, <span class="ident">soln</span>)<span class="question-mark">?</span>;
+<span class="doccomment">/// Checks whether `soln` is a valid solution for `(input, nonce)` with the
+/// parameters `(n, k)`.
+</span><span class="kw">pub fn </span>is_valid_solution(
+    n: u32,
+    k: u32,
+    input: <span class="kw-2">&amp;</span>[u8],
+    nonce: <span class="kw-2">&amp;</span>[u8],
+    soln: <span class="kw-2">&amp;</span>[u8],
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span>p = Params::new(n, k)<span class="question-mark">?</span>;
+    <span class="kw">let </span>indices = indices_from_minimal(p, soln)<span class="question-mark">?</span>;
 
-    <span class="comment">// Recursive validation is faster</span>
-    <span class="ident">is_valid_solution_recursive</span>(<span class="ident">p</span>, <span class="ident">input</span>, <span class="ident">nonce</span>, <span class="kw-2">&amp;</span><span class="ident">indices</span>)
+    <span class="comment">// Recursive validation is faster
+    </span>is_valid_solution_recursive(p, input, nonce, <span class="kw-2">&amp;</span>indices)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">expand_array</span>, <span class="ident">indices_from_minimal</span>, <span class="ident">is_valid_solution</span>, <span class="ident">is_valid_solution_iterative</span>,
-        <span class="ident">is_valid_solution_recursive</span>, <span class="ident">Params</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{
+        expand_array, indices_from_minimal, is_valid_solution, is_valid_solution_iterative,
+        is_valid_solution_recursive, Params,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::test_vectors</span>::{<span class="ident">INVALID_TEST_VECTORS</span>, <span class="ident">VALID_TEST_VECTORS</span>};
+    <span class="kw">use </span><span class="kw">crate</span>::test_vectors::{INVALID_TEST_VECTORS, VALID_TEST_VECTORS};
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">array_expansion</span>() {
-        <span class="kw">let</span> <span class="ident">check_array</span> <span class="op">=</span> <span class="op">|</span>(<span class="ident">bit_len</span>, <span class="ident">byte_pad</span>), <span class="ident">compact</span>, <span class="ident">expanded</span><span class="op">|</span> {
-            <span class="macro">assert_eq!</span>(<span class="ident">expand_array</span>(<span class="ident">compact</span>, <span class="ident">bit_len</span>, <span class="ident">byte_pad</span>), <span class="ident">expanded</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>array_expansion() {
+        <span class="kw">let </span>check_array = |(bit_len, byte_pad), compact, expanded| {
+            <span class="macro">assert_eq!</span>(expand_array(compact, bit_len, byte_pad), expanded);
         };
 
-        <span class="comment">// 8 11-bit chunks, all-ones</span>
-        <span class="ident">check_array</span>(
+        <span class="comment">// 8 11-bit chunks, all-ones
+        </span>check_array(
             (<span class="number">11</span>, <span class="number">0</span>),
             <span class="kw-2">&amp;</span>[
                 <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>,
@@ -910,8 +910,8 @@
                 <span class="number">0x07</span>, <span class="number">0xff</span>,
             ][..],
         );
-        <span class="comment">// 8 21-bit chunks, alternating 1s and 0s</span>
-        <span class="ident">check_array</span>(
+        <span class="comment">// 8 21-bit chunks, alternating 1s and 0s
+        </span>check_array(
             (<span class="number">21</span>, <span class="number">0</span>),
             <span class="kw-2">&amp;</span>[
                 <span class="number">0xaa</span>, <span class="number">0xaa</span>, <span class="number">0xad</span>, <span class="number">0x55</span>, <span class="number">0x55</span>, <span class="number">0x6a</span>, <span class="number">0xaa</span>, <span class="number">0xab</span>, <span class="number">0x55</span>, <span class="number">0x55</span>, <span class="number">0x5a</span>, <span class="number">0xaa</span>, <span class="number">0xaa</span>, <span class="number">0xd5</span>,
@@ -922,8 +922,8 @@
                 <span class="number">0x55</span>, <span class="number">0x15</span>, <span class="number">0x55</span>, <span class="number">0x55</span>, <span class="number">0x15</span>, <span class="number">0x55</span>, <span class="number">0x55</span>, <span class="number">0x15</span>, <span class="number">0x55</span>, <span class="number">0x55</span>,
             ][..],
         );
-        <span class="comment">// 8 21-bit chunks, based on example in the spec</span>
-        <span class="ident">check_array</span>(
+        <span class="comment">// 8 21-bit chunks, based on example in the spec
+        </span>check_array(
             (<span class="number">21</span>, <span class="number">0</span>),
             <span class="kw-2">&amp;</span>[
                 <span class="number">0x00</span>, <span class="number">0x02</span>, <span class="number">0x20</span>, <span class="number">0x00</span>, <span class="number">0x0a</span>, <span class="number">0x7f</span>, <span class="number">0xff</span>, <span class="number">0xfe</span>, <span class="number">0x00</span>, <span class="number">0x12</span>, <span class="number">0x30</span>, <span class="number">0x22</span>, <span class="number">0xb3</span>, <span class="number">0x82</span>,
@@ -934,8 +934,8 @@
                 <span class="number">0x67</span>, <span class="number">0x00</span>, <span class="number">0x89</span>, <span class="number">0xab</span>, <span class="number">0x00</span>, <span class="number">0xcd</span>, <span class="number">0xef</span>, <span class="number">0x12</span>, <span class="number">0x34</span>, <span class="number">0x56</span>,
             ][..],
         );
-        <span class="comment">// 16 14-bit chunks, alternating 11s and 00s</span>
-        <span class="ident">check_array</span>(
+        <span class="comment">// 16 14-bit chunks, alternating 11s and 00s
+        </span>check_array(
             (<span class="number">14</span>, <span class="number">0</span>),
             <span class="kw-2">&amp;</span>[
                 <span class="number">0xcc</span>, <span class="number">0xcf</span>, <span class="number">0x33</span>, <span class="number">0x3c</span>, <span class="number">0xcc</span>, <span class="number">0xf3</span>, <span class="number">0x33</span>, <span class="number">0xcc</span>, <span class="number">0xcf</span>, <span class="number">0x33</span>, <span class="number">0x3c</span>, <span class="number">0xcc</span>, <span class="number">0xf3</span>, <span class="number">0x33</span>,
@@ -947,8 +947,8 @@
                 <span class="number">0x33</span>, <span class="number">0x33</span>, <span class="number">0x33</span>, <span class="number">0x33</span>,
             ][..],
         );
-        <span class="comment">// 8 11-bit chunks, all-ones, 2-byte padding</span>
-        <span class="ident">check_array</span>(
+        <span class="comment">// 8 11-bit chunks, all-ones, 2-byte padding
+        </span>check_array(
             (<span class="number">11</span>, <span class="number">2</span>),
             <span class="kw-2">&amp;</span>[
                 <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>,
@@ -961,24 +961,24 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">minimal_solution_repr</span>() {
-        <span class="kw">let</span> <span class="ident">check_repr</span> <span class="op">=</span> <span class="op">|</span><span class="ident">minimal</span>, <span class="ident">indices</span><span class="op">|</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>minimal_solution_repr() {
+        <span class="kw">let </span>check_repr = |minimal, indices| {
             <span class="macro">assert_eq!</span>(
-                <span class="ident">indices_from_minimal</span>(<span class="ident">Params</span> { <span class="ident">n</span>: <span class="number">80</span>, <span class="ident">k</span>: <span class="number">3</span> }, <span class="ident">minimal</span>).<span class="ident">unwrap</span>(),
-                <span class="ident">indices</span>,
+                indices_from_minimal(Params { n: <span class="number">80</span>, k: <span class="number">3 </span>}, minimal).unwrap(),
+                indices,
             );
         };
 
-        <span class="comment">// The solutions here are not intended to be valid.</span>
-        <span class="ident">check_repr</span>(
+        <span class="comment">// The solutions here are not intended to be valid.
+        </span>check_repr(
             <span class="kw-2">&amp;</span>[
                 <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x08</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x40</span>, <span class="number">0x00</span>, <span class="number">0x02</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x10</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x80</span>,
                 <span class="number">0x00</span>, <span class="number">0x04</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x20</span>, <span class="number">0x00</span>, <span class="number">0x01</span>,
             ],
             <span class="kw-2">&amp;</span>[<span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>],
         );
-        <span class="ident">check_repr</span>(
+        check_repr(
             <span class="kw-2">&amp;</span>[
                 <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>,
                 <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0xff</span>,
@@ -987,14 +987,14 @@
                 <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>, <span class="number">2097151</span>,
             ],
         );
-        <span class="ident">check_repr</span>(
+        check_repr(
             <span class="kw-2">&amp;</span>[
                 <span class="number">0x0f</span>, <span class="number">0xff</span>, <span class="number">0xf8</span>, <span class="number">0x00</span>, <span class="number">0x20</span>, <span class="number">0x03</span>, <span class="number">0xff</span>, <span class="number">0xfe</span>, <span class="number">0x00</span>, <span class="number">0x08</span>, <span class="number">0x00</span>, <span class="number">0xff</span>, <span class="number">0xff</span>, <span class="number">0x80</span>,
                 <span class="number">0x02</span>, <span class="number">0x00</span>, <span class="number">0x3f</span>, <span class="number">0xff</span>, <span class="number">0xe0</span>, <span class="number">0x00</span>, <span class="number">0x80</span>,
             ],
             <span class="kw-2">&amp;</span>[<span class="number">131071</span>, <span class="number">128</span>, <span class="number">131071</span>, <span class="number">128</span>, <span class="number">131071</span>, <span class="number">128</span>, <span class="number">131071</span>, <span class="number">128</span>],
         );
-        <span class="ident">check_repr</span>(
+        check_repr(
             <span class="kw-2">&amp;</span>[
                 <span class="number">0x00</span>, <span class="number">0x02</span>, <span class="number">0x20</span>, <span class="number">0x00</span>, <span class="number">0x0a</span>, <span class="number">0x7f</span>, <span class="number">0xff</span>, <span class="number">0xfe</span>, <span class="number">0x00</span>, <span class="number">0x4d</span>, <span class="number">0x10</span>, <span class="number">0x01</span>, <span class="number">0x4c</span>, <span class="number">0x80</span>,
                 <span class="number">0x0f</span>, <span class="number">0xfc</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x2f</span>, <span class="number">0xff</span>, <span class="number">0xff</span>,
@@ -1003,45 +1003,45 @@
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">valid_test_vectors</span>() {
-        <span class="kw">for</span> <span class="ident">tv</span> <span class="kw">in</span> <span class="ident">VALID_TEST_VECTORS</span> {
-            <span class="kw">for</span> <span class="ident">soln</span> <span class="kw">in</span> <span class="ident">tv</span>.<span class="ident">solutions</span> {
-                <span class="ident">is_valid_solution_iterative</span>(<span class="ident">tv</span>.<span class="ident">params</span>, <span class="ident">tv</span>.<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">nonce</span>, <span class="ident">soln</span>).<span class="ident">unwrap</span>();
-                <span class="ident">is_valid_solution_recursive</span>(<span class="ident">tv</span>.<span class="ident">params</span>, <span class="ident">tv</span>.<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">nonce</span>, <span class="ident">soln</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>valid_test_vectors() {
+        <span class="kw">for </span>tv <span class="kw">in </span>VALID_TEST_VECTORS {
+            <span class="kw">for </span>soln <span class="kw">in </span>tv.solutions {
+                is_valid_solution_iterative(tv.params, tv.input, <span class="kw-2">&amp;</span>tv.nonce, soln).unwrap();
+                is_valid_solution_recursive(tv.params, tv.input, <span class="kw-2">&amp;</span>tv.nonce, soln).unwrap();
             }
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">invalid_test_vectors</span>() {
-        <span class="kw">for</span> <span class="ident">tv</span> <span class="kw">in</span> <span class="ident">INVALID_TEST_VECTORS</span> {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>invalid_test_vectors() {
+        <span class="kw">for </span>tv <span class="kw">in </span>INVALID_TEST_VECTORS {
             <span class="macro">assert_eq!</span>(
-                <span class="ident">is_valid_solution_iterative</span>(<span class="ident">tv</span>.<span class="ident">params</span>, <span class="ident">tv</span>.<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">nonce</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">solution</span>)
-                    .<span class="ident">unwrap_err</span>()
+                is_valid_solution_iterative(tv.params, tv.input, <span class="kw-2">&amp;</span>tv.nonce, tv.solution)
+                    .unwrap_err()
                     .<span class="number">0</span>,
-                <span class="ident">tv</span>.<span class="ident">error</span>
+                tv.error
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">is_valid_solution_recursive</span>(<span class="ident">tv</span>.<span class="ident">params</span>, <span class="ident">tv</span>.<span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">nonce</span>, <span class="kw-2">&amp;</span><span class="ident">tv</span>.<span class="ident">solution</span>)
-                    .<span class="ident">unwrap_err</span>()
+                is_valid_solution_recursive(tv.params, tv.input, <span class="kw-2">&amp;</span>tv.nonce, tv.solution)
+                    .unwrap_err()
                     .<span class="number">0</span>,
-                <span class="ident">tv</span>.<span class="ident">error</span>
+                tv.error
             );
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_bits_matter</span>() {
-        <span class="comment">// Initialize the state according to one of the valid test vectors.</span>
-        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="number">96</span>;
-        <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="number">5</span>;
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">b&quot;Equihash is an asymmetric PoW based on the Generalised Birthday problem.&quot;</span>;
-        <span class="kw">let</span> <span class="ident">nonce</span> <span class="op">=</span> [
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>all_bits_matter() {
+        <span class="comment">// Initialize the state according to one of the valid test vectors.
+        </span><span class="kw">let </span>n = <span class="number">96</span>;
+        <span class="kw">let </span>k = <span class="number">5</span>;
+        <span class="kw">let </span>input = <span class="string">b&quot;Equihash is an asymmetric PoW based on the Generalised Birthday problem.&quot;</span>;
+        <span class="kw">let </span>nonce = [
             <span class="number">1</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
             <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
         ];
-        <span class="kw">let</span> <span class="ident">soln</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
+        <span class="kw">let </span>soln = <span class="kw-2">&amp;</span>[
             <span class="number">0x04</span>, <span class="number">0x6a</span>, <span class="number">0x8e</span>, <span class="number">0xd4</span>, <span class="number">0x51</span>, <span class="number">0xa2</span>, <span class="number">0x19</span>, <span class="number">0x73</span>, <span class="number">0x32</span>, <span class="number">0xe7</span>, <span class="number">0x1f</span>, <span class="number">0x39</span>, <span class="number">0xdb</span>, <span class="number">0x9c</span>,
             <span class="number">0x79</span>, <span class="number">0xfb</span>, <span class="number">0xf9</span>, <span class="number">0x3f</span>, <span class="number">0xc1</span>, <span class="number">0x44</span>, <span class="number">0x3d</span>, <span class="number">0xa5</span>, <span class="number">0x8f</span>, <span class="number">0xb3</span>, <span class="number">0x8d</span>, <span class="number">0x05</span>, <span class="number">0x99</span>, <span class="number">0x17</span>,
             <span class="number">0x21</span>, <span class="number">0x16</span>, <span class="number">0xd5</span>, <span class="number">0x55</span>, <span class="number">0xb1</span>, <span class="number">0xb2</span>, <span class="number">0x1f</span>, <span class="number">0x32</span>, <span class="number">0x70</span>, <span class="number">0x5c</span>, <span class="number">0xe9</span>, <span class="number">0x98</span>, <span class="number">0xf6</span>, <span class="number">0x0d</span>,
@@ -1049,18 +1049,16 @@
             <span class="number">0x99</span>, <span class="number">0x53</span>, <span class="number">0xa0</span>, <span class="number">0x78</span>, <span class="number">0x7d</span>, <span class="number">0xfe</span>, <span class="number">0xfc</span>, <span class="number">0xab</span>, <span class="number">0x34</span>, <span class="number">0x1b</span>, <span class="number">0xde</span>, <span class="number">0xc8</span>,
         ];
 
-        <span class="comment">// Prove that the solution is valid.</span>
-        <span class="ident">is_valid_solution</span>(<span class="ident">n</span>, <span class="ident">k</span>, <span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">nonce</span>, <span class="ident">soln</span>).<span class="ident">unwrap</span>();
+        <span class="comment">// Prove that the solution is valid.
+        </span>is_valid_solution(n, k, input, <span class="kw-2">&amp;</span>nonce, soln).unwrap();
 
-        <span class="comment">// Changing any single bit of the encoded solution should make it invalid.</span>
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">soln</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="number">8</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mutated</span> <span class="op">=</span> <span class="ident">soln</span>.<span class="ident">to_vec</span>();
-            <span class="ident">mutated</span>[<span class="ident">i</span> <span class="op">/</span> <span class="number">8</span>] <span class="op">^</span><span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="ident">i</span> <span class="op">%</span> <span class="number">8</span>);
-            <span class="ident">is_valid_solution</span>(<span class="ident">n</span>, <span class="ident">k</span>, <span class="ident">input</span>, <span class="kw-2">&amp;</span><span class="ident">nonce</span>, <span class="kw-2">&amp;</span><span class="ident">mutated</span>).<span class="ident">unwrap_err</span>();
+        <span class="comment">// Changing any single bit of the encoded solution should make it invalid.
+        </span><span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..soln.len() * <span class="number">8 </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>mutated = soln.to_vec();
+            mutated[i / <span class="number">8</span>] ^= <span class="number">1 </span>&lt;&lt; (i % <span class="number">8</span>);
+            is_valid_solution(n, k, input, <span class="kw-2">&amp;</span>nonce, <span class="kw-2">&amp;</span>mutated).unwrap_err();
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="equihash" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="equihash" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

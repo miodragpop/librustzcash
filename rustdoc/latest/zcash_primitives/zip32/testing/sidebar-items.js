@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["arb_extended_spending_key",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["arb_extended_spending_key",""]]};

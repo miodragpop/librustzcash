@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["batch_verify",""]],"struct":[["BatchEntry",""],["PrivateKey",""],["PublicKey",""],["Signature",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["batch_verify",""]],"struct":[["BatchEntry",""],["PrivateKey",""],["PublicKey",""],["Signature",""]]};

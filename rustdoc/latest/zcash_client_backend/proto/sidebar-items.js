@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["compact_formats","Generated file from `compact_formats.proto`"]]});
+window.SIDEBAR_ITEMS = {"mod":[["compact_formats","Generated file from `compact_formats.proto`"]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["TREE_DEPTH",""]],"struct":[["Output","This is an output circuit instance."],["Spend","This is an instance of the `Spend` circuit."]]});
+window.SIDEBAR_ITEMS = {"constant":[["TREE_DEPTH",""]],"struct":[["Output","This is an output circuit instance."],["Spend","This is an instance of the `Spend` circuit."]]};

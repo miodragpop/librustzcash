@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["RecipientAddress","An address that funds can be sent to."]]});
+window.SIDEBAR_ITEMS = {"enum":[["RecipientAddress","An address that funds can be sent to."]],"struct":[["UnifiedAddress","A Unified Address."]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Personalization",""]],"fn":[["pedersen_hash",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Personalization",""]],"fn":[["pedersen_hash",""]]};

@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_history&#x2F;src&#x2F;tree.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tree.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_history/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_history/src/tree.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tree.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_history/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_history/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_history/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -737,746 +737,744 @@
 <span id="737">737</span>
 <span id="738">738</span>
 <span id="739">739</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Entry</span>, <span class="ident">EntryKind</span>, <span class="ident">EntryLink</span>, <span class="ident">Error</span>, <span class="ident">Version</span>};
+<span class="kw">use crate</span>::{Entry, EntryKind, EntryLink, Error, Version};
 
-<span class="doccomment">/// Represents partially loaded tree.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Some kind of &quot;view&quot; into the array representation of the MMR tree.</span>
-<span class="doccomment">/// With only some of the leaves/nodes pre-loaded / pre-generated.</span>
-<span class="doccomment">/// Exact amount of the loaded data can be calculated by the constructing party,</span>
-<span class="doccomment">/// depending on the length of the tree and maximum amount of operations that are going</span>
-<span class="doccomment">/// to happen after construction. `Tree` should not be used as self-contained data structure,</span>
-<span class="doccomment">/// since it&#39;s internal state can grow indefinitely after serial operations.</span>
-<span class="doccomment">/// Intended use of this `Tree` is to instantiate it based on partially loaded data (see example</span>
-<span class="doccomment">/// how to pick right nodes from the array representation of MMR Tree), perform several operations</span>
-<span class="doccomment">/// (append-s/delete-s) and then drop it.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Tree</span><span class="op">&lt;</span><span class="ident">V</span>: <span class="ident">Version</span><span class="op">&gt;</span> {
-    <span class="ident">stored</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Represents partially loaded tree.
+///
+/// Some kind of &quot;view&quot; into the array representation of the MMR tree.
+/// With only some of the leaves/nodes pre-loaded / pre-generated.
+/// Exact amount of the loaded data can be calculated by the constructing party,
+/// depending on the length of the tree and maximum amount of operations that are going
+/// to happen after construction. `Tree` should not be used as self-contained data structure,
+/// since it&#39;s internal state can grow indefinitely after serial operations.
+/// Intended use of this `Tree` is to instantiate it based on partially loaded data (see example
+/// how to pick right nodes from the array representation of MMR Tree), perform several operations
+/// (append-s/delete-s) and then drop it.
+</span><span class="kw">pub struct </span>Tree&lt;V: Version&gt; {
+    stored: HashMap&lt;u32, Entry&lt;V&gt;&gt;,
 
-    <span class="comment">// This can grow indefinitely if `Tree` is misused as a self-contained data structure</span>
-    <span class="ident">generated</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="comment">// This can grow indefinitely if `Tree` is misused as a self-contained data structure
+    </span>generated: Vec&lt;Entry&lt;V&gt;&gt;,
 
-    <span class="comment">// number of persistent(!) tree entries</span>
-    <span class="ident">stored_count</span>: <span class="ident">u32</span>,
+    <span class="comment">// number of persistent(!) tree entries
+    </span>stored_count: u32,
 
-    <span class="ident">root</span>: <span class="ident">EntryLink</span>,
+    root: EntryLink,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">V</span>: <span class="ident">Version</span><span class="op">&gt;</span> <span class="ident">Tree</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Resolve link originated from this tree</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">link</span>: <span class="ident">EntryLink</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">link</span> {
-            <span class="ident">EntryLink::Generated</span>(<span class="ident">index</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">generated</span>.<span class="ident">get</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>),
-            <span class="ident">EntryLink::Stored</span>(<span class="ident">index</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stored</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>),
+<span class="kw">impl</span>&lt;V: Version&gt; Tree&lt;V&gt; {
+    <span class="doccomment">/// Resolve link originated from this tree
+    </span><span class="kw">pub fn </span>resolve_link(<span class="kw-2">&amp;</span><span class="self">self</span>, link: EntryLink) -&gt; <span class="prelude-ty">Result</span>&lt;IndexedNode&lt;V&gt;, Error&gt; {
+        <span class="kw">match </span>link {
+            EntryLink::Generated(index) =&gt; <span class="self">self</span>.generated.get(index <span class="kw">as </span>usize),
+            EntryLink::Stored(index) =&gt; <span class="self">self</span>.stored.get(<span class="kw-2">&amp;</span>index),
         }
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">node</span><span class="op">|</span> <span class="ident">IndexedNode</span> { <span class="ident">node</span>, <span class="ident">link</span> })
-        .<span class="ident">ok_or</span>(<span class="ident">Error::ExpectedInMemory</span>(<span class="ident">link</span>))
+        .map(|node| IndexedNode { node, link })
+        .ok_or(Error::ExpectedInMemory(link))
     }
 
-    <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EntryLink</span> {
-        <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stored_count</span>;
-        <span class="self">self</span>.<span class="ident">stored_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="self">self</span>.<span class="ident">stored</span>.<span class="ident">insert</span>(<span class="ident">idx</span>, <span class="ident">data</span>);
-        <span class="ident">EntryLink::Stored</span>(<span class="ident">idx</span>)
+    <span class="kw">fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: Entry&lt;V&gt;) -&gt; EntryLink {
+        <span class="kw">let </span>idx = <span class="self">self</span>.stored_count;
+        <span class="self">self</span>.stored_count += <span class="number">1</span>;
+        <span class="self">self</span>.stored.insert(idx, data);
+        EntryLink::Stored(idx)
     }
 
-    <span class="kw">fn</span> <span class="ident">push_generated</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EntryLink</span> {
-        <span class="self">self</span>.<span class="ident">generated</span>.<span class="ident">push</span>(<span class="ident">data</span>);
-        <span class="ident">EntryLink::Generated</span>(<span class="self">self</span>.<span class="ident">generated</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span> <span class="op">-</span> <span class="number">1</span>)
+    <span class="kw">fn </span>push_generated(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: Entry&lt;V&gt;) -&gt; EntryLink {
+        <span class="self">self</span>.generated.push(data);
+        EntryLink::Generated(<span class="self">self</span>.generated.len() <span class="kw">as </span>u32 - <span class="number">1</span>)
     }
 
-    <span class="doccomment">/// Populate tree with plain list of the leaves/nodes. For now, only for tests,</span>
-    <span class="doccomment">/// since this `Tree` structure is for partially loaded tree (but it might change)</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">populate</span>(<span class="ident">loaded</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">root</span>: <span class="ident">EntryLink</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Tree::invalid</span>();
-        <span class="ident">result</span>.<span class="ident">stored_count</span> <span class="op">=</span> <span class="ident">loaded</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u32</span>;
-        <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">item</span>) <span class="kw">in</span> <span class="ident">loaded</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="ident">result</span>.<span class="ident">stored</span>.<span class="ident">insert</span>(<span class="ident">idx</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="ident">item</span>);
+    <span class="doccomment">/// Populate tree with plain list of the leaves/nodes. For now, only for tests,
+    /// since this `Tree` structure is for partially loaded tree (but it might change)
+    </span><span class="attribute">#[cfg(test)]
+    </span><span class="kw">pub fn </span>populate(loaded: Vec&lt;Entry&lt;V&gt;&gt;, root: EntryLink) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>result = Tree::invalid();
+        result.stored_count = loaded.len() <span class="kw">as </span>u32;
+        <span class="kw">for </span>(idx, item) <span class="kw">in </span>loaded.into_iter().enumerate() {
+            result.stored.insert(idx <span class="kw">as </span>u32, item);
         }
-        <span class="ident">result</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">root</span>;
+        result.root = root;
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="comment">// Empty tree with invalid root</span>
-    <span class="kw">fn</span> <span class="ident">invalid</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Tree</span> {
-            <span class="ident">root</span>: <span class="ident">EntryLink::Generated</span>(<span class="number">0</span>),
-            <span class="ident">generated</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">stored</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">stored_count</span>: <span class="number">0</span>,
+    <span class="comment">// Empty tree with invalid root
+    </span><span class="kw">fn </span>invalid() -&gt; <span class="self">Self </span>{
+        Tree {
+            root: EntryLink::Generated(<span class="number">0</span>),
+            generated: Default::default(),
+            stored: Default::default(),
+            stored_count: <span class="number">0</span>,
         }
     }
 
-    <span class="doccomment">/// New view into the the tree array representation</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `length` is total length of the array representation (is generally not a sum of</span>
-    <span class="doccomment">///     peaks.len + extra.len)</span>
-    <span class="doccomment">/// `peaks` is peaks of the mmr tree</span>
-    <span class="doccomment">/// `extra` is some extra nodes that calculated to be required during next one or more</span>
-    <span class="doccomment">/// operations on the tree.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Will panic if `peaks` is empty.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">u32</span>, <span class="ident">peaks</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident">extra</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>)<span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">peaks</span>.<span class="ident">is_empty</span>());
+    <span class="doccomment">/// New view into the the tree array representation
+    ///
+    /// `length` is total length of the array representation (is generally not a sum of
+    ///     peaks.len + extra.len)
+    /// `peaks` is peaks of the mmr tree
+    /// `extra` is some extra nodes that calculated to be required during next one or more
+    /// operations on the tree.
+    ///
+    /// # Panics
+    ///
+    /// Will panic if `peaks` is empty.
+    </span><span class="kw">pub fn </span>new(length: u32, peaks: Vec&lt;(u32, Entry&lt;V&gt;)&gt;, extra: Vec&lt;(u32, Entry&lt;V&gt;)&gt;) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert!</span>(!peaks.is_empty());
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Tree::invalid</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>result = Tree::invalid();
 
-        <span class="ident">result</span>.<span class="ident">stored_count</span> <span class="op">=</span> <span class="ident">length</span>;
+        result.stored_count = length;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">root</span> <span class="op">=</span> <span class="ident">EntryLink::Stored</span>(<span class="ident">peaks</span>[<span class="number">0</span>].<span class="number">0</span>);
-        <span class="kw">for</span> (<span class="ident">gen</span>, (<span class="ident">idx</span>, <span class="ident">node</span>)) <span class="kw">in</span> <span class="ident">peaks</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="ident">result</span>.<span class="ident">stored</span>.<span class="ident">insert</span>(<span class="ident">idx</span>, <span class="ident">node</span>);
-            <span class="kw">if</span> <span class="ident">gen</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="kw">let</span> <span class="ident">next_generated</span> <span class="op">=</span> <span class="ident">combine_nodes</span>(
-                    <span class="ident">result</span>
-                        .<span class="ident">resolve_link</span>(<span class="ident">root</span>)
-                        .<span class="ident">expect</span>(<span class="string">&quot;Inserted before, cannot fail; qed&quot;</span>),
-                    <span class="ident">result</span>
-                        .<span class="ident">resolve_link</span>(<span class="ident">EntryLink::Stored</span>(<span class="ident">idx</span>))
-                        .<span class="ident">expect</span>(<span class="string">&quot;Inserted before, cannot fail; qed&quot;</span>),
+        <span class="kw">let </span><span class="kw-2">mut </span>root = EntryLink::Stored(peaks[<span class="number">0</span>].<span class="number">0</span>);
+        <span class="kw">for </span>(gen, (idx, node)) <span class="kw">in </span>peaks.into_iter().enumerate() {
+            result.stored.insert(idx, node);
+            <span class="kw">if </span>gen != <span class="number">0 </span>{
+                <span class="kw">let </span>next_generated = combine_nodes(
+                    result
+                        .resolve_link(root)
+                        .expect(<span class="string">&quot;Inserted before, cannot fail; qed&quot;</span>),
+                    result
+                        .resolve_link(EntryLink::Stored(idx))
+                        .expect(<span class="string">&quot;Inserted before, cannot fail; qed&quot;</span>),
                 );
-                <span class="ident">root</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">push_generated</span>(<span class="ident">next_generated</span>);
+                root = result.push_generated(next_generated);
             }
         }
 
-        <span class="kw">for</span> (<span class="ident">idx</span>, <span class="ident">node</span>) <span class="kw">in</span> <span class="ident">extra</span> {
-            <span class="ident">result</span>.<span class="ident">stored</span>.<span class="ident">insert</span>(<span class="ident">idx</span>, <span class="ident">node</span>);
+        <span class="kw">for </span>(idx, node) <span class="kw">in </span>extra {
+            result.stored.insert(idx, node);
         }
 
-        <span class="ident">result</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">root</span>;
+        result.root = root;
 
-        <span class="ident">result</span>
+        result
     }
 
-    <span class="kw">fn</span> <span class="ident">get_peaks</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">root</span>: <span class="ident">EntryLink</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EntryLink</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">left_child_link</span>, <span class="ident">right_child_link</span>) <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">root</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="ident">root</span>.<span class="ident">node</span>.<span class="ident">complete</span>() {
-                <span class="ident">target</span>.<span class="ident">push</span>(<span class="ident">root</span>.<span class="ident">link</span>);
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">fn </span>get_peaks(<span class="kw-2">&amp;</span><span class="self">self</span>, root: EntryLink, target: <span class="kw-2">&amp;mut </span>Vec&lt;EntryLink&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>(left_child_link, right_child_link) = {
+            <span class="kw">let </span>root = <span class="self">self</span>.resolve_link(root)<span class="question-mark">?</span>;
+            <span class="kw">if </span>root.node.complete() {
+                target.push(root.link);
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
-            (<span class="ident">root</span>.<span class="ident">left</span>()<span class="question-mark">?</span>, <span class="ident">root</span>.<span class="ident">right</span>()<span class="question-mark">?</span>)
+            (root.left()<span class="question-mark">?</span>, root.right()<span class="question-mark">?</span>)
         };
 
-        <span class="self">self</span>.<span class="ident">get_peaks</span>(<span class="ident">left_child_link</span>, <span class="ident">target</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">get_peaks</span>(<span class="ident">right_child_link</span>, <span class="ident">target</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.get_peaks(left_child_link, target)<span class="question-mark">?</span>;
+        <span class="self">self</span>.get_peaks(right_child_link, target)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Append one leaf to the tree.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns links to actual nodes that has to be persisted as the result of the append.</span>
-    <span class="doccomment">/// If completed without error, at least one link to the appended</span>
-    <span class="doccomment">/// node (with metadata provided in `new_leaf`) will be returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append_leaf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">new_leaf</span>: <span class="ident">V::NodeData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">EntryLink</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root</span>;
-        <span class="kw">let</span> <span class="ident">new_leaf_link</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">Entry::new_leaf</span>(<span class="ident">new_leaf</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">appended</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">new_leaf_link</span>];
+    <span class="doccomment">/// Append one leaf to the tree.
+    ///
+    /// Returns links to actual nodes that has to be persisted as the result of the append.
+    /// If completed without error, at least one link to the appended
+    /// node (with metadata provided in `new_leaf`) will be returned.
+    </span><span class="kw">pub fn </span>append_leaf(<span class="kw-2">&amp;mut </span><span class="self">self</span>, new_leaf: V::NodeData) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EntryLink&gt;, Error&gt; {
+        <span class="kw">let </span>root = <span class="self">self</span>.root;
+        <span class="kw">let </span>new_leaf_link = <span class="self">self</span>.push(Entry::new_leaf(new_leaf));
+        <span class="kw">let </span><span class="kw-2">mut </span>appended = <span class="macro">vec!</span>[new_leaf_link];
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">peaks</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="self">self</span>.<span class="ident">get_peaks</span>(<span class="ident">root</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">peaks</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>peaks = Vec::new();
+        <span class="self">self</span>.get_peaks(root, <span class="kw-2">&amp;mut </span>peaks)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">merge_stack</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">new_leaf_link</span>];
+        <span class="kw">let </span><span class="kw-2">mut </span>merge_stack = <span class="macro">vec!</span>[new_leaf_link];
 
-        <span class="comment">// Scan the peaks right-to-left, merging together equal-sized adjacent</span>
-        <span class="comment">// complete subtrees. After this, merge_stack only contains peaks of</span>
-        <span class="comment">// unequal-sized subtrees.</span>
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_peak</span>) <span class="op">=</span> <span class="ident">peaks</span>.<span class="ident">pop</span>() {
-            <span class="kw">let</span> <span class="ident">next_merge</span> <span class="op">=</span> <span class="ident">merge_stack</span>
-                .<span class="ident">pop</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;there should be at least one, initial or re-pushed&quot;</span>);
+        <span class="comment">// Scan the peaks right-to-left, merging together equal-sized adjacent
+        // complete subtrees. After this, merge_stack only contains peaks of
+        // unequal-sized subtrees.
+        </span><span class="kw">while let </span><span class="prelude-val">Some</span>(next_peak) = peaks.pop() {
+            <span class="kw">let </span>next_merge = merge_stack
+                .pop()
+                .expect(<span class="string">&quot;there should be at least one, initial or re-pushed&quot;</span>);
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">stored</span>) <span class="op">=</span> {
-                <span class="kw">let</span> <span class="ident">peak</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">next_peak</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">next_merge</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="ident">peak</span>.<span class="ident">node</span>.<span class="ident">leaf_count</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">m</span>.<span class="ident">node</span>.<span class="ident">leaf_count</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">combine_nodes</span>(<span class="ident">peak</span>, <span class="ident">m</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(stored) = {
+                <span class="kw">let </span>peak = <span class="self">self</span>.resolve_link(next_peak)<span class="question-mark">?</span>;
+                <span class="kw">let </span>m = <span class="self">self</span>.resolve_link(next_merge)<span class="question-mark">?</span>;
+                <span class="kw">if </span>peak.node.leaf_count() == m.node.leaf_count() {
+                    <span class="prelude-val">Some</span>(combine_nodes(peak, m))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             } {
-                <span class="kw">let</span> <span class="ident">link</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">stored</span>);
-                <span class="ident">merge_stack</span>.<span class="ident">push</span>(<span class="ident">link</span>);
-                <span class="ident">appended</span>.<span class="ident">push</span>(<span class="ident">link</span>);
+                <span class="kw">let </span>link = <span class="self">self</span>.push(stored);
+                merge_stack.push(link);
+                appended.push(link);
                 <span class="kw">continue</span>;
-            } <span class="kw">else</span> {
-                <span class="ident">merge_stack</span>.<span class="ident">push</span>(<span class="ident">next_merge</span>);
-                <span class="ident">merge_stack</span>.<span class="ident">push</span>(<span class="ident">next_peak</span>);
+            } <span class="kw">else </span>{
+                merge_stack.push(next_merge);
+                merge_stack.push(next_peak);
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">merge_stack</span>
-            .<span class="ident">pop</span>()
-            .<span class="ident">expect</span>(<span class="string">&quot;Loop above cannot reduce the merge_stack&quot;</span>);
-        <span class="comment">// Scan the peaks left-to-right, producing new generated nodes that</span>
-        <span class="comment">// connect the subtrees</span>
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_child</span>) <span class="op">=</span> <span class="ident">merge_stack</span>.<span class="ident">pop</span>() {
-            <span class="ident">new_root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">push_generated</span>(<span class="ident">combine_nodes</span>(
-                <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">new_root</span>)<span class="question-mark">?</span>,
-                <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">next_child</span>)<span class="question-mark">?</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>new_root = merge_stack
+            .pop()
+            .expect(<span class="string">&quot;Loop above cannot reduce the merge_stack&quot;</span>);
+        <span class="comment">// Scan the peaks left-to-right, producing new generated nodes that
+        // connect the subtrees
+        </span><span class="kw">while let </span><span class="prelude-val">Some</span>(next_child) = merge_stack.pop() {
+            new_root = <span class="self">self</span>.push_generated(combine_nodes(
+                <span class="self">self</span>.resolve_link(new_root)<span class="question-mark">?</span>,
+                <span class="self">self</span>.resolve_link(next_child)<span class="question-mark">?</span>,
             ))
         }
 
-        <span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">new_root</span>;
+        <span class="self">self</span>.root = new_root;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">appended</span>)
+        <span class="prelude-val">Ok</span>(appended)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">for_children</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">EntryLink</span>, <span class="ident">EntryLink</span>)<span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">node</span>: <span class="ident">EntryLink</span>, <span class="ident">f</span>: <span class="ident">F</span>) {
-        <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">link</span> <span class="op">=</span> <span class="self">self</span>
-                .<span class="ident">resolve_link</span>(<span class="ident">node</span>)
-                .<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve link in test&quot;</span>);
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">fn </span>for_children&lt;F: Fn(EntryLink, EntryLink)&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, node: EntryLink, f: F) {
+        <span class="kw">let </span>(left, right) = {
+            <span class="kw">let </span>link = <span class="self">self
+                </span>.resolve_link(node)
+                .expect(<span class="string">&quot;Failed to resolve link in test&quot;</span>);
             (
-                <span class="ident">link</span>.<span class="ident">left</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to find node in test&quot;</span>),
-                <span class="ident">link</span>.<span class="ident">right</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to find node in test&quot;</span>),
+                link.left().expect(<span class="string">&quot;Failed to find node in test&quot;</span>),
+                link.right().expect(<span class="string">&quot;Failed to find node in test&quot;</span>),
             )
         };
-        <span class="ident">f</span>(<span class="ident">left</span>, <span class="ident">right</span>);
+        f(left, right);
     }
 
-    <span class="kw">fn</span> <span class="ident">pop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">stored</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span>(<span class="self">self</span>.<span class="ident">stored_count</span> <span class="op">-</span> <span class="number">1</span>));
-        <span class="self">self</span>.<span class="ident">stored_count</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+    <span class="kw">fn </span>pop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.stored.remove(<span class="kw-2">&amp;</span>(<span class="self">self</span>.stored_count - <span class="number">1</span>));
+        <span class="self">self</span>.stored_count -= <span class="number">1</span>;
     }
 
-    <span class="doccomment">/// Truncate one leaf from the end of the tree.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns actual number of nodes that should be removed by the caller</span>
-    <span class="doccomment">/// from the end of the array representation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">truncate_leaf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> {
-            <span class="kw">let</span> (<span class="ident">leaves</span>, <span class="ident">root_left_child</span>) <span class="op">=</span> {
-                <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="self">self</span>.<span class="ident">root</span>)<span class="question-mark">?</span>;
-                (<span class="ident">n</span>.<span class="ident">node</span>.<span class="ident">leaf_count</span>(), <span class="ident">n</span>.<span class="ident">node</span>.<span class="ident">left</span>()<span class="question-mark">?</span>)
+    <span class="doccomment">/// Truncate one leaf from the end of the tree.
+    ///
+    /// Returns actual number of nodes that should be removed by the caller
+    /// from the end of the array representation.
+    </span><span class="kw">pub fn </span>truncate_leaf(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;u32, Error&gt; {
+        <span class="kw">let </span>root = {
+            <span class="kw">let </span>(leaves, root_left_child) = {
+                <span class="kw">let </span>n = <span class="self">self</span>.resolve_link(<span class="self">self</span>.root)<span class="question-mark">?</span>;
+                (n.node.leaf_count(), n.node.left()<span class="question-mark">?</span>)
             };
-            <span class="kw">if</span> <span class="ident">leaves</span> <span class="op">&amp;</span> <span class="number">1</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="self">self</span>.<span class="ident">pop</span>();
-                <span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">root_left_child</span>;
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">1</span>);
-            } <span class="kw">else</span> {
-                <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="self">self</span>.<span class="ident">root</span>)<span class="question-mark">?</span>
-            }
+            <span class="kw">if </span>leaves &amp; <span class="number">1 </span>!= <span class="number">0 </span>{
+                <span class="self">self</span>.pop();
+                <span class="self">self</span>.root = root_left_child;
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="number">1</span>);
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.resolve_link(<span class="self">self</span>.root)<span class="question-mark">?
+            </span>}
         };
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">peaks</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">root</span>.<span class="ident">left</span>()<span class="question-mark">?</span>];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">subtree_root_link</span> <span class="op">=</span> <span class="ident">root</span>.<span class="ident">right</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">truncated</span> <span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>peaks = <span class="macro">vec!</span>[root.left()<span class="question-mark">?</span>];
+        <span class="kw">let </span><span class="kw-2">mut </span>subtree_root_link = root.right()<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>truncated = <span class="number">1</span>;
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">left_link</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">subtree_root_link</span>)<span class="question-mark">?</span>.<span class="ident">node</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">EntryKind::Node</span>(<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="ident">left_link</span>.<span class="ident">kind</span> {
-                <span class="ident">peaks</span>.<span class="ident">push</span>(<span class="ident">left</span>);
-                <span class="ident">subtree_root_link</span> <span class="op">=</span> <span class="ident">right</span>;
-                <span class="ident">truncated</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            } <span class="kw">else</span> {
-                <span class="kw">if</span> <span class="ident">root</span>.<span class="ident">node</span>.<span class="ident">complete</span>() {
-                    <span class="ident">truncated</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>left_link = <span class="self">self</span>.resolve_link(subtree_root_link)<span class="question-mark">?</span>.node;
+            <span class="kw">if let </span>EntryKind::Node(left, right) = left_link.kind {
+                peaks.push(left);
+                subtree_root_link = right;
+                truncated += <span class="number">1</span>;
+            } <span class="kw">else </span>{
+                <span class="kw">if </span>root.node.complete() {
+                    truncated += <span class="number">1</span>;
                 }
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">peaks</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">expect</span>(<span class="string">&quot;At lest 1 elements in peaks&quot;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>new_root = <span class="kw-2">*</span>peaks.get(<span class="number">0</span>).expect(<span class="string">&quot;At lest 1 elements in peaks&quot;</span>);
 
-        <span class="kw">for</span> <span class="ident">next_peak</span> <span class="kw">in</span> <span class="ident">peaks</span>.<span class="ident">into_iter</span>().<span class="ident">skip</span>(<span class="number">1</span>) {
-            <span class="ident">new_root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">push_generated</span>(<span class="ident">combine_nodes</span>(
-                <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">new_root</span>)<span class="question-mark">?</span>,
-                <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="ident">next_peak</span>)<span class="question-mark">?</span>,
+        <span class="kw">for </span>next_peak <span class="kw">in </span>peaks.into_iter().skip(<span class="number">1</span>) {
+            new_root = <span class="self">self</span>.push_generated(combine_nodes(
+                <span class="self">self</span>.resolve_link(new_root)<span class="question-mark">?</span>,
+                <span class="self">self</span>.resolve_link(next_peak)<span class="question-mark">?</span>,
             ));
         }
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">truncated</span> {
-            <span class="self">self</span>.<span class="ident">pop</span>();
+        <span class="kw">for _ in </span><span class="number">0</span>..truncated {
+            <span class="self">self</span>.pop();
         }
 
-        <span class="self">self</span>.<span class="ident">root</span> <span class="op">=</span> <span class="ident">new_root</span>;
+        <span class="self">self</span>.root = new_root;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">truncated</span>)
+        <span class="prelude-val">Ok</span>(truncated)
     }
 
-    <span class="doccomment">/// Length of array representation of the tree.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="ident">stored_count</span>
+    <span class="doccomment">/// Length of array representation of the tree.
+    </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="self">self</span>.stored_count
     }
 
-    <span class="doccomment">/// Link to the root node</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">root</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EntryLink</span> {
-        <span class="self">self</span>.<span class="ident">root</span>
+    <span class="doccomment">/// Link to the root node
+    </span><span class="kw">pub fn </span>root(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EntryLink {
+        <span class="self">self</span>.root
     }
 
-    <span class="doccomment">/// Reference to the root node.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">root_node</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">resolve_link</span>(<span class="self">self</span>.<span class="ident">root</span>)
+    <span class="doccomment">/// Reference to the root node.
+    </span><span class="kw">pub fn </span>root_node(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;IndexedNode&lt;V&gt;, Error&gt; {
+        <span class="self">self</span>.resolve_link(<span class="self">self</span>.root)
     }
 
-    <span class="doccomment">/// If this tree is empty.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">stored_count</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
+    <span class="doccomment">/// If this tree is empty.
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.stored_count == <span class="number">0
+    </span>}
+}
+
+<span class="doccomment">/// Reference to the node with link attached.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>IndexedNode&lt;<span class="lifetime">&#39;a</span>, V: Version&gt; {
+    node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Entry&lt;V&gt;,
+    link: EntryLink,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, V: Version&gt; IndexedNode&lt;<span class="lifetime">&#39;a</span>, V&gt; {
+    <span class="kw">fn </span>left(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;EntryLink, Error&gt; {
+        <span class="self">self</span>.node.left().map_err(|e| e.augment(<span class="self">self</span>.link))
+    }
+
+    <span class="kw">fn </span>right(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;EntryLink, Error&gt; {
+        <span class="self">self</span>.node.right().map_err(|e| e.augment(<span class="self">self</span>.link))
+    }
+
+    <span class="doccomment">/// Reference to the entry struct.
+    </span><span class="kw">pub fn </span>node(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Entry&lt;V&gt; {
+        <span class="self">self</span>.node
+    }
+
+    <span class="doccomment">/// Reference to the entry metadata.
+    </span><span class="kw">pub fn </span>data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>V::NodeData {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.node.data
+    }
+
+    <span class="doccomment">/// Actual link by what this node was resolved.
+    </span><span class="kw">pub fn </span>link(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EntryLink {
+        <span class="self">self</span>.link
     }
 }
 
-<span class="doccomment">/// Reference to the node with link attached.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="ident">Version</span><span class="op">&gt;</span> {
-    <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>,
-    <span class="ident">link</span>: <span class="ident">EntryLink</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="ident">Version</span><span class="op">&gt;</span> <span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">left</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EntryLink</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">left</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">augment</span>(<span class="self">self</span>.<span class="ident">link</span>))
-    }
-
-    <span class="kw">fn</span> <span class="ident">right</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EntryLink</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">right</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">augment</span>(<span class="self">self</span>.<span class="ident">link</span>))
-    }
-
-    <span class="doccomment">/// Reference to the entry struct.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">node</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">node</span>
-    }
-
-    <span class="doccomment">/// Reference to the entry metadata.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">V::NodeData</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">node</span>.<span class="ident">data</span>
-    }
-
-    <span class="doccomment">/// Actual link by what this node was resolved.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">EntryLink</span> {
-        <span class="self">self</span>.<span class="ident">link</span>
+<span class="kw">fn </span>combine_nodes&lt;<span class="lifetime">&#39;a</span>, V: Version&gt;(left: IndexedNode&lt;<span class="lifetime">&#39;a</span>, V&gt;, right: IndexedNode&lt;<span class="lifetime">&#39;a</span>, V&gt;) -&gt; Entry&lt;V&gt; {
+    Entry {
+        kind: EntryKind::Node(left.link, right.link),
+        data: V::combine(<span class="kw-2">&amp;</span>left.node.data, <span class="kw-2">&amp;</span>right.node.data),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">combine_nodes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="ident">Version</span><span class="op">&gt;</span>(<span class="ident">left</span>: <span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span><span class="op">&gt;</span>, <span class="ident">right</span>: <span class="ident">IndexedNode</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">V</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span> {
-    <span class="ident">Entry</span> {
-        <span class="ident">kind</span>: <span class="ident">EntryKind::Node</span>(<span class="ident">left</span>.<span class="ident">link</span>, <span class="ident">right</span>.<span class="ident">link</span>),
-        <span class="ident">data</span>: <span class="ident">V::combine</span>(<span class="kw-2">&amp;</span><span class="ident">left</span>.<span class="ident">node</span>.<span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="ident">right</span>.<span class="ident">node</span>.<span class="ident">data</span>),
-    }
-}
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use super</span>::{Entry, EntryKind, EntryLink, Tree};
+    <span class="kw">use crate</span>::{node_data, NodeData, Version, V2};
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Entry</span>, <span class="ident">EntryKind</span>, <span class="ident">EntryLink</span>, <span class="ident">Tree</span>};
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">node_data</span>, <span class="ident">NodeData</span>, <span class="ident">Version</span>, <span class="ident">V2</span>};
+    <span class="kw">use </span>assert_matches::assert_matches;
+    <span class="kw">use </span>quickcheck::{quickcheck, TestResult};
 
-    <span class="kw">use</span> <span class="ident">assert_matches::assert_matches</span>;
-    <span class="kw">use</span> <span class="ident">quickcheck</span>::{<span class="ident">quickcheck</span>, <span class="ident">TestResult</span>};
-
-    <span class="kw">fn</span> <span class="ident">leaf</span>(<span class="ident">height</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">node_data::V2</span> {
-        <span class="ident">node_data::V2</span> {
-            <span class="ident">v1</span>: <span class="ident">NodeData</span> {
-                <span class="ident">consensus_branch_id</span>: <span class="number">1</span>,
-                <span class="ident">subtree_commitment</span>: [<span class="number">0u8</span>; <span class="number">32</span>],
-                <span class="ident">start_time</span>: <span class="number">0</span>,
-                <span class="ident">end_time</span>: <span class="number">0</span>,
-                <span class="ident">start_target</span>: <span class="number">0</span>,
-                <span class="ident">end_target</span>: <span class="number">0</span>,
-                <span class="ident">start_sapling_root</span>: [<span class="number">0u8</span>; <span class="number">32</span>],
-                <span class="ident">end_sapling_root</span>: [<span class="number">0u8</span>; <span class="number">32</span>],
-                <span class="ident">subtree_total_work</span>: <span class="number">0</span>.<span class="ident">into</span>(),
-                <span class="ident">start_height</span>: <span class="ident">height</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                <span class="ident">end_height</span>: <span class="ident">height</span> <span class="kw">as</span> <span class="ident">u64</span>,
-                <span class="ident">sapling_tx</span>: <span class="number">7</span>,
+    <span class="kw">fn </span>leaf(height: u32) -&gt; node_data::V2 {
+        node_data::V2 {
+            v1: NodeData {
+                consensus_branch_id: <span class="number">1</span>,
+                subtree_commitment: [<span class="number">0u8</span>; <span class="number">32</span>],
+                start_time: <span class="number">0</span>,
+                end_time: <span class="number">0</span>,
+                start_target: <span class="number">0</span>,
+                end_target: <span class="number">0</span>,
+                start_sapling_root: [<span class="number">0u8</span>; <span class="number">32</span>],
+                end_sapling_root: [<span class="number">0u8</span>; <span class="number">32</span>],
+                subtree_total_work: <span class="number">0</span>.into(),
+                start_height: height <span class="kw">as </span>u64,
+                end_height: height <span class="kw">as </span>u64,
+                sapling_tx: <span class="number">7</span>,
             },
-            <span class="ident">start_orchard_root</span>: [<span class="number">0u8</span>; <span class="number">32</span>],
-            <span class="ident">end_orchard_root</span>: [<span class="number">0u8</span>; <span class="number">32</span>],
-            <span class="ident">orchard_tx</span>: <span class="number">42</span>,
+            start_orchard_root: [<span class="number">0u8</span>; <span class="number">32</span>],
+            end_orchard_root: [<span class="number">0u8</span>; <span class="number">32</span>],
+            orchard_tx: <span class="number">42</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">initial</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Tree</span><span class="op">&lt;</span><span class="ident">V2</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">node1</span> <span class="op">=</span> <span class="ident">Entry::new_leaf</span>(<span class="ident">leaf</span>(<span class="number">1</span>));
-        <span class="kw">let</span> <span class="ident">node2</span> <span class="op">=</span> <span class="ident">Entry::new_leaf</span>(<span class="ident">leaf</span>(<span class="number">2</span>));
+    <span class="kw">fn </span>initial() -&gt; Tree&lt;V2&gt; {
+        <span class="kw">let </span>node1 = Entry::new_leaf(leaf(<span class="number">1</span>));
+        <span class="kw">let </span>node2 = Entry::new_leaf(leaf(<span class="number">2</span>));
 
-        <span class="kw">let</span> <span class="ident">node3</span> <span class="op">=</span> <span class="ident">Entry</span> {
-            <span class="ident">data</span>: <span class="ident">V2::combine</span>(<span class="kw-2">&amp;</span><span class="ident">node1</span>.<span class="ident">data</span>, <span class="kw-2">&amp;</span><span class="ident">node2</span>.<span class="ident">data</span>),
-            <span class="ident">kind</span>: <span class="ident">EntryKind::Leaf</span>,
+        <span class="kw">let </span>node3 = Entry {
+            data: V2::combine(<span class="kw-2">&amp;</span>node1.data, <span class="kw-2">&amp;</span>node2.data),
+            kind: EntryKind::Leaf,
         };
 
-        <span class="ident">Tree::populate</span>(<span class="macro">vec!</span>[<span class="ident">node1</span>, <span class="ident">node2</span>, <span class="ident">node3</span>], <span class="ident">EntryLink::Stored</span>(<span class="number">2</span>))
+        Tree::populate(<span class="macro">vec!</span>[node1, node2, node3], EntryLink::Stored(<span class="number">2</span>))
     }
 
-    <span class="comment">// returns tree with specified number of leafs and it&#39;s root</span>
-    <span class="kw">fn</span> <span class="ident">generated</span>(<span class="ident">length</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Tree</span><span class="op">&lt;</span><span class="ident">V2</span><span class="op">&gt;</span> {
-        <span class="macro">assert!</span>(<span class="ident">length</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">3</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">2</span>..<span class="ident">length</span> {
-            <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+    <span class="comment">// returns tree with specified number of leafs and it&#39;s root
+    </span><span class="kw">fn </span>generated(length: u32) -&gt; Tree&lt;V2&gt; {
+        <span class="macro">assert!</span>(length &gt;= <span class="number">3</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">2</span>..length {
+            tree.append_leaf(leaf(i + <span class="number">1</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
         }
 
-        <span class="ident">tree</span>
+        tree
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">discrete_append</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>discrete_append() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
 
-        <span class="comment">// ** APPEND 3 **</span>
-        <span class="kw">let</span> <span class="ident">appended</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
-        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve root&quot;</span>).<span class="ident">node</span>;
+        <span class="comment">// ** APPEND 3 **
+        </span><span class="kw">let </span>appended = tree.append_leaf(leaf(<span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">let </span>new_root = tree.root_node().expect(<span class="string">&quot;Failed to resolve root&quot;</span>).node;
 
-        <span class="comment">// initial tree:  (2)</span>
-        <span class="comment">//               /   \</span>
-        <span class="comment">//             (0)   (1)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                (4g)</span>
-        <span class="comment">//               /   \</span>
-        <span class="comment">//             (2)    \</span>
-        <span class="comment">//             /  \    \</span>
-        <span class="comment">//           (0)  (1)  (3)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so only (3) is added as real leaf</span>
-        <span class="comment">// while new root, (4g) is generated one</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">new_root</span>.<span class="ident">data</span>.<span class="ident">v1</span>.<span class="ident">end_height</span>, <span class="number">3</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">appended</span>.<span class="ident">len</span>(), <span class="number">1</span>);
+        <span class="comment">// initial tree:  (2)
+        //               /   \
+        //             (0)   (1)
+        //
+        // new tree:
+        //                (4g)
+        //               /   \
+        //             (2)    \
+        //             /  \    \
+        //           (0)  (1)  (3)
+        //
+        // so only (3) is added as real leaf
+        // while new root, (4g) is generated one
+        </span><span class="macro">assert_eq!</span>(new_root.data.v1.end_height, <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(appended.len(), <span class="number">1</span>);
 
-        <span class="comment">// ** APPEND 4 **</span>
-        <span class="kw">let</span> <span class="ident">appended</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="number">4</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="comment">// ** APPEND 4 **
+        </span><span class="kw">let </span>appended = tree.append_leaf(leaf(<span class="number">4</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve root&quot;</span>).<span class="ident">node</span>;
+        <span class="kw">let </span>new_root = tree.root_node().expect(<span class="string">&quot;Failed to resolve root&quot;</span>).node;
 
-        <span class="comment">// intermediate tree:</span>
-        <span class="comment">//                (4g)</span>
-        <span class="comment">//               /   \</span>
-        <span class="comment">//             (2)    \</span>
-        <span class="comment">//             /  \    \</span>
-        <span class="comment">//           (0)  (1)  (3)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                 ( 6 )</span>
-        <span class="comment">//                /     \</span>
-        <span class="comment">//             (2)       (5)</span>
-        <span class="comment">//             /  \     /   \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so (4), (5), (6) are added as real leaves</span>
-        <span class="comment">// and new root, (6) is stored one</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">new_root</span>.<span class="ident">data</span>.<span class="ident">v1</span>.<span class="ident">end_height</span>, <span class="number">4</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">appended</span>.<span class="ident">len</span>(), <span class="number">3</span>);
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Stored</span>(<span class="number">6</span>));
+        <span class="comment">// intermediate tree:
+        //                (4g)
+        //               /   \
+        //             (2)    \
+        //             /  \    \
+        //           (0)  (1)  (3)
+        //
+        // new tree:
+        //                 ( 6 )
+        //                /     \
+        //             (2)       (5)
+        //             /  \     /   \
+        //           (0)  (1) (3)   (4)
+        //
+        // so (4), (5), (6) are added as real leaves
+        // and new root, (6) is stored one
+        </span><span class="macro">assert_eq!</span>(new_root.data.v1.end_height, <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(appended.len(), <span class="number">3</span>);
+        <span class="macro">assert_matches!</span>(tree.root(), EntryLink::Stored(<span class="number">6</span>));
 
-        <span class="comment">// ** APPEND 5 **</span>
+        <span class="comment">// ** APPEND 5 **
 
-        <span class="kw">let</span> <span class="ident">appended</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="number">5</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
-        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve root&quot;</span>).<span class="ident">node</span>;
+        </span><span class="kw">let </span>appended = tree.append_leaf(leaf(<span class="number">5</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">let </span>new_root = tree.root_node().expect(<span class="string">&quot;Failed to resolve root&quot;</span>).node;
 
-        <span class="comment">// intermediate tree:</span>
-        <span class="comment">//                 ( 6 )</span>
-        <span class="comment">//                /     \</span>
-        <span class="comment">//             (2)       (5)</span>
-        <span class="comment">//             /  \     /   \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                     ( 8g )</span>
-        <span class="comment">//                    /      \</span>
-        <span class="comment">//                 ( 6 )      \</span>
-        <span class="comment">//                /     \      \</span>
-        <span class="comment">//             (2)       (5)    \</span>
-        <span class="comment">//             /  \     /   \    \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)  (7)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so (7) is added as real leaf</span>
-        <span class="comment">// and new root, (8g) is generated one</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">new_root</span>.<span class="ident">data</span>.<span class="ident">v1</span>.<span class="ident">end_height</span>, <span class="number">5</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">appended</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>));
-        <span class="ident">tree</span>.<span class="ident">for_children</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> {
-            <span class="macro">assert_matches!</span>(<span class="ident">l</span>, <span class="ident">EntryLink::Stored</span>(<span class="number">6</span>));
-            <span class="macro">assert_matches!</span>(<span class="ident">r</span>, <span class="ident">EntryLink::Stored</span>(<span class="number">7</span>));
+        <span class="comment">// intermediate tree:
+        //                 ( 6 )
+        //                /     \
+        //             (2)       (5)
+        //             /  \     /   \
+        //           (0)  (1) (3)   (4)
+        //
+        // new tree:
+        //                     ( 8g )
+        //                    /      \
+        //                 ( 6 )      \
+        //                /     \      \
+        //             (2)       (5)    \
+        //             /  \     /   \    \
+        //           (0)  (1) (3)   (4)  (7)
+        //
+        // so (7) is added as real leaf
+        // and new root, (8g) is generated one
+        </span><span class="macro">assert_eq!</span>(new_root.data.v1.end_height, <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(appended.len(), <span class="number">1</span>);
+        <span class="macro">assert_matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>));
+        tree.for_children(tree.root(), |l, r| {
+            <span class="macro">assert_matches!</span>(l, EntryLink::Stored(<span class="number">6</span>));
+            <span class="macro">assert_matches!</span>(r, EntryLink::Stored(<span class="number">7</span>));
         });
 
-        <span class="comment">// *** APPEND #6 ***</span>
-        <span class="kw">let</span> <span class="ident">appended</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="number">6</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
-        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve root&quot;</span>).<span class="ident">node</span>;
+        <span class="comment">// *** APPEND #6 ***
+        </span><span class="kw">let </span>appended = tree.append_leaf(leaf(<span class="number">6</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">let </span>new_root = tree.root_node().expect(<span class="string">&quot;Failed to resolve root&quot;</span>).node;
 
-        <span class="comment">// intermediate tree:</span>
-        <span class="comment">//                     ( 8g )</span>
-        <span class="comment">//                    /      \</span>
-        <span class="comment">//                 ( 6 )      \</span>
-        <span class="comment">//                /     \      \</span>
-        <span class="comment">//             (2)       (5)    \</span>
-        <span class="comment">//             /  \     /   \    \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)  (7)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                     (---10g--)</span>
-        <span class="comment">//                    /          \</span>
-        <span class="comment">//                 ( 6 )          \</span>
-        <span class="comment">//                /     \          \</span>
-        <span class="comment">//             (2)       (5)       (9)</span>
-        <span class="comment">//             /  \     /   \     /   \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)  (7)  (8)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so (7) is added as real leaf</span>
-        <span class="comment">// and new root, (10g) is generated one</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">new_root</span>.<span class="ident">data</span>.<span class="ident">v1</span>.<span class="ident">end_height</span>, <span class="number">6</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">appended</span>.<span class="ident">len</span>(), <span class="number">2</span>);
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>));
-        <span class="ident">tree</span>.<span class="ident">for_children</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> {
-            <span class="macro">assert_matches!</span>(<span class="ident">l</span>, <span class="ident">EntryLink::Stored</span>(<span class="number">6</span>));
-            <span class="macro">assert_matches!</span>(<span class="ident">r</span>, <span class="ident">EntryLink::Stored</span>(<span class="number">9</span>));
+        <span class="comment">// intermediate tree:
+        //                     ( 8g )
+        //                    /      \
+        //                 ( 6 )      \
+        //                /     \      \
+        //             (2)       (5)    \
+        //             /  \     /   \    \
+        //           (0)  (1) (3)   (4)  (7)
+        //
+        // new tree:
+        //                     (---10g--)
+        //                    /          \
+        //                 ( 6 )          \
+        //                /     \          \
+        //             (2)       (5)       (9)
+        //             /  \     /   \     /   \
+        //           (0)  (1) (3)   (4)  (7)  (8)
+        //
+        // so (7) is added as real leaf
+        // and new root, (10g) is generated one
+        </span><span class="macro">assert_eq!</span>(new_root.data.v1.end_height, <span class="number">6</span>);
+        <span class="macro">assert_eq!</span>(appended.len(), <span class="number">2</span>);
+        <span class="macro">assert_matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>));
+        tree.for_children(tree.root(), |l, r| {
+            <span class="macro">assert_matches!</span>(l, EntryLink::Stored(<span class="number">6</span>));
+            <span class="macro">assert_matches!</span>(r, EntryLink::Stored(<span class="number">9</span>));
         });
 
-        <span class="comment">// *** APPEND #7 ***</span>
+        <span class="comment">// *** APPEND #7 ***
 
-        <span class="kw">let</span> <span class="ident">appended</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="number">7</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
-        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to resolve root&quot;</span>).<span class="ident">node</span>;
+        </span><span class="kw">let </span>appended = tree.append_leaf(leaf(<span class="number">7</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">let </span>new_root = tree.root_node().expect(<span class="string">&quot;Failed to resolve root&quot;</span>).node;
 
-        <span class="comment">// intermediate tree:</span>
-        <span class="comment">//                     (---8g---)</span>
-        <span class="comment">//                    /          \</span>
-        <span class="comment">//                 ( 6 )          \</span>
-        <span class="comment">//                /     \          \</span>
-        <span class="comment">//             (2)       (5)       (9)</span>
-        <span class="comment">//             /  \     /   \     /   \</span>
-        <span class="comment">//           (0)  (1) (3)   (4)  (7)  (8)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                          (---12g--)</span>
-        <span class="comment">//                         /          \</span>
-        <span class="comment">//                    (---11g---)      \</span>
-        <span class="comment">//                   /           \      \</span>
-        <span class="comment">//                 ( 6 )          \      \</span>
-        <span class="comment">//                /     \          \      \</span>
-        <span class="comment">//             (2)       (5)       (9)     \</span>
-        <span class="comment">//             /  \     /   \     /   \     \</span>
-        <span class="comment">//           (0)  (1) (3)   (4) (7)   (8)  (10)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so (10) is added as real leaf</span>
-        <span class="comment">// and new root, (12g) is generated one</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">new_root</span>.<span class="ident">data</span>.<span class="ident">v1</span>.<span class="ident">end_height</span>, <span class="number">7</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">appended</span>.<span class="ident">len</span>(), <span class="number">1</span>);
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>));
-        <span class="ident">tree</span>.<span class="ident">for_children</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> {
-            <span class="macro">assert_matches!</span>(<span class="ident">l</span>, <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>));
-            <span class="ident">tree</span>.<span class="ident">for_children</span>(<span class="ident">l</span>, <span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> {
-                <span class="macro">assert_matches!</span>((<span class="ident">l</span>, <span class="ident">r</span>), (<span class="ident">EntryLink::Stored</span>(<span class="number">6</span>), <span class="ident">EntryLink::Stored</span>(<span class="number">9</span>)))
+        <span class="comment">// intermediate tree:
+        //                     (---8g---)
+        //                    /          \
+        //                 ( 6 )          \
+        //                /     \          \
+        //             (2)       (5)       (9)
+        //             /  \     /   \     /   \
+        //           (0)  (1) (3)   (4)  (7)  (8)
+        //
+        // new tree:
+        //                          (---12g--)
+        //                         /          \
+        //                    (---11g---)      \
+        //                   /           \      \
+        //                 ( 6 )          \      \
+        //                /     \          \      \
+        //             (2)       (5)       (9)     \
+        //             /  \     /   \     /   \     \
+        //           (0)  (1) (3)   (4) (7)   (8)  (10)
+        //
+        // so (10) is added as real leaf
+        // and new root, (12g) is generated one
+        </span><span class="macro">assert_eq!</span>(new_root.data.v1.end_height, <span class="number">7</span>);
+        <span class="macro">assert_eq!</span>(appended.len(), <span class="number">1</span>);
+        <span class="macro">assert_matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>));
+        tree.for_children(tree.root(), |l, r| {
+            <span class="macro">assert_matches!</span>(l, EntryLink::Generated(<span class="kw">_</span>));
+            tree.for_children(l, |l, r| {
+                <span class="macro">assert_matches!</span>((l, r), (EntryLink::Stored(<span class="number">6</span>), EntryLink::Stored(<span class="number">9</span>)))
             });
-            <span class="macro">assert_matches!</span>(<span class="ident">r</span>, <span class="ident">EntryLink::Stored</span>(<span class="number">10</span>));
+            <span class="macro">assert_matches!</span>(r, EntryLink::Stored(<span class="number">10</span>));
         });
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">truncate_simple</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">generated</span>(<span class="number">9</span>);
-        <span class="kw">let</span> <span class="ident">total_truncated</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>truncate_simple() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = generated(<span class="number">9</span>);
+        <span class="kw">let </span>total_truncated = tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
 
-        <span class="comment">// initial tree:</span>
-        <span class="comment">//</span>
-        <span class="comment">//                               (-------16g------)</span>
-        <span class="comment">//                              /                  \</span>
-        <span class="comment">//                    (--------14-------)           \</span>
-        <span class="comment">//                   /                   \           \</span>
-        <span class="comment">//                 ( 6 )              (  13  )        \</span>
-        <span class="comment">//                /     \            /        \        \</span>
-        <span class="comment">//             (2)       (5)       (9)        (12)      \</span>
-        <span class="comment">//             /  \     /   \     /   \      /    \      \</span>
-        <span class="comment">//           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)    (15)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                    (--------14-------)</span>
-        <span class="comment">//                   /                   \</span>
-        <span class="comment">//                 ( 6 )              (  13  )</span>
-        <span class="comment">//                /     \            /        \</span>
-        <span class="comment">//             (2)       (5)       (9)        (12)</span>
-        <span class="comment">//             /  \     /   \     /   \      /    \</span>
-        <span class="comment">//           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)</span>
-        <span class="comment">//</span>
-        <span class="comment">// so (15) is truncated</span>
-        <span class="comment">// and new root, (14) is a stored one now</span>
+        <span class="comment">// initial tree:
+        //
+        //                               (-------16g------)
+        //                              /                  \
+        //                    (--------14-------)           \
+        //                   /                   \           \
+        //                 ( 6 )              (  13  )        \
+        //                /     \            /        \        \
+        //             (2)       (5)       (9)        (12)      \
+        //             /  \     /   \     /   \      /    \      \
+        //           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)    (15)
+        //
+        // new tree:
+        //                    (--------14-------)
+        //                   /                   \
+        //                 ( 6 )              (  13  )
+        //                /     \            /        \
+        //             (2)       (5)       (9)        (12)
+        //             /  \     /   \     /   \      /    \
+        //           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)
+        //
+        // so (15) is truncated
+        // and new root, (14) is a stored one now
 
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Stored</span>(<span class="number">14</span>));
-        <span class="macro">assert_eq!</span>(<span class="ident">total_truncated</span>, <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">15</span>);
+        </span><span class="macro">assert_matches!</span>(tree.root(), EntryLink::Stored(<span class="number">14</span>));
+        <span class="macro">assert_eq!</span>(total_truncated, <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">15</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">truncate_generated</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">generated</span>(<span class="number">10</span>);
-        <span class="kw">let</span> <span class="ident">deleted</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>truncate_generated() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = generated(<span class="number">10</span>);
+        <span class="kw">let </span>deleted = tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
 
-        <span class="comment">// initial tree:</span>
-        <span class="comment">//</span>
-        <span class="comment">//                               (--------18g--------)</span>
-        <span class="comment">//                              /                     \</span>
-        <span class="comment">//                    (--------14-------)              \</span>
-        <span class="comment">//                   /                   \              \</span>
-        <span class="comment">//                 ( 6 )              (  13  )           \</span>
-        <span class="comment">//                /     \            /        \           \</span>
-        <span class="comment">//             (2)       (5)       (9)        (12)        (17)</span>
-        <span class="comment">//             /  \     /   \     /   \      /    \      /    \</span>
-        <span class="comment">//           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)  (15)  (16)</span>
-        <span class="comment">//</span>
-        <span class="comment">// new tree:</span>
-        <span class="comment">//                               (-------16g------)</span>
-        <span class="comment">//                              /                  \</span>
-        <span class="comment">//                    (--------14-------)           \</span>
-        <span class="comment">//                   /                   \           \</span>
-        <span class="comment">//                 ( 6 )              (  13  )        \</span>
-        <span class="comment">//                /     \            /        \        \</span>
-        <span class="comment">//             (2)       (5)       (9)        (12)      \</span>
-        <span class="comment">//             /  \     /   \     /   \      /    \      \</span>
-        <span class="comment">//           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)    (15)</span>
+        <span class="comment">// initial tree:
+        //
+        //                               (--------18g--------)
+        //                              /                     \
+        //                    (--------14-------)              \
+        //                   /                   \              \
+        //                 ( 6 )              (  13  )           \
+        //                /     \            /        \           \
+        //             (2)       (5)       (9)        (12)        (17)
+        //             /  \     /   \     /   \      /    \      /    \
+        //           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)  (15)  (16)
+        //
+        // new tree:
+        //                               (-------16g------)
+        //                              /                  \
+        //                    (--------14-------)           \
+        //                   /                   \           \
+        //                 ( 6 )              (  13  )        \
+        //                /     \            /        \        \
+        //             (2)       (5)       (9)        (12)      \
+        //             /  \     /   \     /   \      /    \      \
+        //           (0)  (1) (3)   (4) (7)   (8)  (10)  (11)    (15)
 
-        <span class="comment">// new root is generated</span>
+        // new root is generated
 
-        <span class="macro">assert_matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>));
+        </span><span class="macro">assert_matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>));
 
-        <span class="ident">tree</span>.<span class="ident">for_children</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="op">|</span><span class="ident">left</span>, <span class="ident">right</span><span class="op">|</span> {
+        tree.for_children(tree.root(), |left, right| {
             <span class="macro">assert_matches!</span>(
-                (<span class="ident">left</span>, <span class="ident">right</span>),
-                (<span class="ident">EntryLink::Stored</span>(<span class="number">14</span>), <span class="ident">EntryLink::Stored</span>(<span class="number">15</span>))
+                (left, right),
+                (EntryLink::Stored(<span class="number">14</span>), EntryLink::Stored(<span class="number">15</span>))
             )
         });
 
-        <span class="comment">// two stored nodes should leave us (leaf 16 and no longer needed node 17)</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">deleted</span>, <span class="number">2</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">16</span>);
+        <span class="comment">// two stored nodes should leave us (leaf 16 and no longer needed node 17)
+        </span><span class="macro">assert_eq!</span>(deleted, <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">16</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">tree_len</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>tree_len() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">3</span>);
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-            <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">2 </span>{
+            tree.append_leaf(leaf(i + <span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
         }
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">7</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">7</span>);
 
-        <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+        tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">4</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">tree_len_long</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>tree_len_long() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">3</span>);
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">4094</span> {
-            <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span> <span class="op">+</span> <span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">4094 </span>{
+            tree.append_leaf(leaf(i + <span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
         }
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">8191</span>); <span class="comment">// 4096*2-1 (full tree)</span>
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">8191</span>); <span class="comment">// 4096*2-1 (full tree)
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2049</span> {
-            <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+        </span><span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2049 </span>{
+            tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
         }
 
-        <span class="macro">assert_eq!</span>(<span class="ident">tree</span>.<span class="ident">len</span>(), <span class="number">4083</span>); <span class="comment">// 4095 - log2(4096)</span>
-    }
+        <span class="macro">assert_eq!</span>(tree.len(), <span class="number">4083</span>); <span class="comment">// 4095 - log2(4096)
+    </span>}
 
-    <span class="macro">quickcheck!</span> {
-        <span class="kw">fn</span> <span class="ident">there_and_back</span>(<span class="ident">number</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
-            <span class="kw">if</span> <span class="ident">number</span> <span class="op">&gt;</span> <span class="number">1024</span><span class="kw-2">*</span><span class="number">1024</span> {
-                <span class="ident">TestResult::discard</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">number</span> {
-                    <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span><span class="op">+</span><span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+    <span class="macro">quickcheck! </span>{
+        <span class="kw">fn </span>there_and_back(number: u32) -&gt; TestResult {
+            <span class="kw">if </span>number &gt; <span class="number">1024</span><span class="kw-2">*</span><span class="number">1024 </span>{
+                TestResult::discard()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+                <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..number {
+                    tree.append_leaf(leaf(i+<span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
                 }
-                <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">number</span> {
-                    <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+                <span class="kw">for _ in </span><span class="number">0</span>..number {
+                    tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
                 }
 
-                <span class="ident">TestResult::from_bool</span>(<span class="macro">matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Stored</span>(<span class="number">2</span>)))
+                TestResult::from_bool(<span class="macro">matches!</span>(tree.root(), EntryLink::Stored(<span class="number">2</span>)))
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">leaf_count</span>(<span class="ident">number</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
-            <span class="kw">if</span> <span class="op">!</span>(<span class="number">3</span>..<span class="op">=</span><span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">number</span>) {
-                <span class="ident">TestResult::discard</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..(<span class="ident">number</span><span class="op">-</span><span class="number">1</span>) {
-                    <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span><span class="op">+</span><span class="number">2</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">fn </span>leaf_count(number: u32) -&gt; TestResult {
+            <span class="kw">if </span>!(<span class="number">3</span>..=<span class="number">1024 </span>* <span class="number">1024</span>).contains(<span class="kw-2">&amp;</span>number) {
+                TestResult::discard()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+                <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..(number-<span class="number">1</span>) {
+                    tree.append_leaf(leaf(i+<span class="number">2</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
                 }
 
-                <span class="ident">TestResult::from_bool</span>(
-                    <span class="ident">tree</span>.<span class="ident">root_node</span>().<span class="ident">expect</span>(<span class="string">&quot;no root&quot;</span>).<span class="ident">node</span>.<span class="ident">leaf_count</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">number</span> <span class="kw">as</span> <span class="ident">u64</span>
+                TestResult::from_bool(
+                    tree.root_node().expect(<span class="string">&quot;no root&quot;</span>).node.leaf_count() == number <span class="kw">as </span>u64
                 )
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">parity</span>(<span class="ident">number</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
-            <span class="kw">if</span> <span class="op">!</span>(<span class="number">3</span>..<span class="op">=</span><span class="number">2048</span> <span class="op">*</span> <span class="number">2048</span>).<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">number</span>) {
-                <span class="ident">TestResult::discard</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..(<span class="ident">number</span><span class="op">-</span><span class="number">1</span>) {
-                    <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span><span class="op">+</span><span class="number">2</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">fn </span>parity(number: u32) -&gt; TestResult {
+            <span class="kw">if </span>!(<span class="number">3</span>..=<span class="number">2048 </span>* <span class="number">2048</span>).contains(<span class="kw-2">&amp;</span>number) {
+                TestResult::discard()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+                <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..(number-<span class="number">1</span>) {
+                    tree.append_leaf(leaf(i+<span class="number">2</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
                 }
 
-                <span class="ident">TestResult::from_bool</span>(
-                    <span class="kw">if</span> <span class="ident">number</span> <span class="op">&amp;</span> (<span class="ident">number</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                        <span class="macro">matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Stored</span>(<span class="kw">_</span>))
-                    } <span class="kw">else</span> {
-                        <span class="macro">matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>))
+                TestResult::from_bool(
+                    <span class="kw">if </span>number &amp; (number - <span class="number">1</span>) == <span class="number">0 </span>{
+                        <span class="macro">matches!</span>(tree.root(), EntryLink::Stored(<span class="kw">_</span>))
+                    } <span class="kw">else </span>{
+                        <span class="macro">matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>))
                     }
                 )
             }
         }
 
-        <span class="kw">fn</span> <span class="ident">parity_with_truncate</span>(<span class="ident">add</span>: <span class="ident">u32</span>, <span class="ident">delete</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
-            <span class="comment">// First we add `add` number of leaves, then delete `delete` number of leaves</span>
-            <span class="comment">// What is left should be consistent with generated-stored structure</span>
-            <span class="kw">if</span> <span class="ident">add</span> <span class="op">&gt;</span> <span class="number">2048</span> <span class="op">*</span> <span class="number">2048</span> <span class="op">|</span><span class="op">|</span> <span class="ident">add</span> <span class="op">&lt;</span> <span class="ident">delete</span> {
-                <span class="ident">TestResult::discard</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">add</span> {
-                    <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span><span class="op">+</span><span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="kw">fn </span>parity_with_truncate(add: u32, delete: u32) -&gt; TestResult {
+            <span class="comment">// First we add `add` number of leaves, then delete `delete` number of leaves
+            // What is left should be consistent with generated-stored structure
+            </span><span class="kw">if </span>add &gt; <span class="number">2048 </span>* <span class="number">2048 </span>|| add &lt; delete {
+                TestResult::discard()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+                <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..add {
+                    tree.append_leaf(leaf(i+<span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
                 }
-                <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">delete</span> {
-                    <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+                <span class="kw">for _ in </span><span class="number">0</span>..delete {
+                    tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
                 }
 
-                <span class="kw">let</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">add</span> <span class="op">-</span> <span class="ident">delete</span> <span class="op">+</span> <span class="number">2</span>;
+                <span class="kw">let </span>total = add - delete + <span class="number">2</span>;
 
-                <span class="ident">TestResult::from_bool</span>(
-                    <span class="kw">if</span> <span class="ident">total</span> <span class="op">&amp;</span> (<span class="ident">total</span> <span class="op">-</span> <span class="number">1</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                        <span class="macro">matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Stored</span>(<span class="kw">_</span>))
-                    } <span class="kw">else</span> {
-                        <span class="macro">matches!</span>(<span class="ident">tree</span>.<span class="ident">root</span>(), <span class="ident">EntryLink::Generated</span>(<span class="kw">_</span>))
+                TestResult::from_bool(
+                    <span class="kw">if </span>total &amp; (total - <span class="number">1</span>) == <span class="number">0 </span>{
+                        <span class="macro">matches!</span>(tree.root(), EntryLink::Stored(<span class="kw">_</span>))
+                    } <span class="kw">else </span>{
+                        <span class="macro">matches!</span>(tree.root(), EntryLink::Generated(<span class="kw">_</span>))
                     }
                 )
             }
         }
 
-        <span class="comment">// Length of tree is always less than number of leaves squared</span>
-        <span class="kw">fn</span> <span class="ident">stored_length</span>(<span class="ident">add</span>: <span class="ident">u32</span>, <span class="ident">delete</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TestResult</span> {
-            <span class="kw">if</span> <span class="ident">add</span> <span class="op">&gt;</span> <span class="number">2048</span> <span class="op">*</span> <span class="number">2048</span> <span class="op">|</span><span class="op">|</span> <span class="ident">add</span> <span class="op">&lt;</span> <span class="ident">delete</span> {
-                <span class="ident">TestResult::discard</span>()
-            } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">initial</span>();
-                <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">add</span> {
-                    <span class="ident">tree</span>.<span class="ident">append_leaf</span>(<span class="ident">leaf</span>(<span class="ident">i</span><span class="op">+</span><span class="number">3</span>)).<span class="ident">expect</span>(<span class="string">&quot;Failed to append&quot;</span>);
+        <span class="comment">// Length of tree is always less than number of leaves squared
+        </span><span class="kw">fn </span>stored_length(add: u32, delete: u32) -&gt; TestResult {
+            <span class="kw">if </span>add &gt; <span class="number">2048 </span>* <span class="number">2048 </span>|| add &lt; delete {
+                TestResult::discard()
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>tree = initial();
+                <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..add {
+                    tree.append_leaf(leaf(i+<span class="number">3</span>)).expect(<span class="string">&quot;Failed to append&quot;</span>);
                 }
-                <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">delete</span> {
-                    <span class="ident">tree</span>.<span class="ident">truncate_leaf</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to truncate&quot;</span>);
+                <span class="kw">for _ in </span><span class="number">0</span>..delete {
+                    tree.truncate_leaf().expect(<span class="string">&quot;Failed to truncate&quot;</span>);
                 }
 
-                <span class="kw">let</span> <span class="ident">total</span> <span class="op">=</span> <span class="ident">add</span> <span class="op">-</span> <span class="ident">delete</span> <span class="op">+</span> <span class="number">2</span>;
+                <span class="kw">let </span>total = add - delete + <span class="number">2</span>;
 
-                <span class="ident">TestResult::from_bool</span>(<span class="ident">total</span> <span class="op">*</span> <span class="ident">total</span> <span class="op">&gt;</span> <span class="ident">tree</span>.<span class="ident">len</span>())
+                TestResult::from_bool(total * total &gt; tree.len())
             }
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_history" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_history" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

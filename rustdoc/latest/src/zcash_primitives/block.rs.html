@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives&#x2F;src&#x2F;block.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>block.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_primitives/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives/src/block.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>block.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_primitives/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -250,144 +250,162 @@
 <span id="250">250</span>
 <span id="251">251</span>
 <span id="252">252</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Structs and methods for handling Zcash block headers.</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Structs and methods for handling Zcash block headers.
 
-<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
-<span class="kw">use</span> <span class="ident">sha2</span>::{<span class="ident">Digest</span>, <span class="ident">Sha256</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::ops::Deref</span>;
-<span class="kw">use</span> <span class="ident">zcash_encoding::Vector</span>;
+</span><span class="kw">use </span>byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+<span class="kw">use </span>sha2::{Digest, Sha256};
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
+<span class="kw">use </span>std::ops::Deref;
+<span class="kw">use </span>zcash_encoding::Vector;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">equihash</span>;
+<span class="kw">pub use </span>equihash;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BlockHash</span>(<span class="kw">pub</span> [<span class="ident">u8</span>; <span class="number">32</span>]);
+<span class="attribute">#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+</span><span class="kw">pub struct </span>BlockHash(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">BlockHash</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>;
-        <span class="ident">data</span>.<span class="ident">reverse</span>();
-        <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">hex::encode</span>(<span class="ident">data</span>))
+<span class="kw">impl </span>fmt::Debug <span class="kw">for </span>BlockHash {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="comment">// The (byte-flipped) hex string is more useful than the raw bytes, because we can
+        // look that up in RPC methods and block explorers.
+        </span><span class="kw">let </span>block_hash_str = <span class="self">self</span>.to_string();
+        f.debug_tuple(<span class="string">&quot;BlockHash&quot;</span>).field(<span class="kw-2">&amp;</span>block_hash_str).finish()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">BlockHash</span> {
-    <span class="doccomment">/// Constructs a [`BlockHash`] from the given slice.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will panic if the slice is not exactly 32 bytes.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_slice</span>(<span class="ident">bytes</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="macro">assert_eq!</span>(<span class="ident">bytes</span>.<span class="ident">len</span>(), <span class="number">32</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hash</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">hash</span>.<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>);
-        <span class="ident">BlockHash</span>(<span class="ident">hash</span>)
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>BlockHash {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>data = <span class="self">self</span>.<span class="number">0</span>;
+        data.reverse();
+        formatter.write_str(<span class="kw-2">&amp;</span>hex::encode(data))
     }
 }
 
-<span class="doccomment">/// A Zcash block header.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BlockHeader</span> {
-    <span class="ident">hash</span>: <span class="ident">BlockHash</span>,
-    <span class="ident">data</span>: <span class="ident">BlockHeaderData</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">BlockHeader</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">BlockHeaderData</span>;
-
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">BlockHeaderData</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>
+<span class="kw">impl </span>BlockHash {
+    <span class="doccomment">/// Constructs a [`BlockHash`] from the given slice.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the slice is not exactly 32 bytes.
+    </span><span class="kw">pub fn </span>from_slice(bytes: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self </span>{
+        <span class="macro">assert_eq!</span>(bytes.len(), <span class="number">32</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>hash = [<span class="number">0</span>; <span class="number">32</span>];
+        hash.copy_from_slice(bytes);
+        BlockHash(hash)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BlockHeaderData</span> {
-    <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">i32</span>,
-    <span class="kw">pub</span> <span class="ident">prev_block</span>: <span class="ident">BlockHash</span>,
-    <span class="kw">pub</span> <span class="ident">merkle_root</span>: [<span class="ident">u8</span>; <span class="number">32</span>],
-    <span class="kw">pub</span> <span class="ident">final_sapling_root</span>: [<span class="ident">u8</span>; <span class="number">32</span>],
-    <span class="kw">pub</span> <span class="ident">time</span>: <span class="ident">u32</span>,
-    <span class="kw">pub</span> <span class="ident">bits</span>: <span class="ident">u32</span>,
-    <span class="kw">pub</span> <span class="ident">nonce</span>: [<span class="ident">u8</span>; <span class="number">32</span>],
-    <span class="kw">pub</span> <span class="ident">solution</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A Zcash block header.
+</span><span class="kw">pub struct </span>BlockHeader {
+    hash: BlockHash,
+    data: BlockHeaderData,
 }
 
-<span class="kw">impl</span> <span class="ident">BlockHeaderData</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">freeze</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">BlockHeader</span><span class="op">&gt;</span> {
-        <span class="ident">BlockHeader::from_data</span>(<span class="self">self</span>)
+<span class="kw">impl </span>Deref <span class="kw">for </span>BlockHeader {
+    <span class="kw">type </span>Target = BlockHeaderData;
+
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BlockHeaderData {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.data
     }
 }
 
-<span class="kw">impl</span> <span class="ident">BlockHeader</span> {
-    <span class="kw">fn</span> <span class="ident">from_data</span>(<span class="ident">data</span>: <span class="ident">BlockHeaderData</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BlockHeader</span> {
-            <span class="ident">hash</span>: <span class="ident">BlockHash</span>([<span class="number">0</span>; <span class="number">32</span>]),
-            <span class="ident">data</span>,
+<span class="kw">pub struct </span>BlockHeaderData {
+    <span class="kw">pub </span>version: i32,
+    <span class="kw">pub </span>prev_block: BlockHash,
+    <span class="kw">pub </span>merkle_root: [u8; <span class="number">32</span>],
+    <span class="kw">pub </span>final_sapling_root: [u8; <span class="number">32</span>],
+    <span class="kw">pub </span>time: u32,
+    <span class="kw">pub </span>bits: u32,
+    <span class="kw">pub </span>nonce: [u8; <span class="number">32</span>],
+    <span class="kw">pub </span>solution: Vec&lt;u8&gt;,
+}
+
+<span class="kw">impl </span>BlockHeaderData {
+    <span class="kw">pub fn </span>freeze(<span class="self">self</span>) -&gt; io::Result&lt;BlockHeader&gt; {
+        BlockHeader::from_data(<span class="self">self</span>)
+    }
+}
+
+<span class="kw">impl </span>BlockHeader {
+    <span class="kw">fn </span>from_data(data: BlockHeaderData) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>header = BlockHeader {
+            hash: BlockHash([<span class="number">0</span>; <span class="number">32</span>]),
+            data,
         };
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="ident">header</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw</span>)<span class="question-mark">?</span>;
-        <span class="ident">header</span>
-            .<span class="ident">hash</span>
-            .<span class="number">0</span>
-            .<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">Sha256::digest</span>(<span class="kw-2">&amp;</span><span class="ident">Sha256::digest</span>(<span class="kw-2">&amp;</span><span class="ident">raw</span>)));
-        <span class="prelude-val">Ok</span>(<span class="ident">header</span>)
+        <span class="kw">let </span><span class="kw-2">mut </span>raw = <span class="macro">vec!</span>[];
+        header.write(<span class="kw-2">&amp;mut </span>raw)<span class="question-mark">?</span>;
+        header
+            .hash
+            .<span class="number">0
+            </span>.copy_from_slice(<span class="kw-2">&amp;</span>Sha256::digest(<span class="kw-2">&amp;</span>Sha256::digest(<span class="kw-2">&amp;</span>raw)));
+        <span class="prelude-val">Ok</span>(header)
     }
 
-    <span class="doccomment">/// Returns the hash of this header.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BlockHash</span> {
-        <span class="self">self</span>.<span class="ident">hash</span>
+    <span class="doccomment">/// Returns the hash of this header.
+    </span><span class="kw">pub fn </span>hash(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BlockHash {
+        <span class="self">self</span>.hash
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_i32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>version = reader.read_i32::&lt;LittleEndian&gt;()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_block</span> <span class="op">=</span> <span class="ident">BlockHash</span>([<span class="number">0</span>; <span class="number">32</span>]);
-        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">prev_block</span>.<span class="number">0</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>prev_block = BlockHash([<span class="number">0</span>; <span class="number">32</span>]);
+        reader.read_exact(<span class="kw-2">&amp;mut </span>prev_block.<span class="number">0</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">merkle_root</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">merkle_root</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>merkle_root = [<span class="number">0</span>; <span class="number">32</span>];
+        reader.read_exact(<span class="kw-2">&amp;mut </span>merkle_root)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_sapling_root</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">final_sapling_root</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>final_sapling_root = [<span class="number">0</span>; <span class="number">32</span>];
+        reader.read_exact(<span class="kw-2">&amp;mut </span>final_sapling_root)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">time</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">bits</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span>time = reader.read_u32::&lt;LittleEndian&gt;()<span class="question-mark">?</span>;
+        <span class="kw">let </span>bits = reader.read_u32::&lt;LittleEndian&gt;()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">nonce</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">nonce</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>nonce = [<span class="number">0</span>; <span class="number">32</span>];
+        reader.read_exact(<span class="kw-2">&amp;mut </span>nonce)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">solution</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">read_u8</span>())<span class="question-mark">?</span>;
+        <span class="kw">let </span>solution = Vector::read(<span class="kw-2">&amp;mut </span>reader, |r| r.read_u8())<span class="question-mark">?</span>;
 
-        <span class="ident">BlockHeader::from_data</span>(<span class="ident">BlockHeaderData</span> {
-            <span class="ident">version</span>,
-            <span class="ident">prev_block</span>,
-            <span class="ident">merkle_root</span>,
-            <span class="ident">final_sapling_root</span>,
-            <span class="ident">time</span>,
-            <span class="ident">bits</span>,
-            <span class="ident">nonce</span>,
-            <span class="ident">solution</span>,
+        BlockHeader::from_data(BlockHeaderData {
+            version,
+            prev_block,
+            merkle_root,
+            final_sapling_root,
+            time,
+            bits,
+            nonce,
+            solution,
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="ident">writer</span>.<span class="ident">write_i32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">version</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prev_block</span>.<span class="number">0</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">merkle_root</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">final_sapling_root</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">time</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">bits</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nonce</span>)<span class="question-mark">?</span>;
-        <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">solution</span>, <span class="op">|</span><span class="ident">w</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">w</span>.<span class="ident">write_u8</span>(<span class="kw-2">*</span><span class="ident">b</span>))<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        writer.write_i32::&lt;LittleEndian&gt;(<span class="self">self</span>.version)<span class="question-mark">?</span>;
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.prev_block.<span class="number">0</span>)<span class="question-mark">?</span>;
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.merkle_root)<span class="question-mark">?</span>;
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.final_sapling_root)<span class="question-mark">?</span>;
+        writer.write_u32::&lt;LittleEndian&gt;(<span class="self">self</span>.time)<span class="question-mark">?</span>;
+        writer.write_u32::&lt;LittleEndian&gt;(<span class="self">self</span>.bits)<span class="question-mark">?</span>;
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.nonce)<span class="question-mark">?</span>;
+        Vector::write(<span class="kw-2">&amp;mut </span>writer, <span class="kw-2">&amp;</span><span class="self">self</span>.solution, |w, b| w.write_u8(<span class="kw-2">*</span>b))<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::BlockHeader</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">super</span>::BlockHeader;
 
-    <span class="kw">const</span> <span class="ident">HEADER_MAINNET_415000</span>: [<span class="ident">u8</span>; <span class="number">1487</span>] <span class="op">=</span> [
+    <span class="kw">const </span>HEADER_MAINNET_415000: [u8; <span class="number">1487</span>] = [
         <span class="number">0x04</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x52</span>, <span class="number">0x74</span>, <span class="number">0xb4</span>, <span class="number">0x3b</span>, <span class="number">0x9e</span>, <span class="number">0x4a</span>, <span class="number">0xd8</span>, <span class="number">0xf4</span>, <span class="number">0x3e</span>, <span class="number">0x93</span>, <span class="number">0xf7</span>,
         <span class="number">0x84</span>, <span class="number">0x63</span>, <span class="number">0xd2</span>, <span class="number">0x4d</span>, <span class="number">0xcf</span>, <span class="number">0xe5</span>, <span class="number">0x31</span>, <span class="number">0xae</span>, <span class="number">0xb4</span>, <span class="number">0x71</span>, <span class="number">0x98</span>, <span class="number">0x19</span>, <span class="number">0xf4</span>, <span class="number">0xf9</span>, <span class="number">0x7f</span>,
         <span class="number">0x7e</span>, <span class="number">0x03</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0x66</span>, <span class="number">0x30</span>, <span class="number">0x73</span>, <span class="number">0xbc</span>, <span class="number">0x4b</span>, <span class="number">0xfa</span>, <span class="number">0x95</span>, <span class="number">0xc9</span>, <span class="number">0xbe</span>,
@@ -490,19 +508,17 @@
         <span class="number">0xdf</span>, <span class="number">0x5e</span>,
     ];
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">header_read_write</span>() {
-        <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">BlockHeader::read</span>(<span class="kw-2">&amp;</span><span class="ident">HEADER_MAINNET_415000</span>[..]).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>header_read_write() {
+        <span class="kw">let </span>header = BlockHeader::read(<span class="kw-2">&amp;</span>HEADER_MAINNET_415000[..]).unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">header</span>.<span class="ident">hash</span>()),
-            <span class="string">&quot;0000000001ab37793ce771262b2ffa082519aa3fe891250a1adb43baaf856168&quot;</span>
-        );
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">encoded</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">HEADER_MAINNET_415000</span>.<span class="ident">len</span>());
-        <span class="ident">header</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">encoded</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span><span class="ident">HEADER_MAINNET_415000</span>[..], <span class="kw-2">&amp;</span><span class="ident">encoded</span>[..]);
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, header.hash()),
+            <span class="string">&quot;0000000001ab37793ce771262b2ffa082519aa3fe891250a1adb43baaf856168&quot;
+        </span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>encoded = Vec::with_capacity(HEADER_MAINNET_415000.len());
+        header.write(<span class="kw-2">&amp;mut </span>encoded).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>HEADER_MAINNET_415000[..], <span class="kw-2">&amp;</span>encoded[..]);
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

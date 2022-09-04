@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ChainInvalid",""],["Error",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["ChainInvalid",""],["Error",""]]};

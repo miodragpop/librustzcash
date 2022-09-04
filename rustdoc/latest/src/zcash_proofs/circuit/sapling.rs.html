@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_proofs&#x2F;src&#x2F;circuit&#x2F;sapling.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sapling.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../zcash_proofs/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_proofs/src/circuit/sapling.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>sapling.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../zcash_proofs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../zcash_proofs/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../zcash_proofs/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -937,683 +937,683 @@
 <span id="937">937</span>
 <span id="938">938</span>
 <span id="939">939</span>
-</pre><pre class="rust"><code><span class="doccomment">//! The Sapling circuits.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The Sapling circuits.
 
-<span class="kw">use</span> <span class="ident">ff::PrimeField</span>;
-<span class="kw">use</span> <span class="ident">group::Curve</span>;
+</span><span class="kw">use </span>ff::PrimeField;
+<span class="kw">use </span>group::Curve;
 
-<span class="kw">use</span> <span class="ident">bellman</span>::{<span class="ident">Circuit</span>, <span class="ident">ConstraintSystem</span>, <span class="ident">SynthesisError</span>};
+<span class="kw">use </span>bellman::{Circuit, ConstraintSystem, SynthesisError};
 
-<span class="kw">use</span> <span class="ident">zcash_primitives::constants</span>;
+<span class="kw">use </span>zcash_primitives::constants;
 
-<span class="kw">use</span> <span class="ident">zcash_primitives::sapling</span>::{
-    <span class="ident">PaymentAddress</span>, <span class="ident">ProofGenerationKey</span>, <span class="ident">ValueCommitment</span>, <span class="ident">SAPLING_COMMITMENT_TREE_DEPTH</span>,
+<span class="kw">use </span>zcash_primitives::sapling::{
+    PaymentAddress, ProofGenerationKey, ValueCommitment, SAPLING_COMMITMENT_TREE_DEPTH,
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::ecc</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::pedersen_hash</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::constants</span>::{
-    <span class="ident">NOTE_COMMITMENT_RANDOMNESS_GENERATOR</span>, <span class="ident">NULLIFIER_POSITION_GENERATOR</span>,
-    <span class="ident">PROOF_GENERATION_KEY_GENERATOR</span>, <span class="ident">SPENDING_KEY_GENERATOR</span>, <span class="ident">VALUE_COMMITMENT_RANDOMNESS_GENERATOR</span>,
-    <span class="ident">VALUE_COMMITMENT_VALUE_GENERATOR</span>,
+<span class="kw">use </span><span class="kw">super</span>::ecc;
+<span class="kw">use </span><span class="kw">super</span>::pedersen_hash;
+<span class="kw">use </span><span class="kw">crate</span>::constants::{
+    NOTE_COMMITMENT_RANDOMNESS_GENERATOR, NULLIFIER_POSITION_GENERATOR,
+    PROOF_GENERATION_KEY_GENERATOR, SPENDING_KEY_GENERATOR, VALUE_COMMITMENT_RANDOMNESS_GENERATOR,
+    VALUE_COMMITMENT_VALUE_GENERATOR,
 };
-<span class="kw">use</span> <span class="ident">bellman::gadgets::blake2s</span>;
-<span class="kw">use</span> <span class="ident">bellman::gadgets::boolean</span>;
-<span class="kw">use</span> <span class="ident">bellman::gadgets::multipack</span>;
-<span class="kw">use</span> <span class="ident">bellman::gadgets::num</span>;
-<span class="kw">use</span> <span class="ident">bellman::gadgets::Assignment</span>;
+<span class="kw">use </span>bellman::gadgets::blake2s;
+<span class="kw">use </span>bellman::gadgets::boolean;
+<span class="kw">use </span>bellman::gadgets::multipack;
+<span class="kw">use </span>bellman::gadgets::num;
+<span class="kw">use </span>bellman::gadgets::Assignment;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">use</span> <span class="ident">ff::PrimeFieldBits</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">use </span>ff::PrimeFieldBits;
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">TREE_DEPTH</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">SAPLING_COMMITMENT_TREE_DEPTH</span>;
+<span class="kw">pub const </span>TREE_DEPTH: usize = SAPLING_COMMITMENT_TREE_DEPTH;
 
-<span class="doccomment">/// This is an instance of the `Spend` circuit.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Spend</span> {
-    <span class="doccomment">/// Pedersen commitment to the value being spent</span>
-    <span class="kw">pub</span> <span class="ident">value_commitment</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ValueCommitment</span><span class="op">&gt;</span>,
+<span class="doccomment">/// This is an instance of the `Spend` circuit.
+</span><span class="kw">pub struct </span>Spend {
+    <span class="doccomment">/// Pedersen commitment to the value being spent
+    </span><span class="kw">pub </span>value_commitment: <span class="prelude-ty">Option</span>&lt;ValueCommitment&gt;,
 
-    <span class="doccomment">/// Key required to construct proofs for spending notes</span>
-    <span class="doccomment">/// for a particular spending key</span>
-    <span class="kw">pub</span> <span class="ident">proof_generation_key</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ProofGenerationKey</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Key required to construct proofs for spending notes
+    /// for a particular spending key
+    </span><span class="kw">pub </span>proof_generation_key: <span class="prelude-ty">Option</span>&lt;ProofGenerationKey&gt;,
 
-    <span class="doccomment">/// The payment address associated with the note</span>
-    <span class="kw">pub</span> <span class="ident">payment_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PaymentAddress</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The payment address associated with the note
+    </span><span class="kw">pub </span>payment_address: <span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;,
 
-    <span class="doccomment">/// The randomness of the note commitment</span>
-    <span class="kw">pub</span> <span class="ident">commitment_randomness</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">jubjub::Fr</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The randomness of the note commitment
+    </span><span class="kw">pub </span>commitment_randomness: <span class="prelude-ty">Option</span>&lt;jubjub::Fr&gt;,
 
-    <span class="doccomment">/// Re-randomization of the public key</span>
-    <span class="kw">pub</span> <span class="ident">ar</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">jubjub::Fr</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Re-randomization of the public key
+    </span><span class="kw">pub </span>ar: <span class="prelude-ty">Option</span>&lt;jubjub::Fr&gt;,
 
-    <span class="doccomment">/// The authentication path of the commitment in the tree</span>
-    <span class="kw">pub</span> <span class="ident">auth_path</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">bls12_381::Scalar</span>, <span class="ident">bool</span>)<span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The authentication path of the commitment in the tree
+    </span><span class="kw">pub </span>auth_path: Vec&lt;<span class="prelude-ty">Option</span>&lt;(bls12_381::Scalar, bool)&gt;&gt;,
 
-    <span class="doccomment">/// The anchor; the root of the tree. If the note being</span>
-    <span class="doccomment">/// spent is zero-value, this can be anything.</span>
-    <span class="kw">pub</span> <span class="ident">anchor</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The anchor; the root of the tree. If the note being
+    /// spent is zero-value, this can be anything.
+    </span><span class="kw">pub </span>anchor: <span class="prelude-ty">Option</span>&lt;bls12_381::Scalar&gt;,
 }
 
-<span class="doccomment">/// This is an output circuit instance.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Output</span> {
-    <span class="doccomment">/// Pedersen commitment to the value being spent</span>
-    <span class="kw">pub</span> <span class="ident">value_commitment</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ValueCommitment</span><span class="op">&gt;</span>,
+<span class="doccomment">/// This is an output circuit instance.
+</span><span class="kw">pub struct </span>Output {
+    <span class="doccomment">/// Pedersen commitment to the value being spent
+    </span><span class="kw">pub </span>value_commitment: <span class="prelude-ty">Option</span>&lt;ValueCommitment&gt;,
 
-    <span class="doccomment">/// The payment address of the recipient</span>
-    <span class="kw">pub</span> <span class="ident">payment_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PaymentAddress</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The payment address of the recipient
+    </span><span class="kw">pub </span>payment_address: <span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;,
 
-    <span class="doccomment">/// The randomness used to hide the note commitment data</span>
-    <span class="kw">pub</span> <span class="ident">commitment_randomness</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">jubjub::Fr</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The randomness used to hide the note commitment data
+    </span><span class="kw">pub </span>commitment_randomness: <span class="prelude-ty">Option</span>&lt;jubjub::Fr&gt;,
 
-    <span class="doccomment">/// The ephemeral secret key for DH with recipient</span>
-    <span class="kw">pub</span> <span class="ident">esk</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">jubjub::Fr</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// The ephemeral secret key for DH with recipient
+    </span><span class="kw">pub </span>esk: <span class="prelude-ty">Option</span>&lt;jubjub::Fr&gt;,
 }
 
-<span class="doccomment">/// Exposes a Pedersen commitment to the value as an</span>
-<span class="doccomment">/// input to the circuit</span>
-<span class="kw">fn</span> <span class="ident">expose_value_commitment</span><span class="op">&lt;</span><span class="ident">CS</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">cs</span>: <span class="ident">CS</span>,
-    <span class="ident">value_commitment</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ValueCommitment</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">boolean::Boolean</span><span class="op">&gt;</span>, <span class="ident">SynthesisError</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Exposes a Pedersen commitment to the value as an
+/// input to the circuit
+</span><span class="kw">fn </span>expose_value_commitment&lt;CS&gt;(
+    <span class="kw-2">mut </span>cs: CS,
+    value_commitment: <span class="prelude-ty">Option</span>&lt;ValueCommitment&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;boolean::Boolean&gt;, SynthesisError&gt;
+<span class="kw">where
+    </span>CS: ConstraintSystem&lt;bls12_381::Scalar&gt;,
 {
-    <span class="comment">// Booleanize the value into little-endian bit order</span>
-    <span class="kw">let</span> <span class="ident">value_bits</span> <span class="op">=</span> <span class="ident">boolean::u64_into_boolean_vec_le</span>(
-        <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;value&quot;</span>),
-        <span class="ident">value_commitment</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">value</span>),
+    <span class="comment">// Booleanize the value into little-endian bit order
+    </span><span class="kw">let </span>value_bits = boolean::u64_into_boolean_vec_le(
+        cs.namespace(|| <span class="string">&quot;value&quot;</span>),
+        value_commitment.as_ref().map(|c| c.value),
     )<span class="question-mark">?</span>;
 
-    <span class="comment">// Compute the note value in the exponent</span>
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-        <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;compute the value in the exponent&quot;</span>),
-        <span class="kw-2">&amp;</span><span class="ident">VALUE_COMMITMENT_VALUE_GENERATOR</span>,
-        <span class="kw-2">&amp;</span><span class="ident">value_bits</span>,
+    <span class="comment">// Compute the note value in the exponent
+    </span><span class="kw">let </span>value = ecc::fixed_base_multiplication(
+        cs.namespace(|| <span class="string">&quot;compute the value in the exponent&quot;</span>),
+        <span class="kw-2">&amp;</span>VALUE_COMMITMENT_VALUE_GENERATOR,
+        <span class="kw-2">&amp;</span>value_bits,
     )<span class="question-mark">?</span>;
 
-    <span class="comment">// Booleanize the randomness. This does not ensure</span>
-    <span class="comment">// the bit representation is &quot;in the field&quot; because</span>
-    <span class="comment">// it doesn&#39;t matter for security.</span>
-    <span class="kw">let</span> <span class="ident">rcv</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(
-        <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;rcv&quot;</span>),
-        <span class="ident">value_commitment</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">randomness</span>),
+    <span class="comment">// Booleanize the randomness. This does not ensure
+    // the bit representation is &quot;in the field&quot; because
+    // it doesn&#39;t matter for security.
+    </span><span class="kw">let </span>rcv = boolean::field_into_boolean_vec_le(
+        cs.namespace(|| <span class="string">&quot;rcv&quot;</span>),
+        value_commitment.as_ref().map(|c| c.randomness),
     )<span class="question-mark">?</span>;
 
-    <span class="comment">// Compute the randomness in the exponent</span>
-    <span class="kw">let</span> <span class="ident">rcv</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-        <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of rcv&quot;</span>),
-        <span class="kw-2">&amp;</span><span class="ident">VALUE_COMMITMENT_RANDOMNESS_GENERATOR</span>,
-        <span class="kw-2">&amp;</span><span class="ident">rcv</span>,
+    <span class="comment">// Compute the randomness in the exponent
+    </span><span class="kw">let </span>rcv = ecc::fixed_base_multiplication(
+        cs.namespace(|| <span class="string">&quot;computation of rcv&quot;</span>),
+        <span class="kw-2">&amp;</span>VALUE_COMMITMENT_RANDOMNESS_GENERATOR,
+        <span class="kw-2">&amp;</span>rcv,
     )<span class="question-mark">?</span>;
 
-    <span class="comment">// Compute the Pedersen commitment to the value</span>
-    <span class="kw">let</span> <span class="ident">cv</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">add</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of cv&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">rcv</span>)<span class="question-mark">?</span>;
+    <span class="comment">// Compute the Pedersen commitment to the value
+    </span><span class="kw">let </span>cv = value.add(cs.namespace(|| <span class="string">&quot;computation of cv&quot;</span>), <span class="kw-2">&amp;</span>rcv)<span class="question-mark">?</span>;
 
-    <span class="comment">// Expose the commitment as an input to the circuit</span>
-    <span class="ident">cv</span>.<span class="ident">inputize</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;commitment point&quot;</span>))<span class="question-mark">?</span>;
+    <span class="comment">// Expose the commitment as an input to the circuit
+    </span>cv.inputize(cs.namespace(|| <span class="string">&quot;commitment point&quot;</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">value_bits</span>)
+    <span class="prelude-val">Ok</span>(value_bits)
 }
 
-<span class="kw">impl</span> <span class="ident">Circuit</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Spend</span> {
-    <span class="kw">fn</span> <span class="ident">synthesize</span><span class="op">&lt;</span><span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">impl </span>Circuit&lt;bls12_381::Scalar&gt; <span class="kw">for </span>Spend {
+    <span class="kw">fn </span>synthesize&lt;CS: ConstraintSystem&lt;bls12_381::Scalar&gt;&gt;(
         <span class="self">self</span>,
-        <span class="ident">cs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">CS</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SynthesisError</span><span class="op">&gt;</span> {
-        <span class="comment">// Prover witnesses ak (ensures that it&#39;s on the curve)</span>
-        <span class="kw">let</span> <span class="ident">ak</span> <span class="op">=</span> <span class="ident">ecc::EdwardsPoint::witness</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;ak&quot;</span>),
-            <span class="self">self</span>.<span class="ident">proof_generation_key</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span>.<span class="ident">ak</span>.<span class="ident">into</span>()),
+        cs: <span class="kw-2">&amp;mut </span>CS,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SynthesisError&gt; {
+        <span class="comment">// Prover witnesses ak (ensures that it&#39;s on the curve)
+        </span><span class="kw">let </span>ak = ecc::EdwardsPoint::witness(
+            cs.namespace(|| <span class="string">&quot;ak&quot;</span>),
+            <span class="self">self</span>.proof_generation_key.as_ref().map(|k| k.ak.into()),
         )<span class="question-mark">?</span>;
 
-        <span class="comment">// There are no sensible attacks on small order points</span>
-        <span class="comment">// of ak (that we&#39;re aware of!) but it&#39;s a cheap check,</span>
-        <span class="comment">// so we do it.</span>
-        <span class="ident">ak</span>.<span class="ident">assert_not_small_order</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;ak not small order&quot;</span>))<span class="question-mark">?</span>;
+        <span class="comment">// There are no sensible attacks on small order points
+        // of ak (that we&#39;re aware of!) but it&#39;s a cheap check,
+        // so we do it.
+        </span>ak.assert_not_small_order(cs.namespace(|| <span class="string">&quot;ak not small order&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="comment">// Rerandomize ak and expose it as an input to the circuit</span>
-        {
-            <span class="kw">let</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;ar&quot;</span>), <span class="self">self</span>.<span class="ident">ar</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Rerandomize ak and expose it as an input to the circuit
+        </span>{
+            <span class="kw">let </span>ar = boolean::field_into_boolean_vec_le(cs.namespace(|| <span class="string">&quot;ar&quot;</span>), <span class="self">self</span>.ar)<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the randomness in the exponent</span>
-            <span class="kw">let</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of randomization for the signing key&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">SPENDING_KEY_GENERATOR</span>,
-                <span class="kw-2">&amp;</span><span class="ident">ar</span>,
+            <span class="comment">// Compute the randomness in the exponent
+            </span><span class="kw">let </span>ar = ecc::fixed_base_multiplication(
+                cs.namespace(|| <span class="string">&quot;computation of randomization for the signing key&quot;</span>),
+                <span class="kw-2">&amp;</span>SPENDING_KEY_GENERATOR,
+                <span class="kw-2">&amp;</span>ar,
             )<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">rk</span> <span class="op">=</span> <span class="ident">ak</span>.<span class="ident">add</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of rk&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">ar</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>rk = ak.add(cs.namespace(|| <span class="string">&quot;computation of rk&quot;</span>), <span class="kw-2">&amp;</span>ar)<span class="question-mark">?</span>;
 
-            <span class="ident">rk</span>.<span class="ident">inputize</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;rk&quot;</span>))<span class="question-mark">?</span>;
+            rk.inputize(cs.namespace(|| <span class="string">&quot;rk&quot;</span>))<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Compute nk = [nsk] ProofGenerationKey</span>
-        <span class="kw">let</span> <span class="ident">nk</span>;
+        <span class="comment">// Compute nk = [nsk] ProofGenerationKey
+        </span><span class="kw">let </span>nk;
         {
-            <span class="comment">// Witness nsk as bits</span>
-            <span class="kw">let</span> <span class="ident">nsk</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;nsk&quot;</span>),
-                <span class="self">self</span>.<span class="ident">proof_generation_key</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span>.<span class="ident">nsk</span>),
+            <span class="comment">// Witness nsk as bits
+            </span><span class="kw">let </span>nsk = boolean::field_into_boolean_vec_le(
+                cs.namespace(|| <span class="string">&quot;nsk&quot;</span>),
+                <span class="self">self</span>.proof_generation_key.as_ref().map(|k| k.nsk),
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// NB: We don&#39;t ensure that the bit representation of nsk</span>
-            <span class="comment">// is &quot;in the field&quot; (jubjub::Fr) because it&#39;s not used</span>
-            <span class="comment">// except to demonstrate the prover knows it. If they know</span>
-            <span class="comment">// a congruency then that&#39;s equivalent.</span>
+            <span class="comment">// NB: We don&#39;t ensure that the bit representation of nsk
+            // is &quot;in the field&quot; (jubjub::Fr) because it&#39;s not used
+            // except to demonstrate the prover knows it. If they know
+            // a congruency then that&#39;s equivalent.
 
-            <span class="comment">// Compute nk = [nsk] ProvingPublicKey</span>
-            <span class="ident">nk</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of nk&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">PROOF_GENERATION_KEY_GENERATOR</span>,
-                <span class="kw-2">&amp;</span><span class="ident">nsk</span>,
+            // Compute nk = [nsk] ProvingPublicKey
+            </span>nk = ecc::fixed_base_multiplication(
+                cs.namespace(|| <span class="string">&quot;computation of nk&quot;</span>),
+                <span class="kw-2">&amp;</span>PROOF_GENERATION_KEY_GENERATOR,
+                <span class="kw-2">&amp;</span>nsk,
             )<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// This is the &quot;viewing key&quot; preimage for CRH^ivk</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ivk_preimage</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="comment">// This is the &quot;viewing key&quot; preimage for CRH^ivk
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ivk_preimage = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Place ak in the preimage for CRH^ivk</span>
-        <span class="ident">ivk_preimage</span>.<span class="ident">extend</span>(<span class="ident">ak</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of ak&quot;</span>))<span class="question-mark">?</span>);
+        <span class="comment">// Place ak in the preimage for CRH^ivk
+        </span>ivk_preimage.extend(ak.repr(cs.namespace(|| <span class="string">&quot;representation of ak&quot;</span>))<span class="question-mark">?</span>);
 
-        <span class="comment">// This is the nullifier preimage for PRF^nf</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">nf_preimage</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="comment">// This is the nullifier preimage for PRF^nf
+        </span><span class="kw">let </span><span class="kw-2">mut </span>nf_preimage = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Extend ivk and nf preimages with the representation of</span>
-        <span class="comment">// nk.</span>
-        {
-            <span class="kw">let</span> <span class="ident">repr_nk</span> <span class="op">=</span> <span class="ident">nk</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of nk&quot;</span>))<span class="question-mark">?</span>;
+        <span class="comment">// Extend ivk and nf preimages with the representation of
+        // nk.
+        </span>{
+            <span class="kw">let </span>repr_nk = nk.repr(cs.namespace(|| <span class="string">&quot;representation of nk&quot;</span>))<span class="question-mark">?</span>;
 
-            <span class="ident">ivk_preimage</span>.<span class="ident">extend</span>(<span class="ident">repr_nk</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>());
-            <span class="ident">nf_preimage</span>.<span class="ident">extend</span>(<span class="ident">repr_nk</span>);
+            ivk_preimage.extend(repr_nk.iter().cloned());
+            nf_preimage.extend(repr_nk);
         }
 
-        <span class="macro">assert_eq!</span>(<span class="ident">ivk_preimage</span>.<span class="ident">len</span>(), <span class="number">512</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">nf_preimage</span>.<span class="ident">len</span>(), <span class="number">256</span>);
+        <span class="macro">assert_eq!</span>(ivk_preimage.len(), <span class="number">512</span>);
+        <span class="macro">assert_eq!</span>(nf_preimage.len(), <span class="number">256</span>);
 
-        <span class="comment">// Compute the incoming viewing key ivk</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ivk</span> <span class="op">=</span> <span class="ident">blake2s::blake2s</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of ivk&quot;</span>),
-            <span class="kw-2">&amp;</span><span class="ident">ivk_preimage</span>,
-            <span class="ident">constants::CRH_IVK_PERSONALIZATION</span>,
+        <span class="comment">// Compute the incoming viewing key ivk
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ivk = blake2s::blake2s(
+            cs.namespace(|| <span class="string">&quot;computation of ivk&quot;</span>),
+            <span class="kw-2">&amp;</span>ivk_preimage,
+            constants::CRH_IVK_PERSONALIZATION,
         )<span class="question-mark">?</span>;
 
-        <span class="comment">// drop_5 to ensure it&#39;s in the field</span>
-        <span class="ident">ivk</span>.<span class="ident">truncate</span>(<span class="ident">jubjub::Fr::CAPACITY</span> <span class="kw">as</span> <span class="ident">usize</span>);
+        <span class="comment">// drop_5 to ensure it&#39;s in the field
+        </span>ivk.truncate(jubjub::Fr::CAPACITY <span class="kw">as </span>usize);
 
-        <span class="comment">// Witness g_d, checking that it&#39;s on the curve.</span>
-        <span class="kw">let</span> <span class="ident">g_d</span> <span class="op">=</span> {
-            <span class="ident">ecc::EdwardsPoint::witness</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;witness g_d&quot;</span>),
-                <span class="self">self</span>.<span class="ident">payment_address</span>
-                    .<span class="ident">as_ref</span>()
-                    .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">g_d</span>().<span class="ident">map</span>(<span class="ident">jubjub::ExtendedPoint::from</span>)),
-            )<span class="question-mark">?</span>
-        };
+        <span class="comment">// Witness g_d, checking that it&#39;s on the curve.
+        </span><span class="kw">let </span>g_d = {
+            ecc::EdwardsPoint::witness(
+                cs.namespace(|| <span class="string">&quot;witness g_d&quot;</span>),
+                <span class="self">self</span>.payment_address
+                    .as_ref()
+                    .and_then(|a| a.g_d().map(jubjub::ExtendedPoint::from)),
+            )<span class="question-mark">?
+        </span>};
 
-        <span class="comment">// Check that g_d is not small order. Technically, this check</span>
-        <span class="comment">// is already done in the Output circuit, and this proof ensures</span>
-        <span class="comment">// g_d is bound to a product of that check, but for defense in</span>
-        <span class="comment">// depth let&#39;s check it anyway. It&#39;s cheap.</span>
-        <span class="ident">g_d</span>.<span class="ident">assert_not_small_order</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;g_d not small order&quot;</span>))<span class="question-mark">?</span>;
+        <span class="comment">// Check that g_d is not small order. Technically, this check
+        // is already done in the Output circuit, and this proof ensures
+        // g_d is bound to a product of that check, but for defense in
+        // depth let&#39;s check it anyway. It&#39;s cheap.
+        </span>g_d.assert_not_small_order(cs.namespace(|| <span class="string">&quot;g_d not small order&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="comment">// Compute pk_d = g_d^ivk</span>
-        <span class="kw">let</span> <span class="ident">pk_d</span> <span class="op">=</span> <span class="ident">g_d</span>.<span class="ident">mul</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;compute pk_d&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">ivk</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Compute pk_d = g_d^ivk
+        </span><span class="kw">let </span>pk_d = g_d.mul(cs.namespace(|| <span class="string">&quot;compute pk_d&quot;</span>), <span class="kw-2">&amp;</span>ivk)<span class="question-mark">?</span>;
 
-        <span class="comment">// Compute note contents:</span>
-        <span class="comment">// value (in big endian) followed by g_d and pk_d</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">note_contents</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="comment">// Compute note contents:
+        // value (in big endian) followed by g_d and pk_d
+        </span><span class="kw">let </span><span class="kw-2">mut </span>note_contents = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Handle the value; we&#39;ll need it later for the</span>
-        <span class="comment">// dummy input check.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value_num</span> <span class="op">=</span> <span class="ident">num::Num::zero</span>();
+        <span class="comment">// Handle the value; we&#39;ll need it later for the
+        // dummy input check.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>value_num = num::Num::zero();
         {
-            <span class="comment">// Get the value in little-endian bit order</span>
-            <span class="kw">let</span> <span class="ident">value_bits</span> <span class="op">=</span> <span class="ident">expose_value_commitment</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;value commitment&quot;</span>),
-                <span class="self">self</span>.<span class="ident">value_commitment</span>,
+            <span class="comment">// Get the value in little-endian bit order
+            </span><span class="kw">let </span>value_bits = expose_value_commitment(
+                cs.namespace(|| <span class="string">&quot;value commitment&quot;</span>),
+                <span class="self">self</span>.value_commitment,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the note&#39;s value as a linear combination</span>
-            <span class="comment">// of the bits.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">bls12_381::Scalar::one</span>();
-            <span class="kw">for</span> <span class="ident">bit</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">value_bits</span> {
-                <span class="ident">value_num</span> <span class="op">=</span> <span class="ident">value_num</span>.<span class="ident">add_bool_with_coeff</span>(<span class="ident">CS::one</span>(), <span class="ident">bit</span>, <span class="ident">coeff</span>);
-                <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">coeff</span>.<span class="ident">double</span>();
+            <span class="comment">// Compute the note&#39;s value as a linear combination
+            // of the bits.
+            </span><span class="kw">let </span><span class="kw-2">mut </span>coeff = bls12_381::Scalar::one();
+            <span class="kw">for </span>bit <span class="kw">in </span><span class="kw-2">&amp;</span>value_bits {
+                value_num = value_num.add_bool_with_coeff(CS::one(), bit, coeff);
+                coeff = coeff.double();
             }
 
-            <span class="comment">// Place the value in the note</span>
-            <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">value_bits</span>);
+            <span class="comment">// Place the value in the note
+            </span>note_contents.extend(value_bits);
         }
 
-        <span class="comment">// Place g_d in the note</span>
-        <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">g_d</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of g_d&quot;</span>))<span class="question-mark">?</span>);
+        <span class="comment">// Place g_d in the note
+        </span>note_contents.extend(g_d.repr(cs.namespace(|| <span class="string">&quot;representation of g_d&quot;</span>))<span class="question-mark">?</span>);
 
-        <span class="comment">// Place pk_d in the note</span>
-        <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">pk_d</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of pk_d&quot;</span>))<span class="question-mark">?</span>);
+        <span class="comment">// Place pk_d in the note
+        </span>note_contents.extend(pk_d.repr(cs.namespace(|| <span class="string">&quot;representation of pk_d&quot;</span>))<span class="question-mark">?</span>);
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">note_contents</span>.<span class="ident">len</span>(),
-            <span class="number">64</span> <span class="op">+</span> <span class="comment">// value</span>
-            <span class="number">256</span> <span class="op">+</span> <span class="comment">// g_d</span>
-            <span class="number">256</span> <span class="comment">// p_d</span>
-        );
+            note_contents.len(),
+            <span class="number">64 </span>+ <span class="comment">// value
+            </span><span class="number">256 </span>+ <span class="comment">// g_d
+            </span><span class="number">256 </span><span class="comment">// p_d
+        </span>);
 
-        <span class="comment">// Compute the hash of the note contents</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cm</span> <span class="op">=</span> <span class="ident">pedersen_hash::pedersen_hash</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;note content hash&quot;</span>),
-            <span class="ident">pedersen_hash::Personalization::NoteCommitment</span>,
-            <span class="kw-2">&amp;</span><span class="ident">note_contents</span>,
+        <span class="comment">// Compute the hash of the note contents
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cm = pedersen_hash::pedersen_hash(
+            cs.namespace(|| <span class="string">&quot;note content hash&quot;</span>),
+            pedersen_hash::Personalization::NoteCommitment,
+            <span class="kw-2">&amp;</span>note_contents,
         )<span class="question-mark">?</span>;
 
         {
-            <span class="comment">// Booleanize the randomness for the note commitment</span>
-            <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;rcm&quot;</span>),
-                <span class="self">self</span>.<span class="ident">commitment_randomness</span>,
+            <span class="comment">// Booleanize the randomness for the note commitment
+            </span><span class="kw">let </span>rcm = boolean::field_into_boolean_vec_le(
+                cs.namespace(|| <span class="string">&quot;rcm&quot;</span>),
+                <span class="self">self</span>.commitment_randomness,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the note commitment randomness in the exponent</span>
-            <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of commitment randomness&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">NOTE_COMMITMENT_RANDOMNESS_GENERATOR</span>,
-                <span class="kw-2">&amp;</span><span class="ident">rcm</span>,
+            <span class="comment">// Compute the note commitment randomness in the exponent
+            </span><span class="kw">let </span>rcm = ecc::fixed_base_multiplication(
+                cs.namespace(|| <span class="string">&quot;computation of commitment randomness&quot;</span>),
+                <span class="kw-2">&amp;</span>NOTE_COMMITMENT_RANDOMNESS_GENERATOR,
+                <span class="kw-2">&amp;</span>rcm,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Randomize the note commitment. Pedersen hashes are not</span>
-            <span class="comment">// themselves hiding commitments.</span>
-            <span class="ident">cm</span> <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">add</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;randomization of note commitment&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">rcm</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Randomize the note commitment. Pedersen hashes are not
+            // themselves hiding commitments.
+            </span>cm = cm.add(cs.namespace(|| <span class="string">&quot;randomization of note commitment&quot;</span>), <span class="kw-2">&amp;</span>rcm)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// This will store (least significant bit first)</span>
-        <span class="comment">// the position of the note in the tree, for use</span>
-        <span class="comment">// in nullifier computation.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">position_bits</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="comment">// This will store (least significant bit first)
+        // the position of the note in the tree, for use
+        // in nullifier computation.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>position_bits = <span class="macro">vec!</span>[];
 
-        <span class="comment">// This is an injective encoding, as cur is a</span>
-        <span class="comment">// point in the prime order subgroup.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cur</span> <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">get_u</span>().<span class="ident">clone</span>();
+        <span class="comment">// This is an injective encoding, as cur is a
+        // point in the prime order subgroup.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cur = cm.get_u().clone();
 
-        <span class="comment">// Ascend the merkle tree authentication path</span>
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">e</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">auth_path</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">cs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;merkle tree hash {}&quot;</span>, <span class="ident">i</span>));
+        <span class="comment">// Ascend the merkle tree authentication path
+        </span><span class="kw">for </span>(i, e) <span class="kw">in </span><span class="self">self</span>.auth_path.into_iter().enumerate() {
+            <span class="kw">let </span>cs = <span class="kw-2">&amp;mut </span>cs.namespace(|| <span class="macro">format!</span>(<span class="string">&quot;merkle tree hash {}&quot;</span>, i));
 
-            <span class="comment">// Determines if the current subtree is the &quot;right&quot; leaf at this</span>
-            <span class="comment">// depth of the tree.</span>
-            <span class="kw">let</span> <span class="ident">cur_is_right</span> <span class="op">=</span> <span class="ident">boolean::Boolean::from</span>(<span class="ident">boolean::AllocatedBit::alloc</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;position bit&quot;</span>),
-                <span class="ident">e</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="number">1</span>),
+            <span class="comment">// Determines if the current subtree is the &quot;right&quot; leaf at this
+            // depth of the tree.
+            </span><span class="kw">let </span>cur_is_right = boolean::Boolean::from(boolean::AllocatedBit::alloc(
+                cs.namespace(|| <span class="string">&quot;position bit&quot;</span>),
+                e.map(|e| e.<span class="number">1</span>),
             )<span class="question-mark">?</span>);
 
-            <span class="comment">// Push this boolean for nullifier computation later</span>
-            <span class="ident">position_bits</span>.<span class="ident">push</span>(<span class="ident">cur_is_right</span>.<span class="ident">clone</span>());
+            <span class="comment">// Push this boolean for nullifier computation later
+            </span>position_bits.push(cur_is_right.clone());
 
-            <span class="comment">// Witness the authentication path element adjacent</span>
-            <span class="comment">// at this depth.</span>
-            <span class="kw">let</span> <span class="ident">path_element</span> <span class="op">=</span>
-                <span class="ident">num::AllocatedNum::alloc</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;path element&quot;</span>), <span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">e</span>.<span class="ident">get</span>()<span class="question-mark">?</span>.<span class="number">0</span>))<span class="question-mark">?</span>;
+            <span class="comment">// Witness the authentication path element adjacent
+            // at this depth.
+            </span><span class="kw">let </span>path_element =
+                num::AllocatedNum::alloc(cs.namespace(|| <span class="string">&quot;path element&quot;</span>), || <span class="prelude-val">Ok</span>(e.get()<span class="question-mark">?</span>.<span class="number">0</span>))<span class="question-mark">?</span>;
 
-            <span class="comment">// Swap the two if the current subtree is on the right</span>
-            <span class="kw">let</span> (<span class="ident">ul</span>, <span class="ident">ur</span>) <span class="op">=</span> <span class="ident">num::AllocatedNum::conditionally_reverse</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;conditional reversal of preimage&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">cur</span>,
-                <span class="kw-2">&amp;</span><span class="ident">path_element</span>,
-                <span class="kw-2">&amp;</span><span class="ident">cur_is_right</span>,
+            <span class="comment">// Swap the two if the current subtree is on the right
+            </span><span class="kw">let </span>(ul, ur) = num::AllocatedNum::conditionally_reverse(
+                cs.namespace(|| <span class="string">&quot;conditional reversal of preimage&quot;</span>),
+                <span class="kw-2">&amp;</span>cur,
+                <span class="kw-2">&amp;</span>path_element,
+                <span class="kw-2">&amp;</span>cur_is_right,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// We don&#39;t need to be strict, because the function is</span>
-            <span class="comment">// collision-resistant. If the prover witnesses a congruency,</span>
-            <span class="comment">// they will be unable to find an authentication path in the</span>
-            <span class="comment">// tree with high probability.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">preimage</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-            <span class="ident">preimage</span>.<span class="ident">extend</span>(<span class="ident">ul</span>.<span class="ident">to_bits_le</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;ul into bits&quot;</span>))<span class="question-mark">?</span>);
-            <span class="ident">preimage</span>.<span class="ident">extend</span>(<span class="ident">ur</span>.<span class="ident">to_bits_le</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;ur into bits&quot;</span>))<span class="question-mark">?</span>);
+            <span class="comment">// We don&#39;t need to be strict, because the function is
+            // collision-resistant. If the prover witnesses a congruency,
+            // they will be unable to find an authentication path in the
+            // tree with high probability.
+            </span><span class="kw">let </span><span class="kw-2">mut </span>preimage = <span class="macro">vec!</span>[];
+            preimage.extend(ul.to_bits_le(cs.namespace(|| <span class="string">&quot;ul into bits&quot;</span>))<span class="question-mark">?</span>);
+            preimage.extend(ur.to_bits_le(cs.namespace(|| <span class="string">&quot;ur into bits&quot;</span>))<span class="question-mark">?</span>);
 
-            <span class="comment">// Compute the new subtree value</span>
-            <span class="ident">cur</span> <span class="op">=</span> <span class="ident">pedersen_hash::pedersen_hash</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of pedersen hash&quot;</span>),
-                <span class="ident">pedersen_hash::Personalization::MerkleTree</span>(<span class="ident">i</span>),
-                <span class="kw-2">&amp;</span><span class="ident">preimage</span>,
-            )<span class="question-mark">?</span>
-            .<span class="ident">get_u</span>()
-            .<span class="ident">clone</span>(); <span class="comment">// Injective encoding</span>
-        }
+            <span class="comment">// Compute the new subtree value
+            </span>cur = pedersen_hash::pedersen_hash(
+                cs.namespace(|| <span class="string">&quot;computation of pedersen hash&quot;</span>),
+                pedersen_hash::Personalization::MerkleTree(i),
+                <span class="kw-2">&amp;</span>preimage,
+            )<span class="question-mark">?
+            </span>.get_u()
+            .clone(); <span class="comment">// Injective encoding
+        </span>}
 
         {
-            <span class="kw">let</span> <span class="ident">real_anchor_value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">anchor</span>;
+            <span class="kw">let </span>real_anchor_value = <span class="self">self</span>.anchor;
 
-            <span class="comment">// Allocate the &quot;real&quot; anchor that will be exposed.</span>
-            <span class="kw">let</span> <span class="ident">rt</span> <span class="op">=</span> <span class="ident">num::AllocatedNum::alloc</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;conditional anchor&quot;</span>), <span class="op">|</span><span class="op">|</span> {
-                <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">real_anchor_value</span>.<span class="ident">get</span>()<span class="question-mark">?</span>)
+            <span class="comment">// Allocate the &quot;real&quot; anchor that will be exposed.
+            </span><span class="kw">let </span>rt = num::AllocatedNum::alloc(cs.namespace(|| <span class="string">&quot;conditional anchor&quot;</span>), || {
+                <span class="prelude-val">Ok</span>(<span class="kw-2">*</span>real_anchor_value.get()<span class="question-mark">?</span>)
             })<span class="question-mark">?</span>;
 
-            <span class="comment">// (cur - rt) * value = 0</span>
-            <span class="comment">// if value is zero, cur and rt can be different</span>
-            <span class="comment">// if value is nonzero, they must be equal</span>
-            <span class="ident">cs</span>.<span class="ident">enforce</span>(
-                <span class="op">|</span><span class="op">|</span> <span class="string">&quot;conditionally enforce correct root&quot;</span>,
-                <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span> <span class="op">+</span> <span class="ident">cur</span>.<span class="ident">get_variable</span>() <span class="op">-</span> <span class="ident">rt</span>.<span class="ident">get_variable</span>(),
-                <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">value_num</span>.<span class="ident">lc</span>(<span class="ident">bls12_381::Scalar::one</span>()),
-                <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span>,
+            <span class="comment">// (cur - rt) * value = 0
+            // if value is zero, cur and rt can be different
+            // if value is nonzero, they must be equal
+            </span>cs.enforce(
+                || <span class="string">&quot;conditionally enforce correct root&quot;</span>,
+                |lc| lc + cur.get_variable() - rt.get_variable(),
+                |lc| lc + <span class="kw-2">&amp;</span>value_num.lc(bls12_381::Scalar::one()),
+                |lc| lc,
             );
 
-            <span class="comment">// Expose the anchor</span>
-            <span class="ident">rt</span>.<span class="ident">inputize</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;anchor&quot;</span>))<span class="question-mark">?</span>;
+            <span class="comment">// Expose the anchor
+            </span>rt.inputize(cs.namespace(|| <span class="string">&quot;anchor&quot;</span>))<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Compute the cm + g^position for preventing</span>
-        <span class="comment">// faerie gold attacks</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rho</span> <span class="op">=</span> <span class="ident">cm</span>;
+        <span class="comment">// Compute the cm + g^position for preventing
+        // faerie gold attacks
+        </span><span class="kw">let </span><span class="kw-2">mut </span>rho = cm;
         {
-            <span class="comment">// Compute the position in the exponent</span>
-            <span class="kw">let</span> <span class="ident">position</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;g^position&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">NULLIFIER_POSITION_GENERATOR</span>,
-                <span class="kw-2">&amp;</span><span class="ident">position_bits</span>,
+            <span class="comment">// Compute the position in the exponent
+            </span><span class="kw">let </span>position = ecc::fixed_base_multiplication(
+                cs.namespace(|| <span class="string">&quot;g^position&quot;</span>),
+                <span class="kw-2">&amp;</span>NULLIFIER_POSITION_GENERATOR,
+                <span class="kw-2">&amp;</span>position_bits,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Add the position to the commitment</span>
-            <span class="ident">rho</span> <span class="op">=</span> <span class="ident">rho</span>.<span class="ident">add</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;faerie gold prevention&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">position</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Add the position to the commitment
+            </span>rho = rho.add(cs.namespace(|| <span class="string">&quot;faerie gold prevention&quot;</span>), <span class="kw-2">&amp;</span>position)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Let&#39;s compute nf = BLAKE2s(nk || rho)</span>
-        <span class="ident">nf_preimage</span>.<span class="ident">extend</span>(<span class="ident">rho</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of rho&quot;</span>))<span class="question-mark">?</span>);
+        <span class="comment">// Let&#39;s compute nf = BLAKE2s(nk || rho)
+        </span>nf_preimage.extend(rho.repr(cs.namespace(|| <span class="string">&quot;representation of rho&quot;</span>))<span class="question-mark">?</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">nf_preimage</span>.<span class="ident">len</span>(), <span class="number">512</span>);
+        <span class="macro">assert_eq!</span>(nf_preimage.len(), <span class="number">512</span>);
 
-        <span class="comment">// Compute nf</span>
-        <span class="kw">let</span> <span class="ident">nf</span> <span class="op">=</span> <span class="ident">blake2s::blake2s</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;nf computation&quot;</span>),
-            <span class="kw-2">&amp;</span><span class="ident">nf_preimage</span>,
-            <span class="ident">constants::PRF_NF_PERSONALIZATION</span>,
+        <span class="comment">// Compute nf
+        </span><span class="kw">let </span>nf = blake2s::blake2s(
+            cs.namespace(|| <span class="string">&quot;nf computation&quot;</span>),
+            <span class="kw-2">&amp;</span>nf_preimage,
+            constants::PRF_NF_PERSONALIZATION,
         )<span class="question-mark">?</span>;
 
-        <span class="ident">multipack::pack_into_inputs</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;pack nullifier&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">nf</span>)
+        multipack::pack_into_inputs(cs.namespace(|| <span class="string">&quot;pack nullifier&quot;</span>), <span class="kw-2">&amp;</span>nf)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Circuit</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Output</span> {
-    <span class="kw">fn</span> <span class="ident">synthesize</span><span class="op">&lt;</span><span class="ident">CS</span>: <span class="ident">ConstraintSystem</span><span class="op">&lt;</span><span class="ident">bls12_381::Scalar</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+<span class="kw">impl </span>Circuit&lt;bls12_381::Scalar&gt; <span class="kw">for </span>Output {
+    <span class="kw">fn </span>synthesize&lt;CS: ConstraintSystem&lt;bls12_381::Scalar&gt;&gt;(
         <span class="self">self</span>,
-        <span class="ident">cs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">CS</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SynthesisError</span><span class="op">&gt;</span> {
-        <span class="comment">// Let&#39;s start to construct our note, which contains</span>
-        <span class="comment">// value (big endian)</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">note_contents</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        cs: <span class="kw-2">&amp;mut </span>CS,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), SynthesisError&gt; {
+        <span class="comment">// Let&#39;s start to construct our note, which contains
+        // value (big endian)
+        </span><span class="kw">let </span><span class="kw-2">mut </span>note_contents = <span class="macro">vec!</span>[];
 
-        <span class="comment">// Expose the value commitment and place the value</span>
-        <span class="comment">// in the note.</span>
-        <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">expose_value_commitment</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;value commitment&quot;</span>),
-            <span class="self">self</span>.<span class="ident">value_commitment</span>,
+        <span class="comment">// Expose the value commitment and place the value
+        // in the note.
+        </span>note_contents.extend(expose_value_commitment(
+            cs.namespace(|| <span class="string">&quot;value commitment&quot;</span>),
+            <span class="self">self</span>.value_commitment,
         )<span class="question-mark">?</span>);
 
-        <span class="comment">// Let&#39;s deal with g_d</span>
-        {
-            <span class="comment">// Prover witnesses g_d, ensuring it&#39;s on the</span>
-            <span class="comment">// curve.</span>
-            <span class="kw">let</span> <span class="ident">g_d</span> <span class="op">=</span> <span class="ident">ecc::EdwardsPoint::witness</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;witness g_d&quot;</span>),
-                <span class="self">self</span>.<span class="ident">payment_address</span>
-                    .<span class="ident">as_ref</span>()
-                    .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">g_d</span>().<span class="ident">map</span>(<span class="ident">jubjub::ExtendedPoint::from</span>)),
+        <span class="comment">// Let&#39;s deal with g_d
+        </span>{
+            <span class="comment">// Prover witnesses g_d, ensuring it&#39;s on the
+            // curve.
+            </span><span class="kw">let </span>g_d = ecc::EdwardsPoint::witness(
+                cs.namespace(|| <span class="string">&quot;witness g_d&quot;</span>),
+                <span class="self">self</span>.payment_address
+                    .as_ref()
+                    .and_then(|a| a.g_d().map(jubjub::ExtendedPoint::from)),
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// g_d is ensured to be large order. The relationship</span>
-            <span class="comment">// between g_d and pk_d ultimately binds ivk to the</span>
-            <span class="comment">// note. If this were a small order point, it would</span>
-            <span class="comment">// not do this correctly, and the prover could</span>
-            <span class="comment">// double-spend by finding random ivk&#39;s that satisfy</span>
-            <span class="comment">// the relationship.</span>
-            <span class="comment">//</span>
-            <span class="comment">// Further, if it were small order, epk would be</span>
-            <span class="comment">// small order too!</span>
-            <span class="ident">g_d</span>.<span class="ident">assert_not_small_order</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;g_d not small order&quot;</span>))<span class="question-mark">?</span>;
+            <span class="comment">// g_d is ensured to be large order. The relationship
+            // between g_d and pk_d ultimately binds ivk to the
+            // note. If this were a small order point, it would
+            // not do this correctly, and the prover could
+            // double-spend by finding random ivk&#39;s that satisfy
+            // the relationship.
+            //
+            // Further, if it were small order, epk would be
+            // small order too!
+            </span>g_d.assert_not_small_order(cs.namespace(|| <span class="string">&quot;g_d not small order&quot;</span>))<span class="question-mark">?</span>;
 
-            <span class="comment">// Extend our note contents with the representation of</span>
-            <span class="comment">// g_d.</span>
-            <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">g_d</span>.<span class="ident">repr</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;representation of g_d&quot;</span>))<span class="question-mark">?</span>);
+            <span class="comment">// Extend our note contents with the representation of
+            // g_d.
+            </span>note_contents.extend(g_d.repr(cs.namespace(|| <span class="string">&quot;representation of g_d&quot;</span>))<span class="question-mark">?</span>);
 
-            <span class="comment">// Booleanize our ephemeral secret key</span>
-            <span class="kw">let</span> <span class="ident">esk</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;esk&quot;</span>), <span class="self">self</span>.<span class="ident">esk</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Booleanize our ephemeral secret key
+            </span><span class="kw">let </span>esk = boolean::field_into_boolean_vec_le(cs.namespace(|| <span class="string">&quot;esk&quot;</span>), <span class="self">self</span>.esk)<span class="question-mark">?</span>;
 
-            <span class="comment">// Create the ephemeral public key from g_d.</span>
-            <span class="kw">let</span> <span class="ident">epk</span> <span class="op">=</span> <span class="ident">g_d</span>.<span class="ident">mul</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;epk computation&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">esk</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Create the ephemeral public key from g_d.
+            </span><span class="kw">let </span>epk = g_d.mul(cs.namespace(|| <span class="string">&quot;epk computation&quot;</span>), <span class="kw-2">&amp;</span>esk)<span class="question-mark">?</span>;
 
-            <span class="comment">// Expose epk publicly.</span>
-            <span class="ident">epk</span>.<span class="ident">inputize</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;epk&quot;</span>))<span class="question-mark">?</span>;
+            <span class="comment">// Expose epk publicly.
+            </span>epk.inputize(cs.namespace(|| <span class="string">&quot;epk&quot;</span>))<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Now let&#39;s deal with pk_d. We don&#39;t do any checks and</span>
-        <span class="comment">// essentially allow the prover to witness any 256 bits</span>
-        <span class="comment">// they would like.</span>
-        {
-            <span class="comment">// Just grab pk_d from the witness</span>
-            <span class="kw">let</span> <span class="ident">pk_d</span> <span class="op">=</span> <span class="self">self</span>
-                .<span class="ident">payment_address</span>
-                .<span class="ident">as_ref</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="kw-2">*</span><span class="ident">e</span>.<span class="ident">pk_d</span>()).<span class="ident">to_affine</span>());
+        <span class="comment">// Now let&#39;s deal with pk_d. We don&#39;t do any checks and
+        // essentially allow the prover to witness any 256 bits
+        // they would like.
+        </span>{
+            <span class="comment">// Just grab pk_d from the witness
+            </span><span class="kw">let </span>pk_d = <span class="self">self
+                </span>.payment_address
+                .as_ref()
+                .map(|e| jubjub::ExtendedPoint::from(<span class="kw-2">*</span>e.pk_d()).to_affine());
 
-            <span class="comment">// Witness the v-coordinate, encoded as little</span>
-            <span class="comment">// endian bits (to match the representation)</span>
-            <span class="kw">let</span> <span class="ident">v_contents</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;pk_d bits of v&quot;</span>),
-                <span class="ident">pk_d</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">get_v</span>()),
+            <span class="comment">// Witness the v-coordinate, encoded as little
+            // endian bits (to match the representation)
+            </span><span class="kw">let </span>v_contents = boolean::field_into_boolean_vec_le(
+                cs.namespace(|| <span class="string">&quot;pk_d bits of v&quot;</span>),
+                pk_d.map(|e| e.get_v()),
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Witness the sign bit</span>
-            <span class="kw">let</span> <span class="ident">sign_bit</span> <span class="op">=</span> <span class="ident">boolean::Boolean::from</span>(<span class="ident">boolean::AllocatedBit::alloc</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;pk_d bit of u&quot;</span>),
-                <span class="ident">pk_d</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">get_u</span>().<span class="ident">is_odd</span>().<span class="ident">into</span>()),
+            <span class="comment">// Witness the sign bit
+            </span><span class="kw">let </span>sign_bit = boolean::Boolean::from(boolean::AllocatedBit::alloc(
+                cs.namespace(|| <span class="string">&quot;pk_d bit of u&quot;</span>),
+                pk_d.map(|e| e.get_u().is_odd().into()),
             )<span class="question-mark">?</span>);
 
-            <span class="comment">// Extend the note with pk_d representation</span>
-            <span class="ident">note_contents</span>.<span class="ident">extend</span>(<span class="ident">v_contents</span>);
-            <span class="ident">note_contents</span>.<span class="ident">push</span>(<span class="ident">sign_bit</span>);
+            <span class="comment">// Extend the note with pk_d representation
+            </span>note_contents.extend(v_contents);
+            note_contents.push(sign_bit);
         }
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">note_contents</span>.<span class="ident">len</span>(),
-            <span class="number">64</span> <span class="op">+</span> <span class="comment">// value</span>
-            <span class="number">256</span> <span class="op">+</span> <span class="comment">// g_d</span>
-            <span class="number">256</span> <span class="comment">// pk_d</span>
-        );
+            note_contents.len(),
+            <span class="number">64 </span>+ <span class="comment">// value
+            </span><span class="number">256 </span>+ <span class="comment">// g_d
+            </span><span class="number">256 </span><span class="comment">// pk_d
+        </span>);
 
-        <span class="comment">// Compute the hash of the note contents</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cm</span> <span class="op">=</span> <span class="ident">pedersen_hash::pedersen_hash</span>(
-            <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;note content hash&quot;</span>),
-            <span class="ident">pedersen_hash::Personalization::NoteCommitment</span>,
-            <span class="kw-2">&amp;</span><span class="ident">note_contents</span>,
+        <span class="comment">// Compute the hash of the note contents
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cm = pedersen_hash::pedersen_hash(
+            cs.namespace(|| <span class="string">&quot;note content hash&quot;</span>),
+            pedersen_hash::Personalization::NoteCommitment,
+            <span class="kw-2">&amp;</span>note_contents,
         )<span class="question-mark">?</span>;
 
         {
-            <span class="comment">// Booleanize the randomness</span>
-            <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">boolean::field_into_boolean_vec_le</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;rcm&quot;</span>),
-                <span class="self">self</span>.<span class="ident">commitment_randomness</span>,
+            <span class="comment">// Booleanize the randomness
+            </span><span class="kw">let </span>rcm = boolean::field_into_boolean_vec_le(
+                cs.namespace(|| <span class="string">&quot;rcm&quot;</span>),
+                <span class="self">self</span>.commitment_randomness,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Compute the note commitment randomness in the exponent</span>
-            <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">ecc::fixed_base_multiplication</span>(
-                <span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;computation of commitment randomness&quot;</span>),
-                <span class="kw-2">&amp;</span><span class="ident">NOTE_COMMITMENT_RANDOMNESS_GENERATOR</span>,
-                <span class="kw-2">&amp;</span><span class="ident">rcm</span>,
+            <span class="comment">// Compute the note commitment randomness in the exponent
+            </span><span class="kw">let </span>rcm = ecc::fixed_base_multiplication(
+                cs.namespace(|| <span class="string">&quot;computation of commitment randomness&quot;</span>),
+                <span class="kw-2">&amp;</span>NOTE_COMMITMENT_RANDOMNESS_GENERATOR,
+                <span class="kw-2">&amp;</span>rcm,
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Randomize our note commitment</span>
-            <span class="ident">cm</span> <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">add</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;randomization of note commitment&quot;</span>), <span class="kw-2">&amp;</span><span class="ident">rcm</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Randomize our note commitment
+            </span>cm = cm.add(cs.namespace(|| <span class="string">&quot;randomization of note commitment&quot;</span>), <span class="kw-2">&amp;</span>rcm)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Only the u-coordinate of the output is revealed,</span>
-        <span class="comment">// since we know it is prime order, and we know that</span>
-        <span class="comment">// the u-coordinate is an injective encoding for</span>
-        <span class="comment">// elements in the prime-order subgroup.</span>
-        <span class="ident">cm</span>.<span class="ident">get_u</span>().<span class="ident">inputize</span>(<span class="ident">cs</span>.<span class="ident">namespace</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;commitment&quot;</span>))<span class="question-mark">?</span>;
+        <span class="comment">// Only the u-coordinate of the output is revealed,
+        // since we know it is prime order, and we know that
+        // the u-coordinate is an injective encoding for
+        // elements in the prime-order subgroup.
+        </span>cm.get_u().inputize(cs.namespace(|| <span class="string">&quot;commitment&quot;</span>))<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_input_circuit_with_bls12_381</span>() {
-    <span class="kw">use</span> <span class="ident">bellman::gadgets::test</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">ff::Field</span>;
-    <span class="kw">use</span> <span class="ident">group::Group</span>;
-    <span class="kw">use</span> <span class="ident">rand_core</span>::{<span class="ident">RngCore</span>, <span class="ident">SeedableRng</span>};
-    <span class="kw">use</span> <span class="ident">rand_xorshift::XorShiftRng</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives::sapling</span>::{<span class="ident">pedersen_hash</span>, <span class="ident">Diversifier</span>, <span class="ident">Note</span>, <span class="ident">ProofGenerationKey</span>, <span class="ident">Rseed</span>};
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_input_circuit_with_bls12_381() {
+    <span class="kw">use </span>bellman::gadgets::test::<span class="kw-2">*</span>;
+    <span class="kw">use </span>ff::Field;
+    <span class="kw">use </span>group::Group;
+    <span class="kw">use </span>rand_core::{RngCore, SeedableRng};
+    <span class="kw">use </span>rand_xorshift::XorShiftRng;
+    <span class="kw">use </span>zcash_primitives::sapling::{pedersen_hash, Diversifier, Note, ProofGenerationKey, Rseed};
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">XorShiftRng::from_seed</span>([
+    <span class="kw">let </span><span class="kw-2">mut </span>rng = XorShiftRng::from_seed([
         <span class="number">0x58</span>, <span class="number">0x62</span>, <span class="number">0xbe</span>, <span class="number">0x3d</span>, <span class="number">0x76</span>, <span class="number">0x3d</span>, <span class="number">0x31</span>, <span class="number">0x8d</span>, <span class="number">0x17</span>, <span class="number">0xdb</span>, <span class="number">0x37</span>, <span class="number">0x32</span>, <span class="number">0x54</span>, <span class="number">0x06</span>, <span class="number">0xbc</span>,
         <span class="number">0xe5</span>,
     ]);
 
-    <span class="kw">let</span> <span class="ident">tree_depth</span> <span class="op">=</span> <span class="number">32</span>;
+    <span class="kw">let </span>tree_depth = <span class="number">32</span>;
 
-    <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
-        <span class="kw">let</span> <span class="ident">value_commitment</span> <span class="op">=</span> <span class="ident">ValueCommitment</span> {
-            <span class="ident">value</span>: <span class="ident">rng</span>.<span class="ident">next_u64</span>(),
-            <span class="ident">randomness</span>: <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">10 </span>{
+        <span class="kw">let </span>value_commitment = ValueCommitment {
+            value: rng.next_u64(),
+            randomness: jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng),
         };
 
-        <span class="kw">let</span> <span class="ident">proof_generation_key</span> <span class="op">=</span> <span class="ident">ProofGenerationKey</span> {
-            <span class="ident">ak</span>: <span class="ident">jubjub::SubgroupPoint::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
-            <span class="ident">nsk</span>: <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
+        <span class="kw">let </span>proof_generation_key = ProofGenerationKey {
+            ak: jubjub::SubgroupPoint::random(<span class="kw-2">&amp;mut </span>rng),
+            nsk: jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng),
         };
 
-        <span class="kw">let</span> <span class="ident">viewing_key</span> <span class="op">=</span> <span class="ident">proof_generation_key</span>.<span class="ident">to_viewing_key</span>();
+        <span class="kw">let </span>viewing_key = proof_generation_key.to_viewing_key();
 
-        <span class="kw">let</span> <span class="ident">payment_address</span>;
+        <span class="kw">let </span>payment_address;
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">diversifier</span> <span class="op">=</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">11</span>];
-                <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>);
-                <span class="ident">Diversifier</span>(<span class="ident">d</span>)
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>diversifier = {
+                <span class="kw">let </span><span class="kw-2">mut </span>d = [<span class="number">0</span>; <span class="number">11</span>];
+                rng.fill_bytes(<span class="kw-2">&amp;mut </span>d);
+                Diversifier(d)
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">viewing_key</span>.<span class="ident">to_payment_address</span>(<span class="ident">diversifier</span>) {
-                <span class="ident">payment_address</span> <span class="op">=</span> <span class="ident">p</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = viewing_key.to_payment_address(diversifier) {
+                payment_address = p;
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="ident">g_d</span> <span class="op">=</span> <span class="ident">payment_address</span>.<span class="ident">diversifier</span>().<span class="ident">g_d</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">commitment_randomness</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="kw">let</span> <span class="ident">auth_path</span> <span class="op">=</span>
-            <span class="macro">vec!</span>[<span class="prelude-val">Some</span>((<span class="ident">bls12_381::Scalar::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>), <span class="ident">rng</span>.<span class="ident">next_u32</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)); <span class="ident">tree_depth</span>];
-        <span class="kw">let</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+        <span class="kw">let </span>g_d = payment_address.diversifier().g_d().unwrap();
+        <span class="kw">let </span>commitment_randomness = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
+        <span class="kw">let </span>auth_path =
+            <span class="macro">vec!</span>[<span class="prelude-val">Some</span>((bls12_381::Scalar::random(<span class="kw-2">&amp;mut </span>rng), rng.next_u32() % <span class="number">2 </span>!= <span class="number">0</span>)); tree_depth];
+        <span class="kw">let </span>ar = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
 
         {
-            <span class="kw">let</span> <span class="ident">rk</span> <span class="op">=</span> <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">viewing_key</span>.<span class="ident">rk</span>(<span class="ident">ar</span>)).<span class="ident">to_affine</span>();
-            <span class="kw">let</span> <span class="ident">expected_value_commitment</span> <span class="op">=</span>
-                <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">value_commitment</span>.<span class="ident">commitment</span>()).<span class="ident">to_affine</span>();
-            <span class="kw">let</span> <span class="ident">note</span> <span class="op">=</span> <span class="ident">Note</span> {
-                <span class="ident">value</span>: <span class="ident">value_commitment</span>.<span class="ident">value</span>,
-                <span class="ident">g_d</span>,
-                <span class="ident">pk_d</span>: <span class="kw-2">*</span><span class="ident">payment_address</span>.<span class="ident">pk_d</span>(),
-                <span class="ident">rseed</span>: <span class="ident">Rseed::BeforeZip212</span>(<span class="ident">commitment_randomness</span>),
+            <span class="kw">let </span>rk = jubjub::ExtendedPoint::from(viewing_key.rk(ar)).to_affine();
+            <span class="kw">let </span>expected_value_commitment =
+                jubjub::ExtendedPoint::from(value_commitment.commitment()).to_affine();
+            <span class="kw">let </span>note = Note {
+                value: value_commitment.value,
+                g_d,
+                pk_d: <span class="kw-2">*</span>payment_address.pk_d(),
+                rseed: Rseed::BeforeZip212(commitment_randomness),
             };
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">position</span> <span class="op">=</span> <span class="number">0u64</span>;
-            <span class="kw">let</span> <span class="ident">cmu</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">cmu</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cur</span> <span class="op">=</span> <span class="ident">cmu</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>position = <span class="number">0u64</span>;
+            <span class="kw">let </span>cmu = note.cmu();
+            <span class="kw">let </span><span class="kw-2">mut </span>cur = cmu;
 
-            <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">val</span>) <span class="kw">in</span> <span class="ident">auth_path</span>.<span class="ident">clone</span>().<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-                <span class="kw">let</span> (<span class="ident">uncle</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">unwrap</span>();
+            <span class="kw">for </span>(i, val) <span class="kw">in </span>auth_path.clone().into_iter().enumerate() {
+                <span class="kw">let </span>(uncle, b) = val.unwrap();
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">cur</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">uncle</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>lhs = cur;
+                <span class="kw">let </span><span class="kw-2">mut </span>rhs = uncle;
 
-                <span class="kw">if</span> <span class="ident">b</span> {
-                    <span class="ident">::std::mem::swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">lhs</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rhs</span>);
+                <span class="kw">if </span>b {
+                    ::std::mem::swap(<span class="kw-2">&amp;mut </span>lhs, <span class="kw-2">&amp;mut </span>rhs);
                 }
 
-                <span class="kw">let</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">lhs</span>.<span class="ident">to_le_bits</span>();
-                <span class="kw">let</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">to_le_bits</span>();
+                <span class="kw">let </span>lhs = lhs.to_le_bits();
+                <span class="kw">let </span>rhs = rhs.to_le_bits();
 
-                <span class="ident">cur</span> <span class="op">=</span> <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">pedersen_hash::pedersen_hash</span>(
-                    <span class="ident">pedersen_hash::Personalization::MerkleTree</span>(<span class="ident">i</span>),
-                    <span class="ident">lhs</span>.<span class="ident">iter</span>()
-                        .<span class="ident">by_val</span>()
-                        .<span class="ident">take</span>(<span class="ident">bls12_381::Scalar::NUM_BITS</span> <span class="kw">as</span> <span class="ident">usize</span>)
-                        .<span class="ident">chain</span>(
-                            <span class="ident">rhs</span>.<span class="ident">iter</span>()
-                                .<span class="ident">by_val</span>()
-                                .<span class="ident">take</span>(<span class="ident">bls12_381::Scalar::NUM_BITS</span> <span class="kw">as</span> <span class="ident">usize</span>),
+                cur = jubjub::ExtendedPoint::from(pedersen_hash::pedersen_hash(
+                    pedersen_hash::Personalization::MerkleTree(i),
+                    lhs.iter()
+                        .by_vals()
+                        .take(bls12_381::Scalar::NUM_BITS <span class="kw">as </span>usize)
+                        .chain(
+                            rhs.iter()
+                                .by_vals()
+                                .take(bls12_381::Scalar::NUM_BITS <span class="kw">as </span>usize),
                         ),
                 ))
-                .<span class="ident">to_affine</span>()
-                .<span class="ident">get_u</span>();
+                .to_affine()
+                .get_u();
 
-                <span class="kw">if</span> <span class="ident">b</span> {
-                    <span class="ident">position</span> <span class="op">|</span><span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">i</span>;
+                <span class="kw">if </span>b {
+                    position |= <span class="number">1 </span>&lt;&lt; i;
                 }
             }
 
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">nf</span>(<span class="kw-2">&amp;</span><span class="ident">viewing_key</span>, <span class="ident">position</span>);
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">multipack::bytes_to_bits_le</span>(<span class="kw-2">&amp;</span><span class="ident">expected_nf</span>.<span class="number">0</span>);
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">multipack::compute_multipacking</span>(<span class="kw-2">&amp;</span><span class="ident">expected_nf</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">expected_nf</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+            <span class="kw">let </span>expected_nf = note.nf(<span class="kw-2">&amp;</span>viewing_key.nk, position);
+            <span class="kw">let </span>expected_nf = multipack::bytes_to_bits_le(<span class="kw-2">&amp;</span>expected_nf.<span class="number">0</span>);
+            <span class="kw">let </span>expected_nf = multipack::compute_multipacking(<span class="kw-2">&amp;</span>expected_nf);
+            <span class="macro">assert_eq!</span>(expected_nf.len(), <span class="number">2</span>);
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">TestConstraintSystem::new</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>cs = TestConstraintSystem::new();
 
-            <span class="kw">let</span> <span class="ident">instance</span> <span class="op">=</span> <span class="ident">Spend</span> {
-                <span class="ident">value_commitment</span>: <span class="prelude-val">Some</span>(<span class="ident">value_commitment</span>.<span class="ident">clone</span>()),
-                <span class="ident">proof_generation_key</span>: <span class="prelude-val">Some</span>(<span class="ident">proof_generation_key</span>.<span class="ident">clone</span>()),
-                <span class="ident">payment_address</span>: <span class="prelude-val">Some</span>(<span class="ident">payment_address</span>.<span class="ident">clone</span>()),
-                <span class="ident">commitment_randomness</span>: <span class="prelude-val">Some</span>(<span class="ident">commitment_randomness</span>),
-                <span class="ident">ar</span>: <span class="prelude-val">Some</span>(<span class="ident">ar</span>),
-                <span class="ident">auth_path</span>: <span class="ident">auth_path</span>.<span class="ident">clone</span>(),
-                <span class="ident">anchor</span>: <span class="prelude-val">Some</span>(<span class="ident">cur</span>),
+            <span class="kw">let </span>instance = Spend {
+                value_commitment: <span class="prelude-val">Some</span>(value_commitment.clone()),
+                proof_generation_key: <span class="prelude-val">Some</span>(proof_generation_key.clone()),
+                payment_address: <span class="prelude-val">Some</span>(payment_address.clone()),
+                commitment_randomness: <span class="prelude-val">Some</span>(commitment_randomness),
+                ar: <span class="prelude-val">Some</span>(ar),
+                auth_path: auth_path.clone(),
+                anchor: <span class="prelude-val">Some</span>(cur),
             };
 
-            <span class="ident">instance</span>.<span class="ident">synthesize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>).<span class="ident">unwrap</span>();
+            instance.synthesize(<span class="kw-2">&amp;mut </span>cs).unwrap();
 
-            <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">is_satisfied</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_constraints</span>(), <span class="number">98777</span>);
+            <span class="macro">assert!</span>(cs.is_satisfied());
+            <span class="macro">assert_eq!</span>(cs.num_constraints(), <span class="number">98777</span>);
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">hash</span>(),
-                <span class="string">&quot;d37c738e83df5d9b0bb6495ac96abf21bcb2697477e2c15c2c7916ff7a3b6a89&quot;</span>
-            );
+                cs.hash(),
+                <span class="string">&quot;d37c738e83df5d9b0bb6495ac96abf21bcb2697477e2c15c2c7916ff7a3b6a89&quot;
+            </span>);
 
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get</span>(<span class="string">&quot;randomization of note commitment/u3/num&quot;</span>), <span class="ident">cmu</span>);
+            <span class="macro">assert_eq!</span>(cs.get(<span class="string">&quot;randomization of note commitment/u3/num&quot;</span>), cmu);
 
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_inputs</span>(), <span class="number">8</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), <span class="ident">bls12_381::Scalar::one</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">1</span>, <span class="string">&quot;rk/u/input variable&quot;</span>), <span class="ident">rk</span>.<span class="ident">get_u</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">2</span>, <span class="string">&quot;rk/v/input variable&quot;</span>), <span class="ident">rk</span>.<span class="ident">get_v</span>());
+            <span class="macro">assert_eq!</span>(cs.num_inputs(), <span class="number">8</span>);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), bls12_381::Scalar::one());
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">1</span>, <span class="string">&quot;rk/u/input variable&quot;</span>), rk.get_u());
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">2</span>, <span class="string">&quot;rk/v/input variable&quot;</span>), rk.get_v());
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">3</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_u</span>()
+                cs.get_input(<span class="number">3</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
+                expected_value_commitment.get_u()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">4</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_v</span>()
+                cs.get_input(<span class="number">4</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
+                expected_value_commitment.get_v()
             );
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">5</span>, <span class="string">&quot;anchor/input variable&quot;</span>), <span class="ident">cur</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">6</span>, <span class="string">&quot;pack nullifier/input 0&quot;</span>), <span class="ident">expected_nf</span>[<span class="number">0</span>]);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">7</span>, <span class="string">&quot;pack nullifier/input 1&quot;</span>), <span class="ident">expected_nf</span>[<span class="number">1</span>]);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">5</span>, <span class="string">&quot;anchor/input variable&quot;</span>), cur);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">6</span>, <span class="string">&quot;pack nullifier/input 0&quot;</span>), expected_nf[<span class="number">0</span>]);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">7</span>, <span class="string">&quot;pack nullifier/input 1&quot;</span>), expected_nf[<span class="number">1</span>]);
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_input_circuit_with_bls12_381_external_test_vectors</span>() {
-    <span class="kw">use</span> <span class="ident">bellman::gadgets::test</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">ff::Field</span>;
-    <span class="kw">use</span> <span class="ident">group::Group</span>;
-    <span class="kw">use</span> <span class="ident">rand_core</span>::{<span class="ident">RngCore</span>, <span class="ident">SeedableRng</span>};
-    <span class="kw">use</span> <span class="ident">rand_xorshift::XorShiftRng</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives::sapling</span>::{<span class="ident">pedersen_hash</span>, <span class="ident">Diversifier</span>, <span class="ident">Note</span>, <span class="ident">ProofGenerationKey</span>, <span class="ident">Rseed</span>};
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_input_circuit_with_bls12_381_external_test_vectors() {
+    <span class="kw">use </span>bellman::gadgets::test::<span class="kw-2">*</span>;
+    <span class="kw">use </span>ff::Field;
+    <span class="kw">use </span>group::Group;
+    <span class="kw">use </span>rand_core::{RngCore, SeedableRng};
+    <span class="kw">use </span>rand_xorshift::XorShiftRng;
+    <span class="kw">use </span>zcash_primitives::sapling::{pedersen_hash, Diversifier, Note, ProofGenerationKey, Rseed};
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">XorShiftRng::from_seed</span>([
+    <span class="kw">let </span><span class="kw-2">mut </span>rng = XorShiftRng::from_seed([
         <span class="number">0x59</span>, <span class="number">0x62</span>, <span class="number">0xbe</span>, <span class="number">0x3d</span>, <span class="number">0x76</span>, <span class="number">0x3d</span>, <span class="number">0x31</span>, <span class="number">0x8d</span>, <span class="number">0x17</span>, <span class="number">0xdb</span>, <span class="number">0x37</span>, <span class="number">0x32</span>, <span class="number">0x54</span>, <span class="number">0x06</span>, <span class="number">0xbc</span>,
         <span class="number">0xe5</span>,
     ]);
 
-    <span class="kw">let</span> <span class="ident">tree_depth</span> <span class="op">=</span> <span class="number">32</span>;
+    <span class="kw">let </span>tree_depth = <span class="number">32</span>;
 
-    <span class="kw">let</span> <span class="ident">expected_commitment_us</span> <span class="op">=</span> <span class="macro">vec!</span>[
+    <span class="kw">let </span>expected_commitment_us = <span class="macro">vec!</span>[
         <span class="string">&quot;43821661663052659750276289184181083197337192946256245809816728673021647664276&quot;</span>,
         <span class="string">&quot;7220807656052227578299730541645543434083158611414003423211850718229633594616&quot;</span>,
         <span class="string">&quot;13239753550660714843257636471668037031928211668773449453628093339627668081697&quot;</span>,
@@ -1626,7 +1626,7 @@
         <span class="string">&quot;18269767207277008186871145355531741929166733260352590789136389380124992250945&quot;</span>,
     ];
 
-    <span class="kw">let</span> <span class="ident">expected_commitment_vs</span> <span class="op">=</span> <span class="macro">vec!</span>[
+    <span class="kw">let </span>expected_commitment_vs = <span class="macro">vec!</span>[
         <span class="string">&quot;27630722367128086497290371604583225252915685718989450292520883698391703910&quot;</span>,
         <span class="string">&quot;23310648738313092772044712773481584369462075017189681529702825235349449805260&quot;</span>,
         <span class="string">&quot;25709635353183537915646348052945798827495141780341329896098121888376871589480&quot;</span>,
@@ -1639,244 +1639,242 @@
         <span class="string">&quot;32959334601512756708397683646222389414681003290313255304927423560477040775488&quot;</span>,
     ];
 
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
-        <span class="kw">let</span> <span class="ident">value_commitment</span> <span class="op">=</span> <span class="ident">ValueCommitment</span> {
-            <span class="ident">value</span>: <span class="ident">i</span>,
-            <span class="ident">randomness</span>: <span class="ident">jubjub::Fr::from</span>(<span class="number">1000</span> <span class="op">*</span> (<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)),
+    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">10 </span>{
+        <span class="kw">let </span>value_commitment = ValueCommitment {
+            value: i,
+            randomness: jubjub::Fr::from(<span class="number">1000 </span>* (i + <span class="number">1</span>)),
         };
 
-        <span class="kw">let</span> <span class="ident">proof_generation_key</span> <span class="op">=</span> <span class="ident">ProofGenerationKey</span> {
-            <span class="ident">ak</span>: <span class="ident">jubjub::SubgroupPoint::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
-            <span class="ident">nsk</span>: <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
+        <span class="kw">let </span>proof_generation_key = ProofGenerationKey {
+            ak: jubjub::SubgroupPoint::random(<span class="kw-2">&amp;mut </span>rng),
+            nsk: jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng),
         };
 
-        <span class="kw">let</span> <span class="ident">viewing_key</span> <span class="op">=</span> <span class="ident">proof_generation_key</span>.<span class="ident">to_viewing_key</span>();
+        <span class="kw">let </span>viewing_key = proof_generation_key.to_viewing_key();
 
-        <span class="kw">let</span> <span class="ident">payment_address</span>;
+        <span class="kw">let </span>payment_address;
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">diversifier</span> <span class="op">=</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">11</span>];
-                <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>);
-                <span class="ident">Diversifier</span>(<span class="ident">d</span>)
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>diversifier = {
+                <span class="kw">let </span><span class="kw-2">mut </span>d = [<span class="number">0</span>; <span class="number">11</span>];
+                rng.fill_bytes(<span class="kw-2">&amp;mut </span>d);
+                Diversifier(d)
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">viewing_key</span>.<span class="ident">to_payment_address</span>(<span class="ident">diversifier</span>) {
-                <span class="ident">payment_address</span> <span class="op">=</span> <span class="ident">p</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = viewing_key.to_payment_address(diversifier) {
+                payment_address = p;
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="ident">g_d</span> <span class="op">=</span> <span class="ident">payment_address</span>.<span class="ident">diversifier</span>().<span class="ident">g_d</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">commitment_randomness</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="kw">let</span> <span class="ident">auth_path</span> <span class="op">=</span>
-            <span class="macro">vec!</span>[<span class="prelude-val">Some</span>((<span class="ident">bls12_381::Scalar::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>), <span class="ident">rng</span>.<span class="ident">next_u32</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)); <span class="ident">tree_depth</span>];
-        <span class="kw">let</span> <span class="ident">ar</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+        <span class="kw">let </span>g_d = payment_address.diversifier().g_d().unwrap();
+        <span class="kw">let </span>commitment_randomness = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
+        <span class="kw">let </span>auth_path =
+            <span class="macro">vec!</span>[<span class="prelude-val">Some</span>((bls12_381::Scalar::random(<span class="kw-2">&amp;mut </span>rng), rng.next_u32() % <span class="number">2 </span>!= <span class="number">0</span>)); tree_depth];
+        <span class="kw">let </span>ar = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
 
         {
-            <span class="kw">let</span> <span class="ident">rk</span> <span class="op">=</span> <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">viewing_key</span>.<span class="ident">rk</span>(<span class="ident">ar</span>)).<span class="ident">to_affine</span>();
-            <span class="kw">let</span> <span class="ident">expected_value_commitment</span> <span class="op">=</span>
-                <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">value_commitment</span>.<span class="ident">commitment</span>()).<span class="ident">to_affine</span>();
+            <span class="kw">let </span>rk = jubjub::ExtendedPoint::from(viewing_key.rk(ar)).to_affine();
+            <span class="kw">let </span>expected_value_commitment =
+                jubjub::ExtendedPoint::from(value_commitment.commitment()).to_affine();
             <span class="macro">assert_eq!</span>(
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_u</span>(),
-                <span class="ident">bls12_381::Scalar::from_str_vartime</span>(<span class="kw-2">&amp;</span><span class="ident">expected_commitment_us</span>[<span class="ident">i</span> <span class="kw">as</span> <span class="ident">usize</span>]).<span class="ident">unwrap</span>()
+                expected_value_commitment.get_u(),
+                bls12_381::Scalar::from_str_vartime(expected_commitment_us[i <span class="kw">as </span>usize]).unwrap()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_v</span>(),
-                <span class="ident">bls12_381::Scalar::from_str_vartime</span>(<span class="kw-2">&amp;</span><span class="ident">expected_commitment_vs</span>[<span class="ident">i</span> <span class="kw">as</span> <span class="ident">usize</span>]).<span class="ident">unwrap</span>()
+                expected_value_commitment.get_v(),
+                bls12_381::Scalar::from_str_vartime(expected_commitment_vs[i <span class="kw">as </span>usize]).unwrap()
             );
-            <span class="kw">let</span> <span class="ident">note</span> <span class="op">=</span> <span class="ident">Note</span> {
-                <span class="ident">value</span>: <span class="ident">value_commitment</span>.<span class="ident">value</span>,
-                <span class="ident">g_d</span>,
-                <span class="ident">pk_d</span>: <span class="kw-2">*</span><span class="ident">payment_address</span>.<span class="ident">pk_d</span>(),
-                <span class="ident">rseed</span>: <span class="ident">Rseed::BeforeZip212</span>(<span class="ident">commitment_randomness</span>),
+            <span class="kw">let </span>note = Note {
+                value: value_commitment.value,
+                g_d,
+                pk_d: <span class="kw-2">*</span>payment_address.pk_d(),
+                rseed: Rseed::BeforeZip212(commitment_randomness),
             };
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">position</span> <span class="op">=</span> <span class="number">0u64</span>;
-            <span class="kw">let</span> <span class="ident">cmu</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">cmu</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cur</span> <span class="op">=</span> <span class="ident">cmu</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>position = <span class="number">0u64</span>;
+            <span class="kw">let </span>cmu = note.cmu();
+            <span class="kw">let </span><span class="kw-2">mut </span>cur = cmu;
 
-            <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">val</span>) <span class="kw">in</span> <span class="ident">auth_path</span>.<span class="ident">clone</span>().<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-                <span class="kw">let</span> (<span class="ident">uncle</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">unwrap</span>();
+            <span class="kw">for </span>(i, val) <span class="kw">in </span>auth_path.clone().into_iter().enumerate() {
+                <span class="kw">let </span>(uncle, b) = val.unwrap();
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">cur</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">uncle</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>lhs = cur;
+                <span class="kw">let </span><span class="kw-2">mut </span>rhs = uncle;
 
-                <span class="kw">if</span> <span class="ident">b</span> {
-                    <span class="ident">::std::mem::swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">lhs</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rhs</span>);
+                <span class="kw">if </span>b {
+                    ::std::mem::swap(<span class="kw-2">&amp;mut </span>lhs, <span class="kw-2">&amp;mut </span>rhs);
                 }
 
-                <span class="kw">let</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">lhs</span>.<span class="ident">to_le_bits</span>();
-                <span class="kw">let</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">to_le_bits</span>();
+                <span class="kw">let </span>lhs = lhs.to_le_bits();
+                <span class="kw">let </span>rhs = rhs.to_le_bits();
 
-                <span class="ident">cur</span> <span class="op">=</span> <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">pedersen_hash::pedersen_hash</span>(
-                    <span class="ident">pedersen_hash::Personalization::MerkleTree</span>(<span class="ident">i</span>),
-                    <span class="ident">lhs</span>.<span class="ident">iter</span>()
-                        .<span class="ident">by_val</span>()
-                        .<span class="ident">take</span>(<span class="ident">bls12_381::Scalar::NUM_BITS</span> <span class="kw">as</span> <span class="ident">usize</span>)
-                        .<span class="ident">chain</span>(
-                            <span class="ident">rhs</span>.<span class="ident">iter</span>()
-                                .<span class="ident">by_val</span>()
-                                .<span class="ident">take</span>(<span class="ident">bls12_381::Scalar::NUM_BITS</span> <span class="kw">as</span> <span class="ident">usize</span>),
+                cur = jubjub::ExtendedPoint::from(pedersen_hash::pedersen_hash(
+                    pedersen_hash::Personalization::MerkleTree(i),
+                    lhs.iter()
+                        .by_vals()
+                        .take(bls12_381::Scalar::NUM_BITS <span class="kw">as </span>usize)
+                        .chain(
+                            rhs.iter()
+                                .by_vals()
+                                .take(bls12_381::Scalar::NUM_BITS <span class="kw">as </span>usize),
                         ),
                 ))
-                .<span class="ident">to_affine</span>()
-                .<span class="ident">get_u</span>();
+                .to_affine()
+                .get_u();
 
-                <span class="kw">if</span> <span class="ident">b</span> {
-                    <span class="ident">position</span> <span class="op">|</span><span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">i</span>;
+                <span class="kw">if </span>b {
+                    position |= <span class="number">1 </span>&lt;&lt; i;
                 }
             }
 
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">nf</span>(<span class="kw-2">&amp;</span><span class="ident">viewing_key</span>, <span class="ident">position</span>);
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">multipack::bytes_to_bits_le</span>(<span class="kw-2">&amp;</span><span class="ident">expected_nf</span>.<span class="number">0</span>);
-            <span class="kw">let</span> <span class="ident">expected_nf</span> <span class="op">=</span> <span class="ident">multipack::compute_multipacking</span>(<span class="kw-2">&amp;</span><span class="ident">expected_nf</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">expected_nf</span>.<span class="ident">len</span>(), <span class="number">2</span>);
+            <span class="kw">let </span>expected_nf = note.nf(<span class="kw-2">&amp;</span>viewing_key.nk, position);
+            <span class="kw">let </span>expected_nf = multipack::bytes_to_bits_le(<span class="kw-2">&amp;</span>expected_nf.<span class="number">0</span>);
+            <span class="kw">let </span>expected_nf = multipack::compute_multipacking(<span class="kw-2">&amp;</span>expected_nf);
+            <span class="macro">assert_eq!</span>(expected_nf.len(), <span class="number">2</span>);
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">TestConstraintSystem::new</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>cs = TestConstraintSystem::new();
 
-            <span class="kw">let</span> <span class="ident">instance</span> <span class="op">=</span> <span class="ident">Spend</span> {
-                <span class="ident">value_commitment</span>: <span class="prelude-val">Some</span>(<span class="ident">value_commitment</span>.<span class="ident">clone</span>()),
-                <span class="ident">proof_generation_key</span>: <span class="prelude-val">Some</span>(<span class="ident">proof_generation_key</span>.<span class="ident">clone</span>()),
-                <span class="ident">payment_address</span>: <span class="prelude-val">Some</span>(<span class="ident">payment_address</span>.<span class="ident">clone</span>()),
-                <span class="ident">commitment_randomness</span>: <span class="prelude-val">Some</span>(<span class="ident">commitment_randomness</span>),
-                <span class="ident">ar</span>: <span class="prelude-val">Some</span>(<span class="ident">ar</span>),
-                <span class="ident">auth_path</span>: <span class="ident">auth_path</span>.<span class="ident">clone</span>(),
-                <span class="ident">anchor</span>: <span class="prelude-val">Some</span>(<span class="ident">cur</span>),
+            <span class="kw">let </span>instance = Spend {
+                value_commitment: <span class="prelude-val">Some</span>(value_commitment.clone()),
+                proof_generation_key: <span class="prelude-val">Some</span>(proof_generation_key.clone()),
+                payment_address: <span class="prelude-val">Some</span>(payment_address.clone()),
+                commitment_randomness: <span class="prelude-val">Some</span>(commitment_randomness),
+                ar: <span class="prelude-val">Some</span>(ar),
+                auth_path: auth_path.clone(),
+                anchor: <span class="prelude-val">Some</span>(cur),
             };
 
-            <span class="ident">instance</span>.<span class="ident">synthesize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>).<span class="ident">unwrap</span>();
+            instance.synthesize(<span class="kw-2">&amp;mut </span>cs).unwrap();
 
-            <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">is_satisfied</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_constraints</span>(), <span class="number">98777</span>);
+            <span class="macro">assert!</span>(cs.is_satisfied());
+            <span class="macro">assert_eq!</span>(cs.num_constraints(), <span class="number">98777</span>);
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">hash</span>(),
-                <span class="string">&quot;d37c738e83df5d9b0bb6495ac96abf21bcb2697477e2c15c2c7916ff7a3b6a89&quot;</span>
-            );
+                cs.hash(),
+                <span class="string">&quot;d37c738e83df5d9b0bb6495ac96abf21bcb2697477e2c15c2c7916ff7a3b6a89&quot;
+            </span>);
 
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get</span>(<span class="string">&quot;randomization of note commitment/u3/num&quot;</span>), <span class="ident">cmu</span>);
+            <span class="macro">assert_eq!</span>(cs.get(<span class="string">&quot;randomization of note commitment/u3/num&quot;</span>), cmu);
 
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_inputs</span>(), <span class="number">8</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), <span class="ident">bls12_381::Scalar::one</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">1</span>, <span class="string">&quot;rk/u/input variable&quot;</span>), <span class="ident">rk</span>.<span class="ident">get_u</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">2</span>, <span class="string">&quot;rk/v/input variable&quot;</span>), <span class="ident">rk</span>.<span class="ident">get_v</span>());
+            <span class="macro">assert_eq!</span>(cs.num_inputs(), <span class="number">8</span>);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), bls12_381::Scalar::one());
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">1</span>, <span class="string">&quot;rk/u/input variable&quot;</span>), rk.get_u());
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">2</span>, <span class="string">&quot;rk/v/input variable&quot;</span>), rk.get_v());
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">3</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_u</span>()
+                cs.get_input(<span class="number">3</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
+                expected_value_commitment.get_u()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">4</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_v</span>()
+                cs.get_input(<span class="number">4</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
+                expected_value_commitment.get_v()
             );
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">5</span>, <span class="string">&quot;anchor/input variable&quot;</span>), <span class="ident">cur</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">6</span>, <span class="string">&quot;pack nullifier/input 0&quot;</span>), <span class="ident">expected_nf</span>[<span class="number">0</span>]);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">7</span>, <span class="string">&quot;pack nullifier/input 1&quot;</span>), <span class="ident">expected_nf</span>[<span class="number">1</span>]);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">5</span>, <span class="string">&quot;anchor/input variable&quot;</span>), cur);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">6</span>, <span class="string">&quot;pack nullifier/input 0&quot;</span>), expected_nf[<span class="number">0</span>]);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">7</span>, <span class="string">&quot;pack nullifier/input 1&quot;</span>), expected_nf[<span class="number">1</span>]);
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_output_circuit_with_bls12_381</span>() {
-    <span class="kw">use</span> <span class="ident">bellman::gadgets::test</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">ff::Field</span>;
-    <span class="kw">use</span> <span class="ident">group::Group</span>;
-    <span class="kw">use</span> <span class="ident">rand_core</span>::{<span class="ident">RngCore</span>, <span class="ident">SeedableRng</span>};
-    <span class="kw">use</span> <span class="ident">rand_xorshift::XorShiftRng</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives::sapling</span>::{<span class="ident">Diversifier</span>, <span class="ident">ProofGenerationKey</span>, <span class="ident">Rseed</span>};
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_output_circuit_with_bls12_381() {
+    <span class="kw">use </span>bellman::gadgets::test::<span class="kw-2">*</span>;
+    <span class="kw">use </span>ff::Field;
+    <span class="kw">use </span>group::Group;
+    <span class="kw">use </span>rand_core::{RngCore, SeedableRng};
+    <span class="kw">use </span>rand_xorshift::XorShiftRng;
+    <span class="kw">use </span>zcash_primitives::sapling::{Diversifier, ProofGenerationKey, Rseed};
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">XorShiftRng::from_seed</span>([
+    <span class="kw">let </span><span class="kw-2">mut </span>rng = XorShiftRng::from_seed([
         <span class="number">0x58</span>, <span class="number">0x62</span>, <span class="number">0xbe</span>, <span class="number">0x3d</span>, <span class="number">0x76</span>, <span class="number">0x3d</span>, <span class="number">0x31</span>, <span class="number">0x8d</span>, <span class="number">0x17</span>, <span class="number">0xdb</span>, <span class="number">0x37</span>, <span class="number">0x32</span>, <span class="number">0x54</span>, <span class="number">0x06</span>, <span class="number">0xbc</span>,
         <span class="number">0xe5</span>,
     ]);
 
-    <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100</span> {
-        <span class="kw">let</span> <span class="ident">value_commitment</span> <span class="op">=</span> <span class="ident">ValueCommitment</span> {
-            <span class="ident">value</span>: <span class="ident">rng</span>.<span class="ident">next_u64</span>(),
-            <span class="ident">randomness</span>: <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>),
+    <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">100 </span>{
+        <span class="kw">let </span>value_commitment = ValueCommitment {
+            value: rng.next_u64(),
+            randomness: jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng),
         };
 
-        <span class="kw">let</span> <span class="ident">nsk</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="kw">let</span> <span class="ident">ak</span> <span class="op">=</span> <span class="ident">jubjub::SubgroupPoint::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+        <span class="kw">let </span>nsk = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
+        <span class="kw">let </span>ak = jubjub::SubgroupPoint::random(<span class="kw-2">&amp;mut </span>rng);
 
-        <span class="kw">let</span> <span class="ident">proof_generation_key</span> <span class="op">=</span> <span class="ident">ProofGenerationKey</span> { <span class="ident">ak</span>, <span class="ident">nsk</span> };
+        <span class="kw">let </span>proof_generation_key = ProofGenerationKey { ak, nsk };
 
-        <span class="kw">let</span> <span class="ident">viewing_key</span> <span class="op">=</span> <span class="ident">proof_generation_key</span>.<span class="ident">to_viewing_key</span>();
+        <span class="kw">let </span>viewing_key = proof_generation_key.to_viewing_key();
 
-        <span class="kw">let</span> <span class="ident">payment_address</span>;
+        <span class="kw">let </span>payment_address;
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">diversifier</span> <span class="op">=</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">11</span>];
-                <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">d</span>);
-                <span class="ident">Diversifier</span>(<span class="ident">d</span>)
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>diversifier = {
+                <span class="kw">let </span><span class="kw-2">mut </span>d = [<span class="number">0</span>; <span class="number">11</span>];
+                rng.fill_bytes(<span class="kw-2">&amp;mut </span>d);
+                Diversifier(d)
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">viewing_key</span>.<span class="ident">to_payment_address</span>(<span class="ident">diversifier</span>) {
-                <span class="ident">payment_address</span> <span class="op">=</span> <span class="ident">p</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(p) = viewing_key.to_payment_address(diversifier) {
+                payment_address = p;
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="ident">commitment_randomness</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="kw">let</span> <span class="ident">esk</span> <span class="op">=</span> <span class="ident">jubjub::Fr::random</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+        <span class="kw">let </span>commitment_randomness = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
+        <span class="kw">let </span>esk = jubjub::Fr::random(<span class="kw-2">&amp;mut </span>rng);
 
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">TestConstraintSystem::new</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>cs = TestConstraintSystem::new();
 
-            <span class="kw">let</span> <span class="ident">instance</span> <span class="op">=</span> <span class="ident">Output</span> {
-                <span class="ident">value_commitment</span>: <span class="prelude-val">Some</span>(<span class="ident">value_commitment</span>.<span class="ident">clone</span>()),
-                <span class="ident">payment_address</span>: <span class="prelude-val">Some</span>(<span class="ident">payment_address</span>.<span class="ident">clone</span>()),
-                <span class="ident">commitment_randomness</span>: <span class="prelude-val">Some</span>(<span class="ident">commitment_randomness</span>),
-                <span class="ident">esk</span>: <span class="prelude-val">Some</span>(<span class="ident">esk</span>),
+            <span class="kw">let </span>instance = Output {
+                value_commitment: <span class="prelude-val">Some</span>(value_commitment.clone()),
+                payment_address: <span class="prelude-val">Some</span>(payment_address.clone()),
+                commitment_randomness: <span class="prelude-val">Some</span>(commitment_randomness),
+                esk: <span class="prelude-val">Some</span>(esk),
             };
 
-            <span class="ident">instance</span>.<span class="ident">synthesize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cs</span>).<span class="ident">unwrap</span>();
+            instance.synthesize(<span class="kw-2">&amp;mut </span>cs).unwrap();
 
-            <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">is_satisfied</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_constraints</span>(), <span class="number">7827</span>);
+            <span class="macro">assert!</span>(cs.is_satisfied());
+            <span class="macro">assert_eq!</span>(cs.num_constraints(), <span class="number">7827</span>);
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">hash</span>(),
-                <span class="string">&quot;c26d5cdfe6ccd65c03390902c02e11393ea6bb96aae32a7f2ecb12eb9103faee&quot;</span>
-            );
+                cs.hash(),
+                <span class="string">&quot;c26d5cdfe6ccd65c03390902c02e11393ea6bb96aae32a7f2ecb12eb9103faee&quot;
+            </span>);
 
-            <span class="kw">let</span> <span class="ident">expected_cmu</span> <span class="op">=</span> <span class="ident">payment_address</span>
-                .<span class="ident">create_note</span>(
-                    <span class="ident">value_commitment</span>.<span class="ident">value</span>,
-                    <span class="ident">Rseed::BeforeZip212</span>(<span class="ident">commitment_randomness</span>),
+            <span class="kw">let </span>expected_cmu = payment_address
+                .create_note(
+                    value_commitment.value,
+                    Rseed::BeforeZip212(commitment_randomness),
                 )
-                .<span class="ident">expect</span>(<span class="string">&quot;should be valid&quot;</span>)
-                .<span class="ident">cmu</span>();
+                .expect(<span class="string">&quot;should be valid&quot;</span>)
+                .cmu();
 
-            <span class="kw">let</span> <span class="ident">expected_value_commitment</span> <span class="op">=</span>
-                <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">value_commitment</span>.<span class="ident">commitment</span>()).<span class="ident">to_affine</span>();
+            <span class="kw">let </span>expected_value_commitment =
+                jubjub::ExtendedPoint::from(value_commitment.commitment()).to_affine();
 
-            <span class="kw">let</span> <span class="ident">expected_epk</span> <span class="op">=</span>
-                <span class="ident">jubjub::ExtendedPoint::from</span>(<span class="ident">payment_address</span>.<span class="ident">g_d</span>().<span class="ident">expect</span>(<span class="string">&quot;should be valid&quot;</span>) <span class="op">*</span> <span class="ident">esk</span>)
-                    .<span class="ident">to_affine</span>();
+            <span class="kw">let </span>expected_epk =
+                jubjub::ExtendedPoint::from(payment_address.g_d().expect(<span class="string">&quot;should be valid&quot;</span>) * esk)
+                    .to_affine();
 
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">num_inputs</span>(), <span class="number">6</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), <span class="ident">bls12_381::Scalar::one</span>());
+            <span class="macro">assert_eq!</span>(cs.num_inputs(), <span class="number">6</span>);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">0</span>, <span class="string">&quot;ONE&quot;</span>), bls12_381::Scalar::one());
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">1</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_u</span>()
+                cs.get_input(<span class="number">1</span>, <span class="string">&quot;value commitment/commitment point/u/input variable&quot;</span>),
+                expected_value_commitment.get_u()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">2</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
-                <span class="ident">expected_value_commitment</span>.<span class="ident">get_v</span>()
+                cs.get_input(<span class="number">2</span>, <span class="string">&quot;value commitment/commitment point/v/input variable&quot;</span>),
+                expected_value_commitment.get_v()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">3</span>, <span class="string">&quot;epk/u/input variable&quot;</span>),
-                <span class="ident">expected_epk</span>.<span class="ident">get_u</span>()
+                cs.get_input(<span class="number">3</span>, <span class="string">&quot;epk/u/input variable&quot;</span>),
+                expected_epk.get_u()
             );
             <span class="macro">assert_eq!</span>(
-                <span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">4</span>, <span class="string">&quot;epk/v/input variable&quot;</span>),
-                <span class="ident">expected_epk</span>.<span class="ident">get_v</span>()
+                cs.get_input(<span class="number">4</span>, <span class="string">&quot;epk/v/input variable&quot;</span>),
+                expected_epk.get_v()
             );
-            <span class="macro">assert_eq!</span>(<span class="ident">cs</span>.<span class="ident">get_input</span>(<span class="number">5</span>, <span class="string">&quot;commitment/input variable&quot;</span>), <span class="ident">expected_cmu</span>);
+            <span class="macro">assert_eq!</span>(cs.get_input(<span class="number">5</span>, <span class="string">&quot;commitment/input variable&quot;</span>), expected_cmu);
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_proofs" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_proofs" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

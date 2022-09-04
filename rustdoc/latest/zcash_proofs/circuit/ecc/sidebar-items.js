@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["fixed_base_multiplication","Perform a fixed-base scalar multiplication with `by` being in little-endian bit order."]],"struct":[["EdwardsPoint",""],["MontgomeryPoint",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["fixed_base_multiplication","Perform a fixed-base scalar multiplication with `by` being in little-endian bit order."]],"struct":[["EdwardsPoint",""],["MontgomeryPoint",""]]};

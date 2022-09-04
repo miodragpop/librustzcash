@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["group_hash","Produces a random point in the Jubjub curve. The point is guaranteed to be prime order and not the identity."]]});
+window.SIDEBAR_ITEMS = {"fn":[["group_hash","Produces a random point in the Jubjub curve. The point is guaranteed to be prime order and not the identity."]]};

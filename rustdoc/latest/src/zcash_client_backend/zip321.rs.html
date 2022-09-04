@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend&#x2F;src&#x2F;zip321.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>zip321.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_client_backend/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend/src/zip321.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>zip321.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_client_backend/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -971,980 +971,1048 @@
 <span id="971">971</span>
 <span id="972">972</span>
 <span id="973">973</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Reference implementation of the ZIP-321 standard for payment requests.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This module provides data structures, parsing, and rendering functions</span>
-<span class="doccomment">//! for interpreting and producing valid ZIP 321 URIs.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The specification for ZIP 321 URIs may be found at &lt;https://zips.z.cash/zip-0321&gt;</span>
-<span class="kw">use</span> <span class="ident">core::fmt::Debug</span>;
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
+<span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Reference implementation of the ZIP-321 standard for payment requests.
+//!
+//! This module provides data structures, parsing, and rendering functions
+//! for interpreting and producing valid ZIP 321 URIs.
+//!
+//! The specification for ZIP 321 URIs may be found at &lt;https://zips.z.cash/zip-0321&gt;
+</span><span class="kw">use </span>core::fmt::Debug;
+<span class="kw">use </span>std::collections::HashMap;
 
-<span class="kw">use</span> <span class="ident">nom</span>::{
-    <span class="ident">character::complete::char</span>, <span class="ident">combinator::all_consuming</span>, <span class="ident">multi::separated_list0</span>,
-    <span class="ident">sequence::preceded</span>,
+<span class="kw">use </span>nom::{
+    character::complete::char, combinator::all_consuming, multi::separated_list0,
+    sequence::preceded,
 };
-<span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-    <span class="ident">consensus</span>,
-    <span class="ident">memo</span>::{<span class="self">self</span>, <span class="ident">MemoBytes</span>},
-    <span class="ident">transaction::components::Amount</span>,
+<span class="kw">use </span>zcash_primitives::{
+    consensus,
+    memo::{<span class="self">self</span>, MemoBytes},
+    transaction::components::Amount,
 };
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+<span class="attribute">#[cfg(any(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+</span><span class="kw">use </span>std::cmp::Ordering;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::address::RecipientAddress</span>;
+<span class="kw">use </span><span class="kw">crate</span>::address::RecipientAddress;
 
-<span class="doccomment">/// Errors that may be produced in decoding of memos.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">MemoError</span> {
-    <span class="ident">InvalidBase64</span>(<span class="ident">base64::DecodeError</span>),
-    <span class="ident">MemoBytesError</span>(<span class="ident">memo::Error</span>),
+<span class="doccomment">/// Errors that may be produced in decoding of payment requests.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>Zip321Error {
+    InvalidBase64(base64::DecodeError),
+    MemoBytesError(memo::Error),
+    TooManyPayments(usize),
+    DuplicateParameter(parse::Param, usize),
+    TransparentMemo(usize),
+    RecipientMissing(usize),
+    ParseError(String),
 }
 
-<span class="doccomment">/// Converts a [`MemoBytes`] value to a ZIP 321 compatible base64-encoded string.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`MemoBytes`]: zcash_primitives::memo::MemoBytes</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">memo_to_base64</span>(<span class="ident">memo</span>: <span class="kw-2">&amp;</span><span class="ident">MemoBytes</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="ident">base64::encode_config</span>(<span class="ident">memo</span>.<span class="ident">as_slice</span>(), <span class="ident">base64::URL_SAFE_NO_PAD</span>)
+<span class="doccomment">/// Converts a [`MemoBytes`] value to a ZIP 321 compatible base64-encoded string.
+///
+/// [`MemoBytes`]: zcash_primitives::memo::MemoBytes
+</span><span class="kw">pub fn </span>memo_to_base64(memo: <span class="kw-2">&amp;</span>MemoBytes) -&gt; String {
+    base64::encode_config(memo.as_slice(), base64::URL_SAFE_NO_PAD)
 }
 
-<span class="doccomment">/// Parse a [`MemoBytes`] value from a ZIP 321 compatible base64-encoded string.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`MemoBytes`]: zcash_primitives::memo::MemoBytes</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">memo_from_base64</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">MemoBytes</span>, <span class="ident">MemoError</span><span class="op">&gt;</span> {
-    <span class="ident">base64::decode_config</span>(<span class="ident">s</span>, <span class="ident">base64::URL_SAFE_NO_PAD</span>)
-        .<span class="ident">map_err</span>(<span class="ident">MemoError::InvalidBase64</span>)
-        .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">MemoBytes::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>).<span class="ident">map_err</span>(<span class="ident">MemoError::MemoBytesError</span>))
+<span class="doccomment">/// Parse a [`MemoBytes`] value from a ZIP 321 compatible base64-encoded string.
+///
+/// [`MemoBytes`]: zcash_primitives::memo::MemoBytes
+</span><span class="kw">pub fn </span>memo_from_base64(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;MemoBytes, Zip321Error&gt; {
+    base64::decode_config(s, base64::URL_SAFE_NO_PAD)
+        .map_err(Zip321Error::InvalidBase64)
+        .and_then(|b| MemoBytes::from_bytes(<span class="kw-2">&amp;</span>b).map_err(Zip321Error::MemoBytesError))
 }
 
-<span class="doccomment">/// A single payment being requested.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Payment</span> {
-    <span class="doccomment">/// The payment address to which the payment should be sent.</span>
-    <span class="kw">pub</span> <span class="ident">recipient_address</span>: <span class="ident">RecipientAddress</span>,
-    <span class="doccomment">/// The amount of the payment that is being requested.</span>
-    <span class="kw">pub</span> <span class="ident">amount</span>: <span class="ident">Amount</span>,
-    <span class="doccomment">/// A memo that, if included, must be provided with the payment.</span>
-    <span class="doccomment">/// If a memo is present and [`recipient_address`] is not a shielded</span>
-    <span class="doccomment">/// address, the wallet should report an error.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`recipient_address`]: #structfield.recipient_address</span>
-    <span class="kw">pub</span> <span class="ident">memo</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MemoBytes</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// A human-readable label for this payment within the larger structure</span>
-    <span class="doccomment">/// of the transaction request.</span>
-    <span class="kw">pub</span> <span class="ident">label</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// A human-readable message to be displayed to the user describing the</span>
-    <span class="doccomment">/// purpose of this payment.</span>
-    <span class="kw">pub</span> <span class="ident">message</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// A list of other arbitrary key/value pairs associated with this payment.</span>
-    <span class="kw">pub</span> <span class="ident">other_params</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
+<span class="doccomment">/// A single payment being requested.
+</span><span class="attribute">#[derive(Debug, PartialEq)]
+</span><span class="kw">pub struct </span>Payment {
+    <span class="doccomment">/// The payment address to which the payment should be sent.
+    </span><span class="kw">pub </span>recipient_address: RecipientAddress,
+    <span class="doccomment">/// The amount of the payment that is being requested.
+    </span><span class="kw">pub </span>amount: Amount,
+    <span class="doccomment">/// A memo that, if included, must be provided with the payment.
+    /// If a memo is present and [`recipient_address`] is not a shielded
+    /// address, the wallet should report an error.
+    ///
+    /// [`recipient_address`]: #structfield.recipient_address
+    </span><span class="kw">pub </span>memo: <span class="prelude-ty">Option</span>&lt;MemoBytes&gt;,
+    <span class="doccomment">/// A human-readable label for this payment within the larger structure
+    /// of the transaction request.
+    </span><span class="kw">pub </span>label: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// A human-readable message to be displayed to the user describing the
+    /// purpose of this payment.
+    </span><span class="kw">pub </span>message: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// A list of other arbitrary key/value pairs associated with this payment.
+    </span><span class="kw">pub </span>other_params: Vec&lt;(String, String)&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Payment</span> {
-    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::zip321</span>) <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">other_params</span>.<span class="ident">sort</span>();
+<span class="kw">impl </span>Payment {
+    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.
+    </span><span class="attribute">#[cfg(any(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::zip321) <span class="kw">fn </span>normalize(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.other_params.sort();
     }
 
-    <span class="doccomment">/// Returns a function which compares two normalized payments, with addresses sorted by their</span>
-    <span class="doccomment">/// string representation given the specified network. This does not perform normalization</span>
-    <span class="doccomment">/// internally, so payments must be normalized prior to being passed to the comparison function</span>
-    <span class="doccomment">/// returned from this method.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::zip321</span>) <span class="kw">fn</span> <span class="ident">compare_normalized</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Payment</span>, <span class="kw-2">&amp;</span><span class="ident">Payment</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-        <span class="kw">move</span> <span class="op">|</span><span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Payment</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">Payment</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">a_addr</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">recipient_address</span>.<span class="ident">encode</span>(<span class="ident">params</span>);
-            <span class="kw">let</span> <span class="ident">b_addr</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">recipient_address</span>.<span class="ident">encode</span>(<span class="ident">params</span>);
+    <span class="doccomment">/// Returns a function which compares two normalized payments, with addresses sorted by their
+    /// string representation given the specified network. This does not perform normalization
+    /// internally, so payments must be normalized prior to being passed to the comparison function
+    /// returned from this method.
+    </span><span class="attribute">#[cfg(any(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::zip321) <span class="kw">fn </span>compare_normalized&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+    ) -&gt; <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>Payment, <span class="kw-2">&amp;</span>Payment) -&gt; Ordering + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">move </span>|a: <span class="kw-2">&amp;</span>Payment, b: <span class="kw-2">&amp;</span>Payment| {
+            <span class="kw">let </span>a_addr = a.recipient_address.encode(params);
+            <span class="kw">let </span>b_addr = b.recipient_address.encode(params);
 
-            <span class="ident">a_addr</span>
-                .<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b_addr</span>)
-                .<span class="ident">then</span>(<span class="ident">a</span>.<span class="ident">amount</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">amount</span>))
-                .<span class="ident">then</span>(<span class="ident">a</span>.<span class="ident">memo</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">memo</span>))
-                .<span class="ident">then</span>(<span class="ident">a</span>.<span class="ident">label</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">label</span>))
-                .<span class="ident">then</span>(<span class="ident">a</span>.<span class="ident">message</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">message</span>))
-                .<span class="ident">then</span>(<span class="ident">a</span>.<span class="ident">other_params</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">other_params</span>))
+            a_addr
+                .cmp(<span class="kw-2">&amp;</span>b_addr)
+                .then(a.amount.cmp(<span class="kw-2">&amp;</span>b.amount))
+                .then(a.memo.cmp(<span class="kw-2">&amp;</span>b.memo))
+                .then(a.label.cmp(<span class="kw-2">&amp;</span>b.label))
+                .then(a.message.cmp(<span class="kw-2">&amp;</span>b.message))
+                .then(a.other_params.cmp(<span class="kw-2">&amp;</span>b.other_params))
         }
     }
 }
 
-<span class="doccomment">/// A ZIP321 transaction request.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A ZIP 321 request may include one or more such requests for payment.</span>
-<span class="doccomment">/// When constructing a transaction in response to such a request,</span>
-<span class="doccomment">/// a separate output should be added to the transaction for each</span>
-<span class="doccomment">/// payment value in the request.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TransactionRequest</span> {
-    <span class="ident">payments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Payment</span><span class="op">&gt;</span>,
+<span class="doccomment">/// A ZIP321 transaction request.
+///
+/// A ZIP 321 request may include one or more such requests for payment.
+/// When constructing a transaction in response to such a request,
+/// a separate output should be added to the transaction for each
+/// payment value in the request.
+</span><span class="attribute">#[derive(Debug, PartialEq)]
+</span><span class="kw">pub struct </span>TransactionRequest {
+    payments: Vec&lt;Payment&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">TransactionRequest</span> {
-    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::zip321</span>) <span class="kw">fn</span> <span class="ident">normalize</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) {
-        <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">payments</span> {
-            <span class="ident">p</span>.<span class="ident">normalize</span>();
+<span class="kw">impl </span>TransactionRequest {
+    <span class="doccomment">/// Constructs a new transaction request that obeys the ZIP-321 invariants
+    </span><span class="kw">pub fn </span>new(payments: Vec&lt;Payment&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;TransactionRequest, Zip321Error&gt; {
+        <span class="kw">let </span>request = TransactionRequest { payments };
+
+        <span class="comment">// Enforce validity requirements.
+        </span><span class="kw">if </span>!request.payments.is_empty() {
+            <span class="comment">// It doesn&#39;t matter what params we use here, as none of the validity
+            // requirements depend on them.
+            </span><span class="kw">let </span>params = consensus::MAIN_NETWORK;
+            TransactionRequest::from_uri(<span class="kw-2">&amp;</span>params, <span class="kw-2">&amp;</span>request.to_uri(<span class="kw-2">&amp;</span>params).unwrap())<span class="question-mark">?</span>;
         }
 
-        <span class="self">self</span>.<span class="ident">payments</span>.<span class="ident">sort_by</span>(<span class="ident">Payment::compare_normalized</span>(<span class="ident">params</span>));
+        <span class="prelude-val">Ok</span>(request)
     }
 
-    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.</span>
-    <span class="doccomment">/// by comparing a two transaction requests for equality after normalization.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::zip321</span>) <span class="kw">fn</span> <span class="ident">normalize_and_eq</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-        <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TransactionRequest</span>,
-        <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">TransactionRequest</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">a</span>.<span class="ident">normalize</span>(<span class="ident">params</span>);
-        <span class="ident">b</span>.<span class="ident">normalize</span>(<span class="ident">params</span>);
-
-        <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">b</span>
+    <span class="doccomment">/// Returns the slice of payments that make up this request.
+    </span><span class="kw">pub fn </span>payments(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[Payment] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.payments[..]
     }
 
-    <span class="doccomment">/// Convert this request to a URI string.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns None if the payment request is empty.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_uri</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">payment_params</span>(
-            <span class="ident">payment</span>: <span class="kw-2">&amp;</span><span class="ident">Payment</span>,
-            <span class="ident">payment_index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-        ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">String</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-            <span class="ident">std::iter::empty</span>()
-                .<span class="ident">chain</span>(<span class="ident">render::amount_param</span>(<span class="ident">payment</span>.<span class="ident">amount</span>, <span class="ident">payment_index</span>))
-                .<span class="ident">chain</span>(
-                    <span class="ident">payment</span>
-                        .<span class="ident">memo</span>
-                        .<span class="ident">as_ref</span>()
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">render::memo_param</span>(<span class="kw-2">&amp;</span><span class="ident">m</span>, <span class="ident">payment_index</span>)),
+    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.
+    </span><span class="attribute">#[cfg(any(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::zip321) <span class="kw">fn </span>normalize&lt;P: consensus::Parameters&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, params: <span class="kw-2">&amp;</span>P) {
+        <span class="kw">for </span>p <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.payments {
+            p.normalize();
+        }
+
+        <span class="self">self</span>.payments.sort_by(Payment::compare_normalized(params));
+    }
+
+    <span class="doccomment">/// A utility for use in tests to help check round-trip serialization properties.
+    /// by comparing a two transaction requests for equality after normalization.
+    </span><span class="attribute">#[cfg(all(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::zip321) <span class="kw">fn </span>normalize_and_eq&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+        a: <span class="kw-2">&amp;mut </span>TransactionRequest,
+        b: <span class="kw-2">&amp;mut </span>TransactionRequest,
+    ) -&gt; bool {
+        a.normalize(params);
+        b.normalize(params);
+
+        a == b
+    }
+
+    <span class="doccomment">/// Convert this request to a URI string.
+    ///
+    /// Returns None if the payment request is empty.
+    </span><span class="kw">pub fn </span>to_uri&lt;P: consensus::Parameters&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, params: <span class="kw-2">&amp;</span>P) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="kw">fn </span>payment_params(
+            payment: <span class="kw-2">&amp;</span>Payment,
+            payment_index: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+        ) -&gt; <span class="kw">impl </span>IntoIterator&lt;Item = String&gt; + <span class="lifetime">&#39;_ </span>{
+            std::iter::empty()
+                .chain(render::amount_param(payment.amount, payment_index))
+                .chain(
+                    payment
+                        .memo
+                        .as_ref()
+                        .map(|m| render::memo_param(m, payment_index)),
                 )
-                .<span class="ident">chain</span>(
-                    <span class="ident">payment</span>
-                        .<span class="ident">label</span>
-                        .<span class="ident">as_ref</span>()
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">render::str_param</span>(<span class="string">&quot;label&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>, <span class="ident">payment_index</span>)),
+                .chain(
+                    payment
+                        .label
+                        .as_ref()
+                        .map(|m| render::str_param(<span class="string">&quot;label&quot;</span>, m, payment_index)),
                 )
-                .<span class="ident">chain</span>(
-                    <span class="ident">payment</span>
-                        .<span class="ident">message</span>
-                        .<span class="ident">as_ref</span>()
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">render::str_param</span>(<span class="string">&quot;message&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">m</span>, <span class="ident">payment_index</span>)),
+                .chain(
+                    payment
+                        .message
+                        .as_ref()
+                        .map(|m| render::str_param(<span class="string">&quot;message&quot;</span>, m, payment_index)),
                 )
-                .<span class="ident">chain</span>(
-                    <span class="ident">payment</span>
-                        .<span class="ident">other_params</span>
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">name</span>, <span class="ident">value</span>)<span class="op">|</span> <span class="ident">render::str_param</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>, <span class="ident">payment_index</span>)),
+                .chain(
+                    payment
+                        .other_params
+                        .iter()
+                        .map(<span class="kw">move </span>|(name, value)| render::str_param(name, value, payment_index)),
                 )
         }
 
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">payments</span>[..] {
-            [] <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            [<span class="ident">payment</span>] <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">query_params</span> <span class="op">=</span> <span class="ident">payment_params</span>(<span class="kw-2">&amp;</span><span class="ident">payment</span>, <span class="prelude-val">None</span>)
-                    .<span class="ident">into_iter</span>()
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.payments[..] {
+            [] =&gt; <span class="prelude-val">None</span>,
+            [payment] =&gt; {
+                <span class="kw">let </span>query_params = payment_params(payment, <span class="prelude-val">None</span>)
+                    .into_iter()
+                    .collect::&lt;Vec&lt;String&gt;&gt;();
 
                 <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
                     <span class="string">&quot;zcash:{}?{}&quot;</span>,
-                    <span class="ident">payment</span>.<span class="ident">recipient_address</span>.<span class="ident">encode</span>(<span class="ident">params</span>),
-                    <span class="ident">query_params</span>.<span class="ident">join</span>(<span class="string">&quot;&amp;&quot;</span>)
+                    payment.recipient_address.encode(params),
+                    query_params.join(<span class="string">&quot;&amp;&quot;</span>)
                 ))
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">query_params</span> <span class="op">=</span> <span class="self">self</span>
-                    .<span class="ident">payments</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">enumerate</span>()
-                    .<span class="ident">flat_map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">payment</span>)<span class="op">|</span> {
-                        <span class="kw">let</span> <span class="ident">primary_address</span> <span class="op">=</span> <span class="ident">payment</span>.<span class="ident">recipient_address</span>.<span class="ident">clone</span>();
-                        <span class="ident">std::iter::empty</span>()
-                            .<span class="ident">chain</span>(<span class="prelude-val">Some</span>(<span class="ident">render::addr_param</span>(<span class="ident">params</span>, <span class="kw-2">&amp;</span><span class="ident">primary_address</span>, <span class="prelude-val">Some</span>(<span class="ident">i</span>))))
-                            .<span class="ident">chain</span>(<span class="ident">payment_params</span>(<span class="kw-2">&amp;</span><span class="ident">payment</span>, <span class="prelude-val">Some</span>(<span class="ident">i</span>)))
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">let </span>query_params = <span class="self">self
+                    </span>.payments
+                    .iter()
+                    .enumerate()
+                    .flat_map(|(i, payment)| {
+                        <span class="kw">let </span>primary_address = payment.recipient_address.clone();
+                        std::iter::empty()
+                            .chain(<span class="prelude-val">Some</span>(render::addr_param(params, <span class="kw-2">&amp;</span>primary_address, <span class="prelude-val">Some</span>(i))))
+                            .chain(payment_params(payment, <span class="prelude-val">Some</span>(i)))
                     })
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+                    .collect::&lt;Vec&lt;String&gt;&gt;();
 
-                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;zcash:?{}&quot;</span>, <span class="ident">query_params</span>.<span class="ident">join</span>(<span class="string">&quot;&amp;&quot;</span>)))
+                <span class="prelude-val">Some</span>(<span class="macro">format!</span>(<span class="string">&quot;zcash:?{}&quot;</span>, query_params.join(<span class="string">&quot;&amp;&quot;</span>)))
             }
         }
     }
 
-    <span class="doccomment">/// Parse the provided URI to a payment request value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_uri</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(<span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>, <span class="ident">uri</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="comment">// Parse the leading zcash:&lt;address&gt;</span>
-        <span class="kw">let</span> (<span class="ident">rest</span>, <span class="ident">primary_addr_param</span>) <span class="op">=</span>
-            <span class="ident">parse::lead_addr</span>(<span class="ident">params</span>)(<span class="ident">uri</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+    <span class="doccomment">/// Parse the provided URI to a payment request value.
+    </span><span class="kw">pub fn </span>from_uri&lt;P: consensus::Parameters&gt;(params: <span class="kw-2">&amp;</span>P, uri: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Zip321Error&gt; {
+        <span class="comment">// Parse the leading zcash:&lt;address&gt;
+        </span><span class="kw">let </span>(rest, primary_addr_param) =
+            parse::lead_addr(params)(uri).map_err(|e| Zip321Error::ParseError(e.to_string()))<span class="question-mark">?</span>;
 
-        <span class="comment">// Parse the remaining parameters as an undifferentiated list</span>
-        <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">xs</span>) <span class="op">=</span> <span class="ident">all_consuming</span>(<span class="ident">preceded</span>(
-            <span class="ident">char</span>(<span class="string">&#39;?&#39;</span>),
-            <span class="ident">separated_list0</span>(<span class="ident">char</span>(<span class="string">&#39;&amp;&#39;</span>), <span class="ident">parse::zcashparam</span>(<span class="ident">params</span>)),
-        ))(<span class="ident">rest</span>)
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+        <span class="comment">// Parse the remaining parameters as an undifferentiated list
+        </span><span class="kw">let </span>(<span class="kw">_</span>, xs) = all_consuming(preceded(
+            char(<span class="string">&#39;?&#39;</span>),
+            separated_list0(char(<span class="string">&#39;&amp;&#39;</span>), parse::zcashparam(params)),
+        ))(rest)
+        .map_err(|e| Zip321Error::ParseError(e.to_string()))<span class="question-mark">?</span>;
 
-        <span class="comment">// Construct sets of payment parameters, keyed by the payment index.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params_by_index</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">parse::Param</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
+        <span class="comment">// Construct sets of payment parameters, keyed by the payment index.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>params_by_index: HashMap&lt;usize, Vec&lt;parse::Param&gt;&gt; = HashMap::new();
 
-        <span class="comment">// Add the primary address, if any, to the index.</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span> <span class="ident">primary_addr_param</span> {
-            <span class="ident">params_by_index</span>.<span class="ident">insert</span>(<span class="ident">p</span>.<span class="ident">payment_index</span>, <span class="macro">vec!</span>[<span class="ident">p</span>.<span class="ident">param</span>]);
+        <span class="comment">// Add the primary address, if any, to the index.
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(p) = primary_addr_param {
+            params_by_index.insert(p.payment_index, <span class="macro">vec!</span>[p.param]);
         }
 
-        <span class="comment">// Group the remaining parameters by payment index</span>
-        <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="ident">xs</span> {
-            <span class="kw">match</span> <span class="ident">params_by_index</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">payment_index</span>) {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">params_by_index</span>.<span class="ident">insert</span>(<span class="ident">p</span>.<span class="ident">payment_index</span>, <span class="macro">vec!</span>[<span class="ident">p</span>.<span class="ident">param</span>]);
+        <span class="comment">// Group the remaining parameters by payment index
+        </span><span class="kw">for </span>p <span class="kw">in </span>xs {
+            <span class="kw">match </span>params_by_index.get_mut(<span class="kw-2">&amp;</span>p.payment_index) {
+                <span class="prelude-val">None </span>=&gt; {
+                    params_by_index.insert(p.payment_index, <span class="macro">vec!</span>[p.param]);
                 }
 
-                <span class="prelude-val">Some</span>(<span class="ident">current</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">if</span> <span class="ident">parse::has_duplicate_param</span>(<span class="kw-2">&amp;</span><span class="ident">current</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>.<span class="ident">param</span>) {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
-                            <span class="string">&quot;Found duplicate parameter {:?} at index {}&quot;</span>,
-                            <span class="ident">p</span>.<span class="ident">param</span>, <span class="ident">p</span>.<span class="ident">payment_index</span>
-                        ));
-                    } <span class="kw">else</span> {
-                        <span class="ident">current</span>.<span class="ident">push</span>(<span class="ident">p</span>.<span class="ident">param</span>);
+                <span class="prelude-val">Some</span>(current) =&gt; {
+                    <span class="kw">if </span>parse::has_duplicate_param(current, <span class="kw-2">&amp;</span>p.param) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(Zip321Error::DuplicateParameter(p.param, p.payment_index));
+                    } <span class="kw">else </span>{
+                        current.push(p.param);
                     }
                 }
             }
         }
 
-        <span class="comment">// Build the actual payment values from the index.</span>
-        <span class="ident">params_by_index</span>
-            .<span class="ident">into_iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">params</span>)<span class="op">|</span> <span class="ident">parse::to_payment</span>(<span class="ident">params</span>, <span class="ident">i</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">payments</span><span class="op">|</span> <span class="ident">TransactionRequest</span> { <span class="ident">payments</span> })
+        <span class="comment">// Build the actual payment values from the index.
+        </span>params_by_index
+            .into_iter()
+            .map(|(i, params)| parse::to_payment(params, i))
+            .collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()
+            .map(|payments| TransactionRequest { payments })
     }
 }
 
-<span class="kw">mod</span> <span class="ident">render</span> {
-    <span class="kw">use</span> <span class="ident">percent_encoding</span>::{<span class="ident">utf8_percent_encode</span>, <span class="ident">AsciiSet</span>, <span class="ident">CONTROLS</span>};
+<span class="kw">mod </span>render {
+    <span class="kw">use </span>percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">consensus</span>, <span class="ident">transaction::components::amount::COIN</span>, <span class="ident">transaction::components::Amount</span>,
+    <span class="kw">use </span>zcash_primitives::{
+        consensus, transaction::components::amount::COIN, transaction::components::Amount,
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">memo_to_base64</span>, <span class="ident">MemoBytes</span>, <span class="ident">RecipientAddress</span>};
+    <span class="kw">use super</span>::{memo_to_base64, MemoBytes, RecipientAddress};
 
-    <span class="doccomment">/// The set of ASCII characters that must be percent-encoded according</span>
-    <span class="doccomment">/// to the definition of ZIP 321. This is the complement of the subset of</span>
-    <span class="doccomment">/// ASCII characters defined by `qchar`</span>
-    <span class="doccomment">///</span>
-    <span class="comment">//      unreserved      = ALPHA / DIGIT / &quot;-&quot; / &quot;.&quot; / &quot;_&quot; / &quot;~&quot;</span>
-    <span class="comment">//      allowed-delims  = &quot;!&quot; / &quot;$&quot; / &quot;&#39;&quot; / &quot;(&quot; / &quot;)&quot; / &quot;*&quot; / &quot;+&quot; / &quot;,&quot; / &quot;;&quot;</span>
-    <span class="comment">//      qchar           = unreserved / pct-encoded / allowed-delims / &quot;:&quot; / &quot;@&quot;</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">QCHAR_ENCODE</span>: <span class="kw-2">&amp;</span><span class="ident">AsciiSet</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">CONTROLS</span>
-        .<span class="ident">add</span>(<span class="string">b&#39; &#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;&quot;&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;#&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;%&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;&amp;&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;/&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;&lt;&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;=&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;&gt;&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;?&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;[&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;\\&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;]&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;^&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;`&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;{&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;|&#39;</span>)
-        .<span class="ident">add</span>(<span class="string">b&#39;}&#39;</span>);
+    <span class="doccomment">/// The set of ASCII characters that must be percent-encoded according
+    /// to the definition of ZIP 321. This is the complement of the subset of
+    /// ASCII characters defined by `qchar`
+    ///
+    </span><span class="comment">//      unreserved      = ALPHA / DIGIT / &quot;-&quot; / &quot;.&quot; / &quot;_&quot; / &quot;~&quot;
+    //      allowed-delims  = &quot;!&quot; / &quot;$&quot; / &quot;&#39;&quot; / &quot;(&quot; / &quot;)&quot; / &quot;*&quot; / &quot;+&quot; / &quot;,&quot; / &quot;;&quot;
+    //      qchar           = unreserved / pct-encoded / allowed-delims / &quot;:&quot; / &quot;@&quot;
+    </span><span class="kw">pub const </span>QCHAR_ENCODE: <span class="kw-2">&amp;</span>AsciiSet = <span class="kw-2">&amp;</span>CONTROLS
+        .add(<span class="string">b&#39; &#39;</span>)
+        .add(<span class="string">b&#39;&quot;&#39;</span>)
+        .add(<span class="string">b&#39;#&#39;</span>)
+        .add(<span class="string">b&#39;%&#39;</span>)
+        .add(<span class="string">b&#39;&amp;&#39;</span>)
+        .add(<span class="string">b&#39;/&#39;</span>)
+        .add(<span class="string">b&#39;&lt;&#39;</span>)
+        .add(<span class="string">b&#39;=&#39;</span>)
+        .add(<span class="string">b&#39;&gt;&#39;</span>)
+        .add(<span class="string">b&#39;?&#39;</span>)
+        .add(<span class="string">b&#39;[&#39;</span>)
+        .add(<span class="string">b&#39;\\&#39;</span>)
+        .add(<span class="string">b&#39;]&#39;</span>)
+        .add(<span class="string">b&#39;^&#39;</span>)
+        .add(<span class="string">b&#39;`&#39;</span>)
+        .add(<span class="string">b&#39;{&#39;</span>)
+        .add(<span class="string">b&#39;|&#39;</span>)
+        .add(<span class="string">b&#39;}&#39;</span>);
 
-    <span class="doccomment">/// Converts a parameter index value to the `String` representation</span>
-    <span class="doccomment">/// that must be appended to a parameter name when constructing a ZIP 321 URI.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">param_index</span>(<span class="ident">idx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="kw">match</span> <span class="ident">idx</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;.{}&quot;</span>, <span class="ident">i</span>),
-            <span class="ident">_otherwise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="doccomment">/// Converts a parameter index value to the `String` representation
+    /// that must be appended to a parameter name when constructing a ZIP 321 URI.
+    </span><span class="kw">pub fn </span>param_index(idx: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; String {
+        <span class="kw">match </span>idx {
+            <span class="prelude-val">Some</span>(i) <span class="kw">if </span>i &gt; <span class="number">0 </span>=&gt; <span class="macro">format!</span>(<span class="string">&quot;.{}&quot;</span>, i),
+            _otherwise =&gt; <span class="string">&quot;&quot;</span>.to_string(),
         }
     }
 
-    <span class="doccomment">/// Constructs an &quot;address&quot; key/value pair containing the encoded recipient address</span>
-    <span class="doccomment">/// at the specified parameter index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">addr_param</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-        <span class="ident">addr</span>: <span class="kw-2">&amp;</span><span class="ident">RecipientAddress</span>,
-        <span class="ident">idx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;address{}={}&quot;</span>, <span class="ident">param_index</span>(<span class="ident">idx</span>), <span class="ident">addr</span>.<span class="ident">encode</span>(<span class="ident">params</span>))
+    <span class="doccomment">/// Constructs an &quot;address&quot; key/value pair containing the encoded recipient address
+    /// at the specified parameter index.
+    </span><span class="kw">pub fn </span>addr_param&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+        addr: <span class="kw-2">&amp;</span>RecipientAddress,
+        idx: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+    ) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;address{}={}&quot;</span>, param_index(idx), addr.encode(params))
     }
 
-    <span class="doccomment">/// Converts an [`Amount`] value to a correctly formatted decimal ZEC</span>
-    <span class="doccomment">/// value for inclusion in a ZIP 321 URI.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">amount_str</span>(<span class="ident">amount</span>: <span class="ident">Amount</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">amount</span>.<span class="ident">is_positive</span>() {
-            <span class="kw">let</span> <span class="ident">coins</span> <span class="op">=</span> <span class="ident">i64::from</span>(<span class="ident">amount</span>) <span class="op">/</span> <span class="ident">COIN</span>;
-            <span class="kw">let</span> <span class="ident">zats</span> <span class="op">=</span> <span class="ident">i64::from</span>(<span class="ident">amount</span>) <span class="op">%</span> <span class="ident">COIN</span>;
-            <span class="prelude-val">Some</span>(<span class="kw">if</span> <span class="ident">zats</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">coins</span>)
-            } <span class="kw">else</span> {
-                <span class="macro">format!</span>(<span class="string">&quot;{}.{:0&gt;8}&quot;</span>, <span class="ident">coins</span>, <span class="ident">zats</span>)
-                    .<span class="ident">trim_end_matches</span>(<span class="string">&#39;0&#39;</span>)
-                    .<span class="ident">to_string</span>()
+    <span class="doccomment">/// Converts an [`Amount`] value to a correctly formatted decimal ZEC
+    /// value for inclusion in a ZIP 321 URI.
+    </span><span class="kw">pub fn </span>amount_str(amount: Amount) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="kw">if </span>amount.is_positive() {
+            <span class="kw">let </span>coins = i64::from(amount) / COIN;
+            <span class="kw">let </span>zats = i64::from(amount) % COIN;
+            <span class="prelude-val">Some</span>(<span class="kw">if </span>zats == <span class="number">0 </span>{
+                <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, coins)
+            } <span class="kw">else </span>{
+                <span class="macro">format!</span>(<span class="string">&quot;{}.{:0&gt;8}&quot;</span>, coins, zats)
+                    .trim_end_matches(<span class="string">&#39;0&#39;</span>)
+                    .to_string()
             })
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="doccomment">/// Constructs an &quot;amount&quot; key/value pair containing the encoded ZEC amount</span>
-    <span class="doccomment">/// at the specified parameter index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">amount_param</span>(<span class="ident">amount</span>: <span class="ident">Amount</span>, <span class="ident">idx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="ident">amount_str</span>(<span class="ident">amount</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;amount{}={}&quot;</span>, <span class="ident">param_index</span>(<span class="ident">idx</span>), <span class="ident">s</span>))
+    <span class="doccomment">/// Constructs an &quot;amount&quot; key/value pair containing the encoded ZEC amount
+    /// at the specified parameter index.
+    </span><span class="kw">pub fn </span>amount_param(amount: Amount, idx: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        amount_str(amount).map(|s| <span class="macro">format!</span>(<span class="string">&quot;amount{}={}&quot;</span>, param_index(idx), s))
     }
 
-    <span class="doccomment">/// Constructs a &quot;memo&quot; key/value pair containing the base64URI-encoded memo</span>
-    <span class="doccomment">/// at the specified parameter index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">memo_param</span>(<span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">MemoBytes</span>, <span class="ident">idx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;{}{}={}&quot;</span>, <span class="string">&quot;memo&quot;</span>, <span class="ident">param_index</span>(<span class="ident">idx</span>), <span class="ident">memo_to_base64</span>(<span class="ident">value</span>))
+    <span class="doccomment">/// Constructs a &quot;memo&quot; key/value pair containing the base64URI-encoded memo
+    /// at the specified parameter index.
+    </span><span class="kw">pub fn </span>memo_param(value: <span class="kw-2">&amp;</span>MemoBytes, idx: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}{}={}&quot;</span>, <span class="string">&quot;memo&quot;</span>, param_index(idx), memo_to_base64(value))
     }
 
-    <span class="doccomment">/// Utility function for an arbitrary string key/value pair for inclusion in</span>
-    <span class="doccomment">/// a ZIP 321 URI at the specified parameter index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">str_param</span>(<span class="ident">label</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">idx</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+    <span class="doccomment">/// Utility function for an arbitrary string key/value pair for inclusion in
+    /// a ZIP 321 URI at the specified parameter index.
+    </span><span class="kw">pub fn </span>str_param(label: <span class="kw-2">&amp;</span>str, value: <span class="kw-2">&amp;</span>str, idx: <span class="prelude-ty">Option</span>&lt;usize&gt;) -&gt; String {
         <span class="macro">format!</span>(
             <span class="string">&quot;{}{}={}&quot;</span>,
-            <span class="ident">label</span>,
-            <span class="ident">param_index</span>(<span class="ident">idx</span>),
-            <span class="ident">utf8_percent_encode</span>(<span class="ident">value</span>, <span class="ident">QCHAR_ENCODE</span>)
+            label,
+            param_index(idx),
+            utf8_percent_encode(value, QCHAR_ENCODE)
         )
     }
 }
 
-<span class="kw">mod</span> <span class="ident">parse</span> {
-    <span class="kw">use</span> <span class="ident">core::fmt::Debug</span>;
+<span class="kw">mod </span>parse {
+    <span class="kw">use </span>core::fmt::Debug;
 
-    <span class="kw">use</span> <span class="ident">nom</span>::{
-        <span class="ident">bytes::complete</span>::{<span class="ident">tag</span>, <span class="ident">take_until</span>},
-        <span class="ident">character::complete</span>::{<span class="ident">alpha1</span>, <span class="ident">char</span>, <span class="ident">digit0</span>, <span class="ident">digit1</span>, <span class="ident">one_of</span>},
-        <span class="ident">combinator</span>::{<span class="ident">map_opt</span>, <span class="ident">map_res</span>, <span class="ident">opt</span>, <span class="ident">recognize</span>},
-        <span class="ident">sequence</span>::{<span class="ident">preceded</span>, <span class="ident">separated_pair</span>, <span class="ident">tuple</span>},
-        <span class="ident">AsChar</span>, <span class="ident">IResult</span>, <span class="ident">InputTakeAtPosition</span>,
+    <span class="kw">use </span>nom::{
+        bytes::complete::{tag, take_until},
+        character::complete::{alpha1, char, digit0, digit1, one_of},
+        combinator::{map_opt, map_res, opt, recognize},
+        sequence::{preceded, separated_pair, tuple},
+        AsChar, IResult, InputTakeAtPosition,
     };
-    <span class="kw">use</span> <span class="ident">percent_encoding::percent_decode</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">consensus</span>, <span class="ident">transaction::components::amount::COIN</span>, <span class="ident">transaction::components::Amount</span>,
+    <span class="kw">use </span>percent_encoding::percent_decode;
+    <span class="kw">use </span>zcash_primitives::{
+        consensus, transaction::components::amount::COIN, transaction::components::Amount,
     };
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::address::RecipientAddress</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::address::RecipientAddress;
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">memo_from_base64</span>, <span class="ident">MemoBytes</span>, <span class="ident">Payment</span>};
+    <span class="kw">use super</span>::{memo_from_base64, MemoBytes, Payment, Zip321Error};
 
-    <span class="doccomment">/// A data type that defines the possible parameter types which may occur within a</span>
-    <span class="doccomment">/// ZIP 321 URI.</span>
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Param</span> {
-        <span class="ident">Addr</span>(<span class="ident">RecipientAddress</span>),
-        <span class="ident">Amount</span>(<span class="ident">Amount</span>),
-        <span class="ident">Memo</span>(<span class="ident">MemoBytes</span>),
-        <span class="ident">Label</span>(<span class="ident">String</span>),
-        <span class="ident">Message</span>(<span class="ident">String</span>),
-        <span class="ident">Other</span>(<span class="ident">String</span>, <span class="ident">String</span>),
+    <span class="doccomment">/// A data type that defines the possible parameter types which may occur within a
+    /// ZIP 321 URI.
+    </span><span class="attribute">#[derive(Debug, PartialEq)]
+    </span><span class="kw">pub enum </span>Param {
+        Addr(Box&lt;RecipientAddress&gt;),
+        Amount(Amount),
+        Memo(MemoBytes),
+        Label(String),
+        Message(String),
+        Other(String, String),
     }
 
-    <span class="doccomment">/// A [`Param`] value with its associated index.</span>
-    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndexedParam</span> {
-        <span class="kw">pub</span> <span class="ident">param</span>: <span class="ident">Param</span>,
-        <span class="kw">pub</span> <span class="ident">payment_index</span>: <span class="ident">usize</span>,
+    <span class="doccomment">/// A [`Param`] value with its associated index.
+    </span><span class="attribute">#[derive(Debug)]
+    </span><span class="kw">pub struct </span>IndexedParam {
+        <span class="kw">pub </span>param: Param,
+        <span class="kw">pub </span>payment_index: usize,
     }
 
-    <span class="doccomment">/// Utility function for determining parameter uniqueness.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Utility function for determining whether a newly parsed param is a duplicate</span>
-    <span class="doccomment">/// of a previous parameter.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_duplicate_param</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span>[<span class="ident">Param</span>], <span class="ident">p</span>: <span class="kw-2">&amp;</span><span class="ident">Param</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">for</span> <span class="ident">p0</span> <span class="kw">in</span> <span class="ident">v</span> {
-            <span class="kw">match</span> (<span class="ident">p0</span>, <span class="ident">p</span>) {
-                (<span class="ident">Param::Addr</span>(<span class="kw">_</span>), <span class="ident">Param::Addr</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                (<span class="ident">Param::Amount</span>(<span class="kw">_</span>), <span class="ident">Param::Amount</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                (<span class="ident">Param::Memo</span>(<span class="kw">_</span>), <span class="ident">Param::Memo</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                (<span class="ident">Param::Label</span>(<span class="kw">_</span>), <span class="ident">Param::Label</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                (<span class="ident">Param::Message</span>(<span class="kw">_</span>), <span class="ident">Param::Message</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                (<span class="ident">Param::Other</span>(<span class="ident">n</span>, <span class="kw">_</span>), <span class="ident">Param::Other</span>(<span class="ident">n0</span>, <span class="kw">_</span>)) <span class="kw">if</span> (<span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n0</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="bool-val">true</span>,
-                <span class="ident">_otherwise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>,
+    <span class="doccomment">/// Utility function for determining parameter uniqueness.
+    ///
+    /// Utility function for determining whether a newly parsed param is a duplicate
+    /// of a previous parameter.
+    </span><span class="kw">pub fn </span>has_duplicate_param(v: <span class="kw-2">&amp;</span>[Param], p: <span class="kw-2">&amp;</span>Param) -&gt; bool {
+        <span class="kw">for </span>p0 <span class="kw">in </span>v {
+            <span class="kw">match </span>(p0, p) {
+                (Param::Addr(<span class="kw">_</span>), Param::Addr(<span class="kw">_</span>)) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                (Param::Amount(<span class="kw">_</span>), Param::Amount(<span class="kw">_</span>)) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                (Param::Memo(<span class="kw">_</span>), Param::Memo(<span class="kw">_</span>)) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                (Param::Label(<span class="kw">_</span>), Param::Label(<span class="kw">_</span>)) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                (Param::Message(<span class="kw">_</span>), Param::Message(<span class="kw">_</span>)) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                (Param::Other(n, <span class="kw">_</span>), Param::Other(n0, <span class="kw">_</span>)) <span class="kw">if </span>(n == n0) =&gt; <span class="kw">return </span><span class="bool-val">true</span>,
+                _otherwise =&gt; <span class="kw">continue</span>,
             }
         }
 
-        <span class="bool-val">false</span>
-    }
+        <span class="bool-val">false
+    </span>}
 
-    <span class="doccomment">/// Converts an vector of [`Param`] values to a [`Payment`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function performs checks to ensure that the resulting [`Payment`] is structurally</span>
-    <span class="doccomment">/// valid; for example, a request for memo contents may not be associated with a</span>
-    <span class="doccomment">/// transparent payment address.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_payment</span>(<span class="ident">vs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Param</span><span class="op">&gt;</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Payment</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">vs</span>.<span class="ident">iter</span>().<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">v</span> {
-            <span class="ident">Param::Addr</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>.<span class="ident">clone</span>()),
-            <span class="ident">_otherwise</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+    <span class="doccomment">/// Converts an vector of [`Param`] values to a [`Payment`].
+    ///
+    /// This function performs checks to ensure that the resulting [`Payment`] is structurally
+    /// valid; for example, a request for memo contents may not be associated with a
+    /// transparent payment address.
+    </span><span class="kw">pub fn </span>to_payment(vs: Vec&lt;Param&gt;, i: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Payment, Zip321Error&gt; {
+        <span class="kw">let </span>addr = vs.iter().find_map(|v| <span class="kw">match </span>v {
+            Param::Addr(a) =&gt; <span class="prelude-val">Some</span>(a.clone()),
+            _otherwise =&gt; <span class="prelude-val">None</span>,
         });
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">payment</span> <span class="op">=</span> <span class="ident">Payment</span> {
-            <span class="ident">recipient_address</span>: <span class="ident">addr</span>.<span class="ident">ok_or</span>(<span class="macro">format!</span>(<span class="string">&quot;Payment {} had no recipient address.&quot;</span>, <span class="ident">i</span>))<span class="question-mark">?</span>,
-            <span class="ident">amount</span>: <span class="ident">Amount::zero</span>(),
-            <span class="ident">memo</span>: <span class="prelude-val">None</span>,
-            <span class="ident">label</span>: <span class="prelude-val">None</span>,
-            <span class="ident">message</span>: <span class="prelude-val">None</span>,
-            <span class="ident">other_params</span>: <span class="macro">vec!</span>[],
+        <span class="kw">let </span><span class="kw-2">mut </span>payment = Payment {
+            recipient_address: <span class="kw-2">*</span>addr.ok_or(Zip321Error::RecipientMissing(i))<span class="question-mark">?</span>,
+            amount: Amount::zero(),
+            memo: <span class="prelude-val">None</span>,
+            label: <span class="prelude-val">None</span>,
+            message: <span class="prelude-val">None</span>,
+            other_params: <span class="macro">vec!</span>[],
         };
 
-        <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="ident">vs</span> {
-            <span class="kw">match</span> <span class="ident">v</span> {
-                <span class="ident">Param::Amount</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">payment</span>.<span class="ident">amount</span> <span class="op">=</span> <span class="ident">a</span>,
-                <span class="ident">Param::Memo</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="kw">match</span> <span class="ident">payment</span>.<span class="ident">recipient_address</span> {
-                        <span class="ident">RecipientAddress::Shielded</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">payment</span>.<span class="ident">memo</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>),
-                        <span class="ident">RecipientAddress::Transparent</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Payment {} attempted to associate a memo with a transparent recipient address&quot;</span>, <span class="ident">i</span>)),
+        <span class="kw">for </span>v <span class="kw">in </span>vs {
+            <span class="kw">match </span>v {
+                Param::Amount(a) =&gt; payment.amount = a,
+                Param::Memo(m) =&gt; <span class="kw">match </span>payment.recipient_address {
+                    RecipientAddress::Shielded(<span class="kw">_</span>) | RecipientAddress::Unified(<span class="kw">_</span>) =&gt; {
+                        payment.memo = <span class="prelude-val">Some</span>(m)
+                    }
+                    RecipientAddress::Transparent(<span class="kw">_</span>) =&gt; {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(Zip321Error::TransparentMemo(i))
                     }
                 },
 
-                <span class="ident">Param::Label</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">payment</span>.<span class="ident">label</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>),
-                <span class="ident">Param::Message</span>(<span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">payment</span>.<span class="ident">message</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>),
-                <span class="ident">Param::Other</span>(<span class="ident">n</span>, <span class="ident">m</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">payment</span>.<span class="ident">other_params</span>.<span class="ident">push</span>((<span class="ident">n</span>, <span class="ident">m</span>)),
-                <span class="ident">_otherwise</span> <span class="op">=</span><span class="op">&gt;</span> {}
+                Param::Label(m) =&gt; payment.label = <span class="prelude-val">Some</span>(m),
+                Param::Message(m) =&gt; payment.message = <span class="prelude-val">Some</span>(m),
+                Param::Other(n, m) =&gt; payment.other_params.push((n, m)),
+                _otherwise =&gt; {}
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">payment</span>)
+        <span class="prelude-val">Ok</span>(payment)
     }
 
-    <span class="doccomment">/// Parses and consumes the leading &quot;zcash:\[address\]&quot; from a ZIP 321 URI.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lead_addr</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">IndexedParam</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-        <span class="kw">move</span> <span class="op">|</span><span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> {
-            <span class="ident">map_opt</span>(
-                <span class="ident">preceded</span>(<span class="ident">tag</span>(<span class="string">&quot;zcash:&quot;</span>), <span class="ident">take_until</span>(<span class="string">&quot;?&quot;</span>)),
-                <span class="op">|</span><span class="ident">addr_str</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> {
-                    <span class="kw">if</span> <span class="ident">addr_str</span>.<span class="ident">is_empty</span>() {
-                        <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>) <span class="comment">// no address is ok, so wrap in `Some`</span>
-                    } <span class="kw">else</span> {
-                        <span class="comment">// `decode` returns `None` on error, which we want to</span>
-                        <span class="comment">// then cause `map_opt` to fail.</span>
-                        <span class="ident">RecipientAddress::decode</span>(<span class="ident">params</span>, <span class="ident">addr_str</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">IndexedParam</span> {
-                                <span class="ident">param</span>: <span class="ident">Param::Addr</span>(<span class="ident">a</span>),
-                                <span class="ident">payment_index</span>: <span class="number">0</span>,
+    <span class="doccomment">/// Parses and consumes the leading &quot;zcash:\[address\]&quot; from a ZIP 321 URI.
+    </span><span class="kw">pub fn </span>lead_addr&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+    ) -&gt; <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, <span class="prelude-ty">Option</span>&lt;IndexedParam&gt;&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">move </span>|input: <span class="kw-2">&amp;</span>str| {
+            map_opt(
+                preceded(tag(<span class="string">&quot;zcash:&quot;</span>), take_until(<span class="string">&quot;?&quot;</span>)),
+                |addr_str: <span class="kw-2">&amp;</span>str| {
+                    <span class="kw">if </span>addr_str.is_empty() {
+                        <span class="prelude-val">Some</span>(<span class="prelude-val">None</span>) <span class="comment">// no address is ok, so wrap in `Some`
+                    </span>} <span class="kw">else </span>{
+                        <span class="comment">// `decode` returns `None` on error, which we want to
+                        // then cause `map_opt` to fail.
+                        </span>RecipientAddress::decode(params, addr_str).map(|a| {
+                            <span class="prelude-val">Some</span>(IndexedParam {
+                                param: Param::Addr(Box::new(a)),
+                                payment_index: <span class="number">0</span>,
                             })
                         })
                     }
                 },
-            )(<span class="ident">input</span>)
+            )(input)
         }
     }
 
-    <span class="doccomment">/// The primary parser for &lt;name&gt;=&lt;value&gt; query-string parameter pair.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">zcashparam</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">IndexedParam</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-        <span class="kw">move</span> <span class="op">|</span><span class="ident">input</span><span class="op">|</span> {
-            <span class="ident">map_res</span>(
-                <span class="ident">separated_pair</span>(<span class="ident">indexed_name</span>, <span class="ident">char</span>(<span class="string">&#39;=&#39;</span>), <span class="ident">recognize</span>(<span class="ident">qchars</span>)),
-                <span class="kw">move</span> <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">to_indexed_param</span>(<span class="ident">params</span>, <span class="ident">r</span>),
-            )(<span class="ident">input</span>)
+    <span class="doccomment">/// The primary parser for &lt;name&gt;=&lt;value&gt; query-string parameter pair.
+    </span><span class="kw">pub fn </span>zcashparam&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+    ) -&gt; <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, IndexedParam&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">move </span>|input| {
+            map_res(
+                separated_pair(indexed_name, char(<span class="string">&#39;=&#39;</span>), recognize(qchars)),
+                <span class="kw">move </span>|r| to_indexed_param(params, r),
+            )(input)
         }
     }
 
-    <span class="doccomment">/// Extension for the `alphanumeric0` parser which extends that parser</span>
-    <span class="doccomment">/// by also permitting the characters that are members of the `allowed`</span>
-    <span class="doccomment">/// string.</span>
-    <span class="kw">fn</span> <span class="ident">alphanum_or</span>(<span class="ident">allowed</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> (<span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>) <span class="op">+</span> <span class="lifetime">&#39;_</span> {
-        <span class="kw">move</span> <span class="op">|</span><span class="ident">input</span><span class="op">|</span> {
-            <span class="ident">input</span>.<span class="ident">split_at_position_complete</span>(<span class="op">|</span><span class="ident">item</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">as_char</span>();
-                <span class="op">!</span>(<span class="ident">c</span>.<span class="ident">is_alphanum</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">allowed</span>.<span class="ident">contains</span>(<span class="ident">c</span>))
+    <span class="doccomment">/// Extension for the `alphanumeric0` parser which extends that parser
+    /// by also permitting the characters that are members of the `allowed`
+    /// string.
+    </span><span class="kw">fn </span>alphanum_or(allowed: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw">impl </span>(Fn(<span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str&gt;) + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">move </span>|input| {
+            input.split_at_position_complete(|item| {
+                <span class="kw">let </span>c = item.as_char();
+                !(c.is_alphanum() || allowed.contains(c))
             })
         }
     }
 
-    <span class="doccomment">/// Parses valid characters which may appear in parameter values.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">qchars</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="ident">alphanum_or</span>(<span class="string">&quot;-._~!$&#39;()*+,;:@%&quot;</span>)(<span class="ident">input</span>)
+    <span class="doccomment">/// Parses valid characters which may appear in parameter values.
+    </span><span class="kw">pub fn </span>qchars(input: <span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str&gt; {
+        alphanum_or(<span class="string">&quot;-._~!$&#39;()*+,;:@%&quot;</span>)(input)
     }
 
-    <span class="doccomment">/// Parses valid characters that may appear in parameter names.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">namechars</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
-        <span class="ident">alphanum_or</span>(<span class="string">&quot;+-&quot;</span>)(<span class="ident">input</span>)
+    <span class="doccomment">/// Parses valid characters that may appear in parameter names.
+    </span><span class="kw">pub fn </span>namechars(input: <span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str&gt; {
+        alphanum_or(<span class="string">&quot;+-&quot;</span>)(input)
     }
 
-    <span class="doccomment">/// Parses a parameter name and its associated index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indexed_name</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">paramname</span> <span class="op">=</span> <span class="ident">recognize</span>(<span class="ident">tuple</span>((<span class="ident">alpha1</span>, <span class="ident">namechars</span>)));
+    <span class="doccomment">/// Parses a parameter name and its associated index.
+    </span><span class="kw">pub fn </span>indexed_name(input: <span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, (<span class="kw-2">&amp;</span>str, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;)&gt; {
+        <span class="kw">let </span>paramname = recognize(tuple((alpha1, namechars)));
 
-        <span class="ident">tuple</span>((
-            <span class="ident">paramname</span>,
-            <span class="ident">opt</span>(<span class="ident">preceded</span>(
-                <span class="ident">char</span>(<span class="string">&#39;.&#39;</span>),
-                <span class="ident">recognize</span>(<span class="ident">tuple</span>((
-                    <span class="ident">one_of</span>(<span class="string">&quot;123456789&quot;</span>),
-                    <span class="ident">map_opt</span>(<span class="ident">digit0</span>, <span class="op">|</span><span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">3</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="ident">s</span>) }),
+        tuple((
+            paramname,
+            opt(preceded(
+                char(<span class="string">&#39;.&#39;</span>),
+                recognize(tuple((
+                    one_of(<span class="string">&quot;123456789&quot;</span>),
+                    map_opt(digit0, |s: <span class="kw-2">&amp;</span>str| <span class="kw">if </span>s.len() &gt; <span class="number">3 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(s) }),
                 ))),
             )),
-        ))(<span class="ident">input</span>)
+        ))(input)
     }
 
-    <span class="doccomment">/// Parses a value in decimal ZEC.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_amount</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IResult</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">Amount</span><span class="op">&gt;</span> {
-        <span class="ident">map_res</span>(
-            <span class="ident">tuple</span>((
-                <span class="ident">digit1</span>,
-                <span class="ident">opt</span>(<span class="ident">preceded</span>(
-                    <span class="ident">char</span>(<span class="string">&#39;.&#39;</span>),
-                    <span class="ident">map_opt</span>(<span class="ident">digit0</span>, <span class="op">|</span><span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">8</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="ident">s</span>) }),
+    <span class="doccomment">/// Parses a value in decimal ZEC.
+    </span><span class="kw">pub fn </span>parse_amount(input: <span class="kw-2">&amp;</span>str) -&gt; IResult&lt;<span class="kw-2">&amp;</span>str, Amount&gt; {
+        map_res(
+            tuple((
+                digit1,
+                opt(preceded(
+                    char(<span class="string">&#39;.&#39;</span>),
+                    map_opt(digit0, |s: <span class="kw-2">&amp;</span>str| <span class="kw">if </span>s.len() &gt; <span class="number">8 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(s) }),
                 )),
             )),
-            <span class="op">|</span>(<span class="ident">whole_s</span>, <span class="ident">decimal_s</span>): (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>)<span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">coins</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">whole_s</span>
-                    .<span class="ident">to_string</span>()
-                    .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+            |(whole_s, decimal_s): (<span class="kw-2">&amp;</span>str, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;)| {
+                <span class="kw">let </span>coins: i64 = whole_s
+                    .to_string()
+                    .parse::&lt;i64&gt;()
+                    .map_err(|e| e.to_string())<span class="question-mark">?</span>;
 
-                <span class="kw">let</span> <span class="ident">zats</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">decimal_s</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">d</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">format!</span>(<span class="string">&quot;{:0&lt;8}&quot;</span>, <span class="ident">d</span>)
-                        .<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>()
-                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>,
-                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+                <span class="kw">let </span>zats: i64 = <span class="kw">match </span>decimal_s {
+                    <span class="prelude-val">Some</span>(d) =&gt; <span class="macro">format!</span>(<span class="string">&quot;{:0&lt;8}&quot;</span>, d)
+                        .parse::&lt;i64&gt;()
+                        .map_err(|e| e.to_string())<span class="question-mark">?</span>,
+                    <span class="prelude-val">None </span>=&gt; <span class="number">0</span>,
                 };
 
-                <span class="kw">if</span> <span class="ident">coins</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">21000000</span> <span class="op">&amp;&amp;</span> (<span class="ident">coins</span> <span class="op">&gt;</span> <span class="number">21000000</span> <span class="op">|</span><span class="op">|</span> <span class="ident">zats</span> <span class="op">&gt;</span> <span class="number">0</span>) {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+                <span class="kw">if </span>coins &gt;= <span class="number">21000000 </span>&amp;&amp; (coins &gt; <span class="number">21000000 </span>|| zats &gt; <span class="number">0</span>) {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(
                         <span class="string">&quot;{} coins exceeds the maximum possible Zcash value.&quot;</span>,
-                        <span class="ident">coins</span>
+                        coins
                     ));
                 }
 
-                <span class="kw">let</span> <span class="ident">amt</span> <span class="op">=</span> <span class="ident">coins</span> <span class="op">*</span> <span class="ident">COIN</span> <span class="op">+</span> <span class="ident">zats</span>;
+                <span class="kw">let </span>amt = coins * COIN + zats;
 
-                <span class="ident">Amount::from_nonnegative_i64</span>(<span class="ident">amt</span>)
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Not a valid zat amount: {}&quot;</span>, <span class="ident">amt</span>))
+                Amount::from_nonnegative_i64(amt)
+                    .map_err(|<span class="kw">_</span>| <span class="macro">format!</span>(<span class="string">&quot;Not a valid zat amount: {}&quot;</span>, amt))
             },
-        )(<span class="ident">input</span>)
+        )(input)
     }
 
-    <span class="kw">fn</span> <span class="ident">to_indexed_param</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-        <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">P</span>,
-        ((<span class="ident">name</span>, <span class="ident">iopt</span>), <span class="ident">value</span>): ((<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>), <span class="kw-2">&amp;</span><span class="ident">str</span>),
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexedParam</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">param</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">name</span> {
-            <span class="string">&quot;address&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RecipientAddress::decode</span>(<span class="ident">params</span>, <span class="ident">value</span>)
-                .<span class="ident">map</span>(<span class="ident">Param::Addr</span>)
-                .<span class="ident">ok_or</span>(<span class="macro">format!</span>(
+    <span class="kw">fn </span>to_indexed_param&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>P,
+        ((name, iopt), value): ((<span class="kw-2">&amp;</span>str, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;), <span class="kw-2">&amp;</span>str),
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;IndexedParam, String&gt; {
+        <span class="kw">let </span>param = <span class="kw">match </span>name {
+            <span class="string">&quot;address&quot; </span>=&gt; RecipientAddress::decode(params, value)
+                .map(Box::new)
+                .map(Param::Addr)
+                .ok_or(<span class="macro">format!</span>(
                     <span class="string">&quot;Could not interpret {} as a valid Zcash address.&quot;</span>,
-                    <span class="ident">value</span>
+                    value
                 )),
 
-            <span class="string">&quot;amount&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">parse_amount</span>(<span class="ident">value</span>)
-                .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">a</span>)<span class="op">|</span> <span class="ident">Param::Amount</span>(<span class="ident">a</span>))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()),
+            <span class="string">&quot;amount&quot; </span>=&gt; parse_amount(value)
+                .map(|(<span class="kw">_</span>, a)| Param::Amount(a))
+                .map_err(|e| e.to_string()),
 
-            <span class="string">&quot;label&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">percent_decode</span>(<span class="ident">value</span>.<span class="ident">as_bytes</span>())
-                .<span class="ident">decode_utf8</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">Param::Label</span>(<span class="ident">s</span>.<span class="ident">into_owned</span>()))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()),
+            <span class="string">&quot;label&quot; </span>=&gt; percent_decode(value.as_bytes())
+                .decode_utf8()
+                .map(|s| Param::Label(s.into_owned()))
+                .map_err(|e| e.to_string()),
 
-            <span class="string">&quot;message&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">percent_decode</span>(<span class="ident">value</span>.<span class="ident">as_bytes</span>())
-                .<span class="ident">decode_utf8</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">Param::Message</span>(<span class="ident">s</span>.<span class="ident">into_owned</span>()))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()),
+            <span class="string">&quot;message&quot; </span>=&gt; percent_decode(value.as_bytes())
+                .decode_utf8()
+                .map(|s| Param::Message(s.into_owned()))
+                .map_err(|e| e.to_string()),
 
-            <span class="string">&quot;memo&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">memo_from_base64</span>(<span class="ident">value</span>)
-                .<span class="ident">map</span>(<span class="ident">Param::Memo</span>)
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Decoded memo was invalid: {:?}&quot;</span>, <span class="ident">e</span>)),
+            <span class="string">&quot;memo&quot; </span>=&gt; memo_from_base64(value)
+                .map(Param::Memo)
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Decoded memo was invalid: {:?}&quot;</span>, e)),
 
-            <span class="ident">other</span> <span class="kw">if</span> <span class="ident">other</span>.<span class="ident">starts_with</span>(<span class="string">&quot;req-&quot;</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Required parameter {} not recognized&quot;</span>, <span class="ident">other</span>))
+            other <span class="kw">if </span>other.starts_with(<span class="string">&quot;req-&quot;</span>) =&gt; {
+                <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Required parameter {} not recognized&quot;</span>, other))
             }
 
-            <span class="ident">other</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">percent_decode</span>(<span class="ident">value</span>.<span class="ident">as_bytes</span>())
-                .<span class="ident">decode_utf8</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">Param::Other</span>(<span class="ident">other</span>.<span class="ident">to_string</span>(), <span class="ident">s</span>.<span class="ident">into_owned</span>()))
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()),
+            other =&gt; percent_decode(value.as_bytes())
+                .decode_utf8()
+                .map(|s| Param::Other(other.to_string(), s.into_owned()))
+                .map_err(|e| e.to_string()),
         }<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">payment_index</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">iopt</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">istr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">istr</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>().<span class="ident">map</span>(<span class="prelude-val">Some</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">to_string</span>()),
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        <span class="kw">let </span>payment_index = <span class="kw">match </span>iopt {
+            <span class="prelude-val">Some</span>(istr) =&gt; istr.parse::&lt;usize&gt;().map(<span class="prelude-val">Some</span>).map_err(|e| e.to_string()),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         }<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">IndexedParam</span> {
-            <span class="ident">param</span>,
-            <span class="ident">payment_index</span>: <span class="ident">payment_index</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>),
+        <span class="prelude-val">Ok</span>(IndexedParam {
+            param,
+            payment_index: payment_index.unwrap_or(<span class="number">0</span>),
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">testing</span> {
-    <span class="kw">use</span> <span class="ident">proptest::collection::btree_map</span>;
-    <span class="kw">use</span> <span class="ident">proptest::collection::vec</span>;
-    <span class="kw">use</span> <span class="ident">proptest::option</span>;
-    <span class="kw">use</span> <span class="ident">proptest::prelude</span>::{<span class="ident">any</span>, <span class="ident">prop_compose</span>, <span class="ident">prop_oneof</span>};
-    <span class="kw">use</span> <span class="ident">proptest::strategy::Strategy</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">consensus::TEST_NETWORK</span>, <span class="ident">legacy::testing::arb_transparent_addr</span>,
-        <span class="ident">sapling::keys::testing::arb_shielded_addr</span>,
-        <span class="ident">transaction::components::amount::testing::arb_nonnegative_amount</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;test-dependencies&quot;</span>)]
+</span><span class="kw">pub mod </span>testing {
+    <span class="kw">use </span>proptest::collection::btree_map;
+    <span class="kw">use </span>proptest::collection::vec;
+    <span class="kw">use </span>proptest::option;
+    <span class="kw">use </span>proptest::prelude::{any, prop_compose, prop_oneof};
+    <span class="kw">use </span>proptest::strategy::Strategy;
+    <span class="kw">use </span>zcash_primitives::{
+        consensus::TEST_NETWORK, legacy::testing::arb_transparent_addr,
+        sapling::keys::testing::arb_shielded_addr,
+        transaction::components::amount::testing::arb_nonnegative_amount,
     };
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::address::RecipientAddress</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::address::{RecipientAddress, UnifiedAddress};
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">MemoBytes</span>, <span class="ident">Payment</span>, <span class="ident">TransactionRequest</span>};
+    <span class="kw">use super</span>::{MemoBytes, Payment, TransactionRequest};
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_addr</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Strategy</span><span class="op">&lt;</span><span class="ident">Value</span> <span class="op">=</span> <span class="ident">RecipientAddress</span><span class="op">&gt;</span> {
-        <span class="macro">prop_oneof!</span>[
-            <span class="ident">arb_shielded_addr</span>().<span class="ident">prop_map</span>(<span class="ident">RecipientAddress::Shielded</span>),
-            <span class="ident">arb_transparent_addr</span>().<span class="ident">prop_map</span>(<span class="ident">RecipientAddress::Transparent</span>),
-        ]
-    }
-
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">VALID_PARAMNAME</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;[a-zA-Z][a-zA-Z0-9+-]*&quot;</span>;
-
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_valid_memo</span>()(<span class="ident">bytes</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>(), <span class="number">0</span>..<span class="number">512</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MemoBytes</span> {
-            <span class="ident">MemoBytes::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">bytes</span>).<span class="ident">unwrap</span>()
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">fn </span>arb_unified_addr()(
+            sapling <span class="kw">in </span>arb_shielded_addr(),
+            transparent <span class="kw">in </span>option::of(arb_transparent_addr()),
+        ) -&gt; UnifiedAddress {
+            UnifiedAddress::from_receivers(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(sapling), transparent).unwrap()
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_zip321_payment</span>()(
-            <span class="ident">recipient_address</span> <span class="kw">in</span> <span class="ident">arb_addr</span>(),
-            <span class="ident">amount</span> <span class="kw">in</span> <span class="ident">arb_nonnegative_amount</span>(),
-            <span class="ident">memo</span> <span class="kw">in</span> <span class="ident">option::of</span>(<span class="ident">arb_valid_memo</span>()),
-            <span class="ident">message</span> <span class="kw">in</span> <span class="ident">option::of</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>()),
-            <span class="ident">label</span> <span class="kw">in</span> <span class="ident">option::of</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>()),
-            <span class="comment">// prevent duplicates by generating a set rather than a vec</span>
-            <span class="ident">other_params</span> <span class="kw">in</span> <span class="ident">btree_map</span>(<span class="ident">VALID_PARAMNAME</span>, <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(), <span class="number">0</span>..<span class="number">3</span>),
-            ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Payment</span> {
+    <span class="kw">pub fn </span>arb_addr() -&gt; <span class="kw">impl </span>Strategy&lt;Value = RecipientAddress&gt; {
+        <span class="macro">prop_oneof!</span>[
+            arb_shielded_addr().prop_map(RecipientAddress::Shielded),
+            arb_transparent_addr().prop_map(RecipientAddress::Transparent),
+            arb_unified_addr().prop_map(RecipientAddress::Unified),
+        ]
+    }
 
-            <span class="kw">let</span> <span class="ident">is_sapling</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">recipient_address</span> {
-                <span class="ident">RecipientAddress::Transparent</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
-                <span class="ident">RecipientAddress::Shielded</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+    <span class="kw">pub const </span>VALID_PARAMNAME: <span class="kw-2">&amp;</span>str = <span class="string">&quot;[a-zA-Z][a-zA-Z0-9+-]*&quot;</span>;
+
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_valid_memo()(bytes <span class="kw">in </span>vec(any::&lt;u8&gt;(), <span class="number">0</span>..<span class="number">512</span>)) -&gt; MemoBytes {
+            MemoBytes::from_bytes(<span class="kw-2">&amp;</span>bytes).unwrap()
+        }
+    }
+
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_zip321_payment()(
+            recipient_address <span class="kw">in </span>arb_addr(),
+            amount <span class="kw">in </span>arb_nonnegative_amount(),
+            memo <span class="kw">in </span>option::of(arb_valid_memo()),
+            message <span class="kw">in </span>option::of(any::&lt;String&gt;()),
+            label <span class="kw">in </span>option::of(any::&lt;String&gt;()),
+            <span class="comment">// prevent duplicates by generating a set rather than a vec
+            </span>other_params <span class="kw">in </span>btree_map(VALID_PARAMNAME, any::&lt;String&gt;(), <span class="number">0</span>..<span class="number">3</span>),
+            ) -&gt; Payment {
+
+            <span class="kw">let </span>is_shielded = <span class="kw">match </span>recipient_address {
+                RecipientAddress::Transparent(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+                RecipientAddress::Shielded(<span class="kw">_</span>) | RecipientAddress::Unified(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
             };
 
-            <span class="ident">Payment</span> {
-                <span class="ident">recipient_address</span>,
-                <span class="ident">amount</span>,
-                <span class="ident">memo</span>: <span class="ident">memo</span>.<span class="ident">filter</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">is_sapling</span>),
-                <span class="ident">label</span>,
-                <span class="ident">message</span>,
-                <span class="ident">other_params</span>: <span class="ident">other_params</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
+            Payment {
+                recipient_address,
+                amount,
+                memo: memo.filter(|<span class="kw">_</span>| is_shielded),
+                label,
+                message,
+                other_params: other_params.into_iter().collect(),
             }
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_zip321_request</span>()(<span class="ident">payments</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">arb_zip321_payment</span>(), <span class="number">1</span>..<span class="number">10</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TransactionRequest</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">TransactionRequest</span> { <span class="ident">payments</span> };
-            <span class="ident">req</span>.<span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>); <span class="comment">// just to make test comparisons easier</span>
-            <span class="ident">req</span>
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_zip321_request()(payments <span class="kw">in </span>vec(arb_zip321_payment(), <span class="number">1</span>..<span class="number">10</span>)) -&gt; TransactionRequest {
+            <span class="kw">let </span><span class="kw-2">mut </span>req = TransactionRequest { payments };
+            req.normalize(<span class="kw-2">&amp;</span>TEST_NETWORK); <span class="comment">// just to make test comparisons easier
+            </span>req
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_zip321_uri</span>()(<span class="ident">req</span> <span class="kw">in</span> <span class="ident">arb_zip321_request</span>()) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-            <span class="ident">req</span>.<span class="ident">to_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>).<span class="ident">unwrap</span>()
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_zip321_uri()(req <span class="kw">in </span>arb_zip321_request()) -&gt; String {
+            req.to_uri(<span class="kw-2">&amp;</span>TEST_NETWORK).unwrap()
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_addr_str</span>()(<span class="ident">addr</span> <span class="kw">in</span> <span class="ident">arb_addr</span>()) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-            <span class="ident">addr</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>)
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_addr_str()(addr <span class="kw">in </span>arb_addr()) -&gt; String {
+            addr.encode(<span class="kw-2">&amp;</span>TEST_NETWORK)
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">std::str::FromStr</span>;
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">consensus</span>::{<span class="ident">Parameters</span>, <span class="ident">TEST_NETWORK</span>},
-        <span class="ident">memo::Memo</span>,
-        <span class="ident">transaction::components::Amount</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>std::str::FromStr;
+    <span class="kw">use </span>zcash_primitives::{
+        consensus::{Parameters, TEST_NETWORK},
+        memo::Memo,
+        transaction::components::Amount,
     };
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::address::RecipientAddress</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::address::RecipientAddress;
 
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">memo_from_base64</span>, <span class="ident">memo_to_base64</span>,
-        <span class="ident">parse</span>::{<span class="ident">parse_amount</span>, <span class="ident">zcashparam</span>, <span class="ident">Param</span>},
-        <span class="ident">render::amount_str</span>,
-        <span class="ident">MemoBytes</span>, <span class="ident">Payment</span>, <span class="ident">TransactionRequest</span>,
+    <span class="kw">use super</span>::{
+        memo_from_base64, memo_to_base64,
+        parse::{parse_amount, zcashparam, Param},
+        render::amount_str,
+        MemoBytes, Payment, TransactionRequest,
     };
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::encoding::decode_payment_address</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::encoding::decode_payment_address;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">use</span> <span class="ident">proptest::prelude</span>::{<span class="ident">any</span>, <span class="ident">proptest</span>};
+    <span class="attribute">#[cfg(all(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">use </span>proptest::prelude::{any, proptest};
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">use</span> <span class="ident">zcash_primitives::transaction::components::amount::testing::arb_nonnegative_amount</span>;
+    <span class="attribute">#[cfg(all(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">use </span>zcash_primitives::transaction::components::amount::testing::arb_nonnegative_amount;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="kw">use</span> <span class="kw">super</span>::{
-        <span class="ident">render</span>::{<span class="ident">memo_param</span>, <span class="ident">str_param</span>},
-        <span class="ident">testing</span>::{<span class="ident">arb_addr</span>, <span class="ident">arb_addr_str</span>, <span class="ident">arb_valid_memo</span>, <span class="ident">arb_zip321_request</span>, <span class="ident">arb_zip321_uri</span>},
+    <span class="attribute">#[cfg(all(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="kw">use super</span>::{
+        render::{memo_param, str_param},
+        testing::{arb_addr, arb_addr_str, arb_valid_memo, arb_zip321_request, arb_zip321_uri},
     };
 
-    <span class="kw">fn</span> <span class="ident">check_roundtrip</span>(<span class="ident">req</span>: <span class="ident">TransactionRequest</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">req_uri</span>) <span class="op">=</span> <span class="ident">req</span>.<span class="ident">to_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>) {
-            <span class="kw">let</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">req_uri</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">parsed</span>, <span class="ident">req</span>);
-        } <span class="kw">else</span> {
-            <span class="macro">panic!</span>(<span class="string">&quot;Generated invalid payment request: {:?}&quot;</span>, <span class="ident">req</span>);
+    <span class="kw">fn </span>check_roundtrip(req: TransactionRequest) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(req_uri) = req.to_uri(<span class="kw-2">&amp;</span>TEST_NETWORK) {
+            <span class="kw">let </span>parsed = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;</span>req_uri).unwrap();
+            <span class="macro">assert_eq!</span>(parsed, req);
+        } <span class="kw">else </span>{
+            <span class="macro">panic!</span>(<span class="string">&quot;Generated invalid payment request: {:?}&quot;</span>, req);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_roundtrip_simple_amounts</span>() {
-        <span class="kw">let</span> <span class="ident">amounts</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">1u64</span>, <span class="number">1000u64</span>, <span class="number">100000u64</span>, <span class="number">100000000u64</span>, <span class="number">100000000000u64</span>];
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_roundtrip_simple_amounts() {
+        <span class="kw">let </span>amounts = <span class="macro">vec!</span>[<span class="number">1u64</span>, <span class="number">1000u64</span>, <span class="number">100000u64</span>, <span class="number">100000000u64</span>, <span class="number">100000000000u64</span>];
 
-        <span class="kw">for</span> <span class="ident">amt_u64</span> <span class="kw">in</span> <span class="ident">amounts</span> {
-            <span class="kw">let</span> <span class="ident">amt</span> <span class="op">=</span> <span class="ident">Amount::from_u64</span>(<span class="ident">amt_u64</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">amt_str</span> <span class="op">=</span> <span class="ident">amount_str</span>(<span class="ident">amt</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">amt</span>, <span class="ident">parse_amount</span>(<span class="kw-2">&amp;</span><span class="ident">amt_str</span>).<span class="ident">unwrap</span>().<span class="number">1</span>);
+        <span class="kw">for </span>amt_u64 <span class="kw">in </span>amounts {
+            <span class="kw">let </span>amt = Amount::from_u64(amt_u64).unwrap();
+            <span class="kw">let </span>amt_str = amount_str(amt).unwrap();
+            <span class="macro">assert_eq!</span>(amt, parse_amount(<span class="kw-2">&amp;</span>amt_str).unwrap().<span class="number">1</span>);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_parse_empty_message</span>() {
-        <span class="kw">let</span> <span class="ident">fragment</span> <span class="op">=</span> <span class="string">&quot;message=&quot;</span>;
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_parse_empty_message() {
+        <span class="kw">let </span>fragment = <span class="string">&quot;message=&quot;</span>;
 
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">zcashparam</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>)(<span class="ident">fragment</span>).<span class="ident">unwrap</span>().<span class="number">1</span>.<span class="ident">param</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">result</span>, <span class="ident">Param::Message</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()));
+        <span class="kw">let </span>result = zcashparam(<span class="kw-2">&amp;</span>TEST_NETWORK)(fragment).unwrap().<span class="number">1</span>.param;
+        <span class="macro">assert_eq!</span>(result, Param::Message(<span class="string">&quot;&quot;</span>.to_string()));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_parse_simple</span>() {
-        <span class="kw">let</span> <span class="ident">uri</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k?amount=3768769.02796286&amp;message=&quot;</span>;
-        <span class="kw">let</span> <span class="ident">parse_result</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">uri</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_parse_simple() {
+        <span class="kw">let </span>uri = <span class="string">&quot;zcash:ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k?amount=3768769.02796286&amp;message=&quot;</span>;
+        <span class="kw">let </span>parse_result = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, uri).unwrap();
 
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">TransactionRequest</span> {
-            <span class="ident">payments</span>: <span class="macro">vec!</span>[
-                <span class="ident">Payment</span> {
-                    <span class="ident">recipient_address</span>: <span class="ident">RecipientAddress::Shielded</span>(<span class="ident">decode_payment_address</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>.<span class="ident">hrp_sapling_payment_address</span>(), <span class="string">&quot;ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>()),
-                    <span class="ident">amount</span>: <span class="ident">Amount::from_u64</span>(<span class="number">376876902796286</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">memo</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">label</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">message</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()),
-                    <span class="ident">other_params</span>: <span class="macro">vec!</span>[],
+        <span class="kw">let </span>expected = TransactionRequest {
+            payments: <span class="macro">vec!</span>[
+                Payment {
+                    recipient_address: RecipientAddress::Shielded(decode_payment_address(TEST_NETWORK.hrp_sapling_payment_address(), <span class="string">&quot;ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k&quot;</span>).unwrap()),
+                    amount: Amount::from_u64(<span class="number">376876902796286</span>).unwrap(),
+                    memo: <span class="prelude-val">None</span>,
+                    label: <span class="prelude-val">None</span>,
+                    message: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>.to_string()),
+                    other_params: <span class="macro">vec!</span>[],
                 }
             ]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">parse_result</span>, <span class="ident">expected</span>);
+        <span class="macro">assert_eq!</span>(parse_result, expected);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_roundtrip_empty_message</span>() {
-        <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <span class="ident">TransactionRequest</span> {
-            <span class="ident">payments</span>: <span class="macro">vec!</span>[
-                <span class="ident">Payment</span> {
-                    <span class="ident">recipient_address</span>: <span class="ident">RecipientAddress::Shielded</span>(<span class="ident">decode_payment_address</span>(<span class="ident">TEST_NETWORK</span>.<span class="ident">hrp_sapling_payment_address</span>(), <span class="string">&quot;ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">unwrap</span>()),
-                    <span class="ident">amount</span>: <span class="ident">Amount::from_u64</span>(<span class="number">0</span>).<span class="ident">unwrap</span>(),
-                    <span class="ident">memo</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">label</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">message</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()),
-                    <span class="ident">other_params</span>: <span class="macro">vec!</span>[]
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_roundtrip_empty_message() {
+        <span class="kw">let </span>req = TransactionRequest {
+            payments: <span class="macro">vec!</span>[
+                Payment {
+                    recipient_address: RecipientAddress::Shielded(decode_payment_address(TEST_NETWORK.hrp_sapling_payment_address(), <span class="string">&quot;ztestsapling1n65uaftvs2g7075q2x2a04shfk066u3lldzxsrprfrqtzxnhc9ps73v4lhx4l9yfxj46sl0q90k&quot;</span>).unwrap()),
+                    amount: Amount::from_u64(<span class="number">0</span>).unwrap(),
+                    memo: <span class="prelude-val">None</span>,
+                    label: <span class="prelude-val">None</span>,
+                    message: <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>.to_string()),
+                    other_params: <span class="macro">vec!</span>[]
                 }
             ]
         };
 
-        <span class="ident">check_roundtrip</span>(<span class="ident">req</span>);
+        check_roundtrip(req);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_memos</span>() {
-        <span class="kw">let</span> <span class="ident">m_simple</span>: <span class="ident">MemoBytes</span> <span class="op">=</span> <span class="ident">Memo::from_str</span>(<span class="string">&quot;This is a simple memo.&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">m_simple_64</span> <span class="op">=</span> <span class="ident">memo_to_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_simple</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">memo_from_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_simple_64</span>).<span class="ident">unwrap</span>(), <span class="ident">m_simple</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_memos() {
+        <span class="kw">let </span>m_simple: MemoBytes = Memo::from_str(<span class="string">&quot;This is a simple memo.&quot;</span>).unwrap().into();
+        <span class="kw">let </span>m_simple_64 = memo_to_base64(<span class="kw-2">&amp;</span>m_simple);
+        <span class="macro">assert_eq!</span>(memo_from_base64(<span class="kw-2">&amp;</span>m_simple_64).unwrap(), m_simple);
 
-        <span class="kw">let</span> <span class="ident">m_json</span>: <span class="ident">MemoBytes</span> <span class="op">=</span> <span class="ident">Memo::from_str</span>(<span class="string">&quot;{ \&quot;key\&quot;: \&quot;This is a JSON-structured memo.\&quot; }&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">m_json_64</span> <span class="op">=</span> <span class="ident">memo_to_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_json</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">memo_from_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_json_64</span>).<span class="ident">unwrap</span>(), <span class="ident">m_json</span>);
+        <span class="kw">let </span>m_json: MemoBytes = Memo::from_str(<span class="string">&quot;{ \&quot;key\&quot;: \&quot;This is a JSON-structured memo.\&quot; }&quot;</span>)
+            .unwrap()
+            .into();
+        <span class="kw">let </span>m_json_64 = memo_to_base64(<span class="kw-2">&amp;</span>m_json);
+        <span class="macro">assert_eq!</span>(memo_from_base64(<span class="kw-2">&amp;</span>m_json_64).unwrap(), m_json);
 
-        <span class="kw">let</span> <span class="ident">m_unicode</span>: <span class="ident">MemoBytes</span> <span class="op">=</span> <span class="ident">Memo::from_str</span>(<span class="string">&quot;This is a unicode memo ✨🦄🏆🎉&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">m_unicode_64</span> <span class="op">=</span> <span class="ident">memo_to_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_unicode</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">memo_from_base64</span>(<span class="kw-2">&amp;</span><span class="ident">m_unicode_64</span>).<span class="ident">unwrap</span>(), <span class="ident">m_unicode</span>);
+        <span class="kw">let </span>m_unicode: MemoBytes = Memo::from_str(<span class="string">&quot;This is a unicode memo ✨🦄🏆🎉&quot;</span>)
+            .unwrap()
+            .into();
+        <span class="kw">let </span>m_unicode_64 = memo_to_base64(<span class="kw-2">&amp;</span>m_unicode);
+        <span class="macro">assert_eq!</span>(memo_from_base64(<span class="kw-2">&amp;</span>m_unicode_64).unwrap(), m_unicode);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_spec_valid_examples</span>() {
-        <span class="kw">let</span> <span class="ident">valid_1</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=1&amp;memo=VGhpcyBpcyBhIHNpbXBsZSBtZW1vLg&amp;message=Thank%20you%20for%20your%20purchase&quot;</span>;
-        <span class="kw">let</span> <span class="ident">v1r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">valid_1</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_spec_valid_examples() {
+        <span class="kw">let </span>valid_1 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=1&amp;memo=VGhpcyBpcyBhIHNpbXBsZSBtZW1vLg&amp;message=Thank%20you%20for%20your%20purchase&quot;</span>;
+        <span class="kw">let </span>v1r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, valid_1).unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">v1r</span>.<span class="ident">payments</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">amount</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Amount::from_u64</span>(<span class="number">100000000</span>).<span class="ident">unwrap</span>())
+            v1r.payments.get(<span class="number">0</span>).map(|p| p.amount),
+            <span class="prelude-val">Some</span>(Amount::from_u64(<span class="number">100000000</span>).unwrap())
         );
 
-        <span class="kw">let</span> <span class="ident">valid_2</span> <span class="op">=</span> <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=123.456&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=0.789&amp;memo.1=VGhpcyBpcyBhIHVuaWNvZGUgbWVtbyDinKjwn6aE8J-PhvCfjok&quot;</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v2r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">valid_2</span>).<span class="ident">unwrap</span>();
-        <span class="ident">v2r</span>.<span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>);
+        <span class="kw">let </span>valid_2 = <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=123.456&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=0.789&amp;memo.1=VGhpcyBpcyBhIHVuaWNvZGUgbWVtbyDinKjwn6aE8J-PhvCfjok&quot;</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>v2r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, valid_2).unwrap();
+        v2r.normalize(<span class="kw-2">&amp;</span>TEST_NETWORK);
         <span class="macro">assert_eq!</span>(
-            <span class="ident">v2r</span>.<span class="ident">payments</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">amount</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Amount::from_u64</span>(<span class="number">12345600000</span>).<span class="ident">unwrap</span>())
+            v2r.payments.get(<span class="number">0</span>).map(|p| p.amount),
+            <span class="prelude-val">Some</span>(Amount::from_u64(<span class="number">12345600000</span>).unwrap())
         );
         <span class="macro">assert_eq!</span>(
-            <span class="ident">v2r</span>.<span class="ident">payments</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">amount</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Amount::from_u64</span>(<span class="number">78900000</span>).<span class="ident">unwrap</span>())
-        );
-
-        <span class="comment">// valid; amount just less than MAX_MONEY</span>
-        <span class="comment">// 20999999.99999999</span>
-        <span class="kw">let</span> <span class="ident">valid_3</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=20999999.99999999&quot;</span>;
-        <span class="kw">let</span> <span class="ident">v3r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">valid_3</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(
-            <span class="ident">v3r</span>.<span class="ident">payments</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">amount</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Amount::from_u64</span>(<span class="number">2099999999999999u64</span>).<span class="ident">unwrap</span>())
+            v2r.payments.get(<span class="number">1</span>).map(|p| p.amount),
+            <span class="prelude-val">Some</span>(Amount::from_u64(<span class="number">78900000</span>).unwrap())
         );
 
-        <span class="comment">// valid; MAX_MONEY</span>
-        <span class="comment">// 21000000</span>
-        <span class="kw">let</span> <span class="ident">valid_4</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=21000000&quot;</span>;
-        <span class="kw">let</span> <span class="ident">v4r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">valid_4</span>).<span class="ident">unwrap</span>();
+        <span class="comment">// valid; amount just less than MAX_MONEY
+        // 20999999.99999999
+        </span><span class="kw">let </span>valid_3 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=20999999.99999999&quot;</span>;
+        <span class="kw">let </span>v3r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, valid_3).unwrap();
         <span class="macro">assert_eq!</span>(
-            <span class="ident">v4r</span>.<span class="ident">payments</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">amount</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">Amount::from_u64</span>(<span class="number">2100000000000000u64</span>).<span class="ident">unwrap</span>())
+            v3r.payments.get(<span class="number">0</span>).map(|p| p.amount),
+            <span class="prelude-val">Some</span>(Amount::from_u64(<span class="number">2099999999999999u64</span>).unwrap())
+        );
+
+        <span class="comment">// valid; MAX_MONEY
+        // 21000000
+        </span><span class="kw">let </span>valid_4 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=21000000&quot;</span>;
+        <span class="kw">let </span>v4r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, valid_4).unwrap();
+        <span class="macro">assert_eq!</span>(
+            v4r.payments.get(<span class="number">0</span>).map(|p| p.amount),
+            <span class="prelude-val">Some</span>(Amount::from_u64(<span class="number">2100000000000000u64</span>).unwrap())
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_zip321_spec_invalid_examples</span>() {
-        <span class="comment">// invalid; missing `address=`</span>
-        <span class="kw">let</span> <span class="ident">invalid_1</span> <span class="op">=</span> <span class="string">&quot;zcash:?amount=3491405.05201255&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=5740296.87793245&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i1r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_1</span>);
-        <span class="macro">assert!</span>(<span class="ident">i1r</span>.<span class="ident">is_err</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_zip321_spec_invalid_examples() {
+        <span class="comment">// invalid; missing `address=`
+        </span><span class="kw">let </span>invalid_1 = <span class="string">&quot;zcash:?amount=3491405.05201255&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=5740296.87793245&quot;</span>;
+        <span class="kw">let </span>i1r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_1);
+        <span class="macro">assert!</span>(i1r.is_err());
 
-        <span class="comment">// invalid; missing `address.1=`</span>
-        <span class="kw">let</span> <span class="ident">invalid_2</span> <span class="op">=</span> <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=1&amp;amount.1=2&amp;address.2=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i2r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_2</span>);
-        <span class="macro">assert!</span>(<span class="ident">i2r</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; missing `address.1=`
+        </span><span class="kw">let </span>invalid_2 = <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=1&amp;amount.1=2&amp;address.2=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&quot;</span>;
+        <span class="kw">let </span>i2r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_2);
+        <span class="macro">assert!</span>(i2r.is_err());
 
-        <span class="comment">// invalid; `address.0=` and `amount.0=` are not permitted (leading 0s).</span>
-        <span class="kw">let</span> <span class="ident">invalid_3</span> <span class="op">=</span> <span class="string">&quot;zcash:?address.0=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.0=2&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i3r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_3</span>);
-        <span class="macro">assert!</span>(<span class="ident">i3r</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; `address.0=` and `amount.0=` are not permitted (leading 0s).
+        </span><span class="kw">let </span>invalid_3 = <span class="string">&quot;zcash:?address.0=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.0=2&quot;</span>;
+        <span class="kw">let </span>i3r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_3);
+        <span class="macro">assert!</span>(i3r.is_err());
 
-        <span class="comment">// invalid; duplicate `amount=` field</span>
-        <span class="kw">let</span> <span class="ident">invalid_4</span> <span class="op">=</span>
+        <span class="comment">// invalid; duplicate `amount=` field
+        </span><span class="kw">let </span>invalid_4 =
             <span class="string">&quot;zcash:?amount=1.234&amp;amount=2.345&amp;address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i4r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_4</span>);
-        <span class="macro">assert!</span>(<span class="ident">i4r</span>.<span class="ident">is_err</span>());
+        <span class="kw">let </span>i4r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_4);
+        <span class="macro">assert!</span>(i4r.is_err());
 
-        <span class="comment">// invalid; duplicate `amount.1=` field</span>
-        <span class="kw">let</span> <span class="ident">invalid_5</span> <span class="op">=</span>
+        <span class="comment">// invalid; duplicate `amount.1=` field
+        </span><span class="kw">let </span>invalid_5 =
             <span class="string">&quot;zcash:?amount.1=1.234&amp;amount.1=2.345&amp;address.1=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i5r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_5</span>);
-        <span class="macro">assert!</span>(<span class="ident">i5r</span>.<span class="ident">is_err</span>());
+        <span class="kw">let </span>i5r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_5);
+        <span class="macro">assert!</span>(i5r.is_err());
 
-        <span class="comment">//invalid; memo associated with t-addr</span>
-        <span class="kw">let</span> <span class="ident">invalid_6</span> <span class="op">=</span> <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=123.456&amp;memo=eyAia2V5IjogIlRoaXMgaXMgYSBKU09OLXN0cnVjdHVyZWQgbWVtby4iIH0&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=0.789&amp;memo.1=VGhpcyBpcyBhIHVuaWNvZGUgbWVtbyDinKjwn6aE8J-PhvCfjok&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i6r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_6</span>);
-        <span class="macro">assert!</span>(<span class="ident">i6r</span>.<span class="ident">is_err</span>());
+        <span class="comment">//invalid; memo associated with t-addr
+        </span><span class="kw">let </span>invalid_6 = <span class="string">&quot;zcash:?address=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&amp;amount=123.456&amp;memo=eyAia2V5IjogIlRoaXMgaXMgYSBKU09OLXN0cnVjdHVyZWQgbWVtby4iIH0&amp;address.1=ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez&amp;amount.1=0.789&amp;memo.1=VGhpcyBpcyBhIHVuaWNvZGUgbWVtbyDinKjwn6aE8J-PhvCfjok&quot;</span>;
+        <span class="kw">let </span>i6r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_6);
+        <span class="macro">assert!</span>(i6r.is_err());
 
-        <span class="comment">// invalid; amount component exceeds an i64</span>
-        <span class="comment">// 9223372036854775808 = i64::MAX + 1</span>
-        <span class="kw">let</span> <span class="ident">invalid_7</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=9223372036854775808&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i7r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_7</span>);
-        <span class="macro">assert!</span>(<span class="ident">i7r</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; amount component exceeds an i64
+        // 9223372036854775808 = i64::MAX + 1
+        </span><span class="kw">let </span>invalid_7 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=9223372036854775808&quot;</span>;
+        <span class="kw">let </span>i7r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_7);
+        <span class="macro">assert!</span>(i7r.is_err());
 
-        <span class="comment">// invalid; amount component wraps into a valid small positive i64</span>
-        <span class="comment">// 18446744073709551624</span>
-        <span class="kw">let</span> <span class="ident">invalid_7a</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=18446744073709551624&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i7ar</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_7a</span>);
-        <span class="macro">assert!</span>(<span class="ident">i7ar</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; amount component wraps into a valid small positive i64
+        // 18446744073709551624
+        </span><span class="kw">let </span>invalid_7a = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=18446744073709551624&quot;</span>;
+        <span class="kw">let </span>i7ar = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_7a);
+        <span class="macro">assert!</span>(i7ar.is_err());
 
-        <span class="comment">// invalid; amount component is MAX_MONEY</span>
-        <span class="comment">// 21000000.00000001</span>
-        <span class="kw">let</span> <span class="ident">invalid_8</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=21000000.00000001&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i8r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_8</span>);
-        <span class="macro">assert!</span>(<span class="ident">i8r</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; amount component is MAX_MONEY
+        // 21000000.00000001
+        </span><span class="kw">let </span>invalid_8 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=21000000.00000001&quot;</span>;
+        <span class="kw">let </span>i8r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_8);
+        <span class="macro">assert!</span>(i8r.is_err());
 
-        <span class="comment">// invalid; negative amount</span>
-        <span class="kw">let</span> <span class="ident">invalid_9</span> <span class="op">=</span> <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=-1&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i9r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_9</span>);
-        <span class="macro">assert!</span>(<span class="ident">i9r</span>.<span class="ident">is_err</span>());
+        <span class="comment">// invalid; negative amount
+        </span><span class="kw">let </span>invalid_9 = <span class="string">&quot;zcash:ztestsapling10yy2ex5dcqkclhc7z7yrnjq2z6feyjad56ptwlfgmy77dmaqqrl9gyhprdx59qgmsnyfska2kez?amount=-1&quot;</span>;
+        <span class="kw">let </span>i9r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_9);
+        <span class="macro">assert!</span>(i9r.is_err());
 
-        <span class="comment">// invalid; parameter index too large</span>
-        <span class="kw">let</span> <span class="ident">invalid_10</span> <span class="op">=</span>
+        <span class="comment">// invalid; parameter index too large
+        </span><span class="kw">let </span>invalid_10 =
             <span class="string">&quot;zcash:?amount.10000=1.23&amp;address.10000=tmEZhbWHTpdKMw5it8YDspUXSMGQyFwovpU&quot;</span>;
-        <span class="kw">let</span> <span class="ident">i10r</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">invalid_10</span>);
-        <span class="macro">assert!</span>(<span class="ident">i10r</span>.<span class="ident">is_err</span>());
+        <span class="kw">let </span>i10r = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, invalid_10);
+        <span class="macro">assert!</span>(i10r.is_err());
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-    <span class="macro">proptest!</span> {
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_address</span>(<span class="ident">addr</span> <span class="kw">in</span> <span class="ident">arb_addr</span>()) {
-            <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">addr</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">RecipientAddress::decode</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>), <span class="prelude-val">Some</span>(<span class="ident">addr</span>));
+    <span class="attribute">#[cfg(all(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+    </span><span class="macro">proptest! </span>{
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_address(addr <span class="kw">in </span>arb_addr()) {
+            <span class="kw">let </span>a = addr.encode(<span class="kw-2">&amp;</span>TEST_NETWORK);
+            <span class="macro">assert_eq!</span>(RecipientAddress::decode(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;</span>a), <span class="prelude-val">Some</span>(addr));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_address_str</span>(<span class="ident">a</span> <span class="kw">in</span> <span class="ident">arb_addr_str</span>()) {
-            <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">RecipientAddress::decode</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">addr</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>), <span class="ident">a</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_address_str(a <span class="kw">in </span>arb_addr_str()) {
+            <span class="kw">let </span>addr = RecipientAddress::decode(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;</span>a).unwrap();
+            <span class="macro">assert_eq!</span>(addr.encode(<span class="kw-2">&amp;</span>TEST_NETWORK), a);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_amount</span>(<span class="ident">amt</span> <span class="kw">in</span> <span class="ident">arb_nonnegative_amount</span>()) {
-            <span class="kw">let</span> <span class="ident">amt_str</span> <span class="op">=</span> <span class="ident">amount_str</span>(<span class="ident">amt</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">amt</span>, <span class="ident">parse_amount</span>(<span class="kw-2">&amp;</span><span class="ident">amt_str</span>).<span class="ident">unwrap</span>().<span class="number">1</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_amount(amt <span class="kw">in </span>arb_nonnegative_amount()) {
+            <span class="kw">let </span>amt_str = amount_str(amt).unwrap();
+            <span class="macro">assert_eq!</span>(amt, parse_amount(<span class="kw-2">&amp;</span>amt_str).unwrap().<span class="number">1</span>);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_str_param</span>(
-            <span class="ident">message</span> <span class="kw">in</span> <span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>(), <span class="ident">i</span> <span class="kw">in</span> <span class="ident">proptest::option::of</span>(<span class="number">0usize</span>..<span class="number">2000</span>)) {
-            <span class="kw">let</span> <span class="ident">fragment</span> <span class="op">=</span> <span class="ident">str_param</span>(<span class="string">&quot;message&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">message</span>, <span class="ident">i</span>);
-            <span class="kw">let</span> (<span class="ident">rest</span>, <span class="ident">iparam</span>) <span class="op">=</span> <span class="ident">zcashparam</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>)(<span class="kw-2">&amp;</span><span class="ident">fragment</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">rest</span>, <span class="string">&quot;&quot;</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">iparam</span>.<span class="ident">param</span>, <span class="ident">Param::Message</span>(<span class="ident">message</span>));
-            <span class="macro">assert_eq!</span>(<span class="ident">iparam</span>.<span class="ident">payment_index</span>, <span class="ident">i</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_str_param(
+            message <span class="kw">in </span>any::&lt;String&gt;(), i <span class="kw">in </span>proptest::option::of(<span class="number">0usize</span>..<span class="number">2000</span>)) {
+            <span class="kw">let </span>fragment = str_param(<span class="string">&quot;message&quot;</span>, <span class="kw-2">&amp;</span>message, i);
+            <span class="kw">let </span>(rest, iparam) = zcashparam(<span class="kw-2">&amp;</span>TEST_NETWORK)(<span class="kw-2">&amp;</span>fragment).unwrap();
+            <span class="macro">assert_eq!</span>(rest, <span class="string">&quot;&quot;</span>);
+            <span class="macro">assert_eq!</span>(iparam.param, Param::Message(message));
+            <span class="macro">assert_eq!</span>(iparam.payment_index, i.unwrap_or(<span class="number">0</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_memo_param</span>(
-            <span class="ident">memo</span> <span class="kw">in</span> <span class="ident">arb_valid_memo</span>(), <span class="ident">i</span> <span class="kw">in</span> <span class="ident">proptest::option::of</span>(<span class="number">0usize</span>..<span class="number">2000</span>)) {
-            <span class="kw">let</span> <span class="ident">fragment</span> <span class="op">=</span> <span class="ident">memo_param</span>(<span class="kw-2">&amp;</span><span class="ident">memo</span>, <span class="ident">i</span>);
-            <span class="kw">let</span> (<span class="ident">rest</span>, <span class="ident">iparam</span>) <span class="op">=</span> <span class="ident">zcashparam</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>)(<span class="kw-2">&amp;</span><span class="ident">fragment</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">rest</span>, <span class="string">&quot;&quot;</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">iparam</span>.<span class="ident">param</span>, <span class="ident">Param::Memo</span>(<span class="ident">memo</span>));
-            <span class="macro">assert_eq!</span>(<span class="ident">iparam</span>.<span class="ident">payment_index</span>, <span class="ident">i</span>.<span class="ident">unwrap_or</span>(<span class="number">0</span>));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_memo_param(
+            memo <span class="kw">in </span>arb_valid_memo(), i <span class="kw">in </span>proptest::option::of(<span class="number">0usize</span>..<span class="number">2000</span>)) {
+            <span class="kw">let </span>fragment = memo_param(<span class="kw-2">&amp;</span>memo, i);
+            <span class="kw">let </span>(rest, iparam) = zcashparam(<span class="kw-2">&amp;</span>TEST_NETWORK)(<span class="kw-2">&amp;</span>fragment).unwrap();
+            <span class="macro">assert_eq!</span>(rest, <span class="string">&quot;&quot;</span>);
+            <span class="macro">assert_eq!</span>(iparam.param, Param::Memo(memo));
+            <span class="macro">assert_eq!</span>(iparam.payment_index, i.unwrap_or(<span class="number">0</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_request</span>(<span class="kw-2">mut</span> <span class="ident">req</span> <span class="kw">in</span> <span class="ident">arb_zip321_request</span>()) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">req_uri</span>) <span class="op">=</span> <span class="ident">req</span>.<span class="ident">to_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>) {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">req_uri</span>).<span class="ident">unwrap</span>();
-                <span class="macro">assert!</span>(<span class="ident">TransactionRequest::normalize_and_eq</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">parsed</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">req</span>));
-            } <span class="kw">else</span> {
-                <span class="macro">panic!</span>(<span class="string">&quot;Generated invalid payment request: {:?}&quot;</span>, <span class="ident">req</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_request(<span class="kw-2">mut </span>req <span class="kw">in </span>arb_zip321_request()) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(req_uri) = req.to_uri(<span class="kw-2">&amp;</span>TEST_NETWORK) {
+                <span class="kw">let </span><span class="kw-2">mut </span>parsed = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;</span>req_uri).unwrap();
+                <span class="macro">assert!</span>(TransactionRequest::normalize_and_eq(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;mut </span>parsed, <span class="kw-2">&amp;mut </span>req));
+            } <span class="kw">else </span>{
+                <span class="macro">panic!</span>(<span class="string">&quot;Generated invalid payment request: {:?}&quot;</span>, req);
             }
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">prop_zip321_roundtrip_uri</span>(<span class="ident">uri</span> <span class="kw">in</span> <span class="ident">arb_zip321_uri</span>()) {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">parsed</span> <span class="op">=</span> <span class="ident">TransactionRequest::from_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>, <span class="kw-2">&amp;</span><span class="ident">uri</span>).<span class="ident">unwrap</span>();
-            <span class="ident">parsed</span>.<span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>);
-            <span class="kw">let</span> <span class="ident">serialized</span> <span class="op">=</span> <span class="ident">parsed</span>.<span class="ident">to_uri</span>(<span class="kw-2">&amp;</span><span class="ident">TEST_NETWORK</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">serialized</span>, <span class="prelude-val">Some</span>(<span class="ident">uri</span>))
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>prop_zip321_roundtrip_uri(uri <span class="kw">in </span>arb_zip321_uri()) {
+            <span class="kw">let </span><span class="kw-2">mut </span>parsed = TransactionRequest::from_uri(<span class="kw-2">&amp;</span>TEST_NETWORK, <span class="kw-2">&amp;</span>uri).unwrap();
+            parsed.normalize(<span class="kw-2">&amp;</span>TEST_NETWORK);
+            <span class="kw">let </span>serialized = parsed.to_uri(<span class="kw-2">&amp;</span>TEST_NETWORK);
+            <span class="macro">assert_eq!</span>(serialized, <span class="prelude-val">Some</span>(uri))
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_backend" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_backend" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

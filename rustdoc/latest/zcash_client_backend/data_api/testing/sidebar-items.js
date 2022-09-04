@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["MockBlockSource",""],["MockWalletDb",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["MockBlockSource",""],["MockWalletDb",""]]};

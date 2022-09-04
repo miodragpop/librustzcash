@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["MockTxProver",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["MockTxProver",""]]};

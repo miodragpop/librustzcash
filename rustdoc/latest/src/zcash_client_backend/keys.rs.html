@@ -1,12 +1,12 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend&#x2F;src&#x2F;keys.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keys.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_client_backend/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1"> 1</span>
-<span id="2"> 2</span>
-<span id="3"> 3</span>
-<span id="4"> 4</span>
-<span id="5"> 5</span>
-<span id="6"> 6</span>
-<span id="7"> 7</span>
-<span id="8"> 8</span>
-<span id="9"> 9</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend/src/keys.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>keys.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_client_backend/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
 <span id="10">10</span>
 <span id="11">11</span>
 <span id="12">12</span>
@@ -43,52 +43,924 @@
 <span id="43">43</span>
 <span id="44">44</span>
 <span id="45">45</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Helper functions for managing light client key material.</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Helper functions for managing light client key material.
+</span><span class="kw">use </span>zcash_address::unified::{<span class="self">self</span>, Container, Encoding};
+<span class="kw">use </span>zcash_primitives::{
+    consensus,
+    sapling::keys <span class="kw">as </span>sapling_keys,
+    zip32::{AccountId, DiversifierIndex},
+};
 
-<span class="kw">use</span> <span class="ident">zcash_primitives::zip32</span>::{<span class="ident">ChildIndex</span>, <span class="ident">ExtendedSpendingKey</span>};
+<span class="kw">use </span><span class="kw">crate</span>::address::UnifiedAddress;
 
-<span class="doccomment">/// Derives the ZIP 32 [`ExtendedSpendingKey`] for a given coin type and account from the</span>
-<span class="doccomment">/// given seed.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Panics</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Panics if `seed` is shorter than 32 bytes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use zcash_primitives::{constants::testnet::COIN_TYPE};</span>
-<span class="doccomment">/// use zcash_client_backend::{keys::spending_key};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let extsk = spending_key(&amp;[0; 32][..], COIN_TYPE, 0);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// [`ExtendedSpendingKey`]: zcash_primitives::zip32::ExtendedSpendingKey</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">spending_key</span>(<span class="ident">seed</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">coin_type</span>: <span class="ident">u32</span>, <span class="ident">account</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ExtendedSpendingKey</span> {
-    <span class="kw">if</span> <span class="ident">seed</span>.<span class="ident">len</span>() <span class="op">&lt;</span> <span class="number">32</span> {
-        <span class="macro">panic!</span>(<span class="string">&quot;ZIP 32 seeds MUST be at least 32 bytes&quot;</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">use </span>std::convert::TryInto;
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">use </span>zcash_primitives::legacy::keys::{<span class="self">self </span><span class="kw">as </span>legacy, IncomingViewingKey};
+
+<span class="kw">pub mod </span>sapling {
+    <span class="kw">use </span>zcash_primitives::zip32::{AccountId, ChildIndex};
+    <span class="kw">pub use </span>zcash_primitives::zip32::{ExtendedFullViewingKey, ExtendedSpendingKey};
+
+    <span class="doccomment">/// Derives the ZIP 32 [`ExtendedSpendingKey`] for a given coin type and account from the
+    /// given seed.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `seed` is shorter than 32 bytes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use zcash_primitives::{
+    ///     constants::testnet::COIN_TYPE,
+    ///     zip32::AccountId,
+    /// };
+    /// use zcash_client_backend::{
+    ///     keys::sapling,
+    /// };
+    ///
+    /// let extsk = sapling::spending_key(&amp;[0; 32][..], COIN_TYPE, AccountId::from(0));
+    /// ```
+    /// [`ExtendedSpendingKey`]: zcash_primitives::zip32::ExtendedSpendingKey
+    </span><span class="kw">pub fn </span>spending_key(seed: <span class="kw-2">&amp;</span>[u8], coin_type: u32, account: AccountId) -&gt; ExtendedSpendingKey {
+        <span class="kw">if </span>seed.len() &lt; <span class="number">32 </span>{
+            <span class="macro">panic!</span>(<span class="string">&quot;ZIP 32 seeds MUST be at least 32 bytes&quot;</span>);
+        }
+
+        ExtendedSpendingKey::from_path(
+            <span class="kw-2">&amp;</span>ExtendedSpendingKey::master(seed),
+            <span class="kw-2">&amp;</span>[
+                ChildIndex::Hardened(<span class="number">32</span>),
+                ChildIndex::Hardened(coin_type),
+                ChildIndex::Hardened(account.into()),
+            ],
+        )
     }
-
-    <span class="ident">ExtendedSpendingKey::from_path</span>(
-        <span class="kw-2">&amp;</span><span class="ident">ExtendedSpendingKey::master</span>(<span class="kw-2">&amp;</span><span class="ident">seed</span>),
-        <span class="kw-2">&amp;</span>[
-            <span class="ident">ChildIndex::Hardened</span>(<span class="number">32</span>),
-            <span class="ident">ChildIndex::Hardened</span>(<span class="ident">coin_type</span>),
-            <span class="ident">ChildIndex::Hardened</span>(<span class="ident">account</span>),
-        ],
-    )
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::spending_key</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">fn </span>to_transparent_child_index(j: DiversifierIndex) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+    <span class="kw">let </span>(low_4_bytes, rest) = j.<span class="number">0</span>.split_at(<span class="number">4</span>);
+    <span class="kw">let </span>transparent_j = u32::from_le_bytes(low_4_bytes.try_into().unwrap());
+    <span class="kw">if </span>transparent_j &gt; (<span class="number">0x7FFFFFFF</span>) || rest.iter().any(|b| b != <span class="kw-2">&amp;</span><span class="number">0</span>) {
+        <span class="prelude-val">None
+    </span>} <span class="kw">else </span>{
+        <span class="prelude-val">Some</span>(transparent_j)
+    }
+}
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="kw">fn</span> <span class="ident">spending_key_panics_on_short_seed</span>() {
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">spending_key</span>(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">31</span>][..], <span class="number">0</span>, <span class="number">0</span>);
+<span class="attribute">#[derive(Debug)]
+#[doc(hidden)]
+</span><span class="kw">pub enum </span>DerivationError {
+    Orchard(orchard::zip32::Error),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span>Transparent(hdwallet::error::Error),
+}
+
+<span class="doccomment">/// A set of viewing keys that are all associated with a single
+/// ZIP-0032 account identifier.
+</span><span class="attribute">#[derive(Clone, Debug)]
+#[doc(hidden)]
+</span><span class="kw">pub struct </span>UnifiedSpendingKey {
+    account: AccountId,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span>transparent: legacy::AccountPrivKey,
+    sapling: sapling::ExtendedSpendingKey,
+    orchard: orchard::keys::SpendingKey,
+}
+
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">impl </span>UnifiedSpendingKey {
+    <span class="kw">pub fn </span>from_seed&lt;P: consensus::Parameters&gt;(
+        params: <span class="kw-2">&amp;</span>P,
+        seed: <span class="kw-2">&amp;</span>[u8],
+        account: AccountId,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;UnifiedSpendingKey, DerivationError&gt; {
+        <span class="kw">if </span>seed.len() &lt; <span class="number">32 </span>{
+            <span class="macro">panic!</span>(<span class="string">&quot;ZIP 32 seeds MUST be at least 32 bytes&quot;</span>);
+        }
+
+        <span class="kw">let </span>orchard =
+            orchard::keys::SpendingKey::from_zip32_seed(seed, params.coin_type(), account.into())
+                .map_err(DerivationError::Orchard)<span class="question-mark">?</span>;
+
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span>transparent = legacy::AccountPrivKey::from_seed(params, seed, account)
+            .map_err(DerivationError::Transparent)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(UnifiedSpendingKey {
+            account,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>transparent,
+            sapling: sapling::spending_key(seed, params.coin_type(), account),
+            orchard,
+        })
+    }
+
+    <span class="kw">pub fn </span>to_unified_full_viewing_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; UnifiedFullViewingKey {
+        UnifiedFullViewingKey {
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>transparent: <span class="prelude-val">Some</span>(<span class="self">self</span>.transparent.to_account_pubkey()),
+            sapling: <span class="prelude-val">Some</span>(sapling::ExtendedFullViewingKey::from(<span class="kw-2">&amp;</span><span class="self">self</span>.sapling).into()),
+            orchard: <span class="prelude-val">Some</span>((<span class="kw-2">&amp;</span><span class="self">self</span>.orchard).into()),
+            unknown: <span class="macro">vec!</span>[],
+        }
+    }
+
+    <span class="kw">pub fn </span>account(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
+        <span class="self">self</span>.account
+    }
+
+    <span class="doccomment">/// Returns the transparent component of the unified key at the
+    /// BIP44 path `m/44&#39;/&lt;coin_type&gt;&#39;/&lt;account&gt;&#39;`.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span><span class="kw">pub fn </span>transparent(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>legacy::AccountPrivKey {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.transparent
+    }
+
+    <span class="doccomment">/// Returns the Sapling extended spending key component of this unified spending key.
+    </span><span class="kw">pub fn </span>sapling(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>sapling::ExtendedSpendingKey {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.sapling
+    }
+
+    <span class="doccomment">/// Returns the Orchard spending key component of this unified spending key.
+    </span><span class="kw">pub fn </span>orchard(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>orchard::keys::SpendingKey {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.orchard
+    }
+}
+
+<span class="doccomment">/// A set of viewing keys that are all associated with a single
+/// ZIP-0032 account identifier.
+</span><span class="attribute">#[derive(Clone, Debug)]
+#[doc(hidden)]
+</span><span class="kw">pub struct </span>UnifiedFullViewingKey {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span>transparent: <span class="prelude-ty">Option</span>&lt;legacy::AccountPubKey&gt;,
+    sapling: <span class="prelude-ty">Option</span>&lt;sapling_keys::DiversifiableFullViewingKey&gt;,
+    orchard: <span class="prelude-ty">Option</span>&lt;orchard::keys::FullViewingKey&gt;,
+    unknown: Vec&lt;(u32, Vec&lt;u8&gt;)&gt;,
+}
+
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">impl </span>UnifiedFullViewingKey {
+    <span class="doccomment">/// Construct a new unified full viewing key, if the required components are present.
+    </span><span class="kw">pub fn </span>new(
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)] </span>transparent: <span class="prelude-ty">Option</span>&lt;legacy::AccountPubKey&gt;,
+        sapling: <span class="prelude-ty">Option</span>&lt;sapling_keys::DiversifiableFullViewingKey&gt;,
+        orchard: <span class="prelude-ty">Option</span>&lt;orchard::keys::FullViewingKey&gt;,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;UnifiedFullViewingKey&gt; {
+        <span class="kw">if </span>sapling.is_none() {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(UnifiedFullViewingKey {
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+                </span>transparent,
+                sapling,
+                orchard,
+                <span class="comment">// We don&#39;t allow constructing new UFVKs with unknown items, but we store
+                // this to allow parsing such UFVKs.
+                </span>unknown: <span class="macro">vec!</span>[],
+            })
+        }
+    }
+
+    <span class="doccomment">/// Parses a `UnifiedFullViewingKey` from its [ZIP 316] string encoding.
+    ///
+    /// [ZIP 316]: https://zips.z.cash/zip-0316
+    </span><span class="kw">pub fn </span>decode&lt;P: consensus::Parameters&gt;(params: <span class="kw-2">&amp;</span>P, encoding: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, String&gt; {
+        <span class="kw">let </span>(net, ufvk) = unified::Ufvk::decode(encoding).map_err(|e| e.to_string())<span class="question-mark">?</span>;
+        <span class="kw">let </span>expected_net = params.address_network().expect(<span class="string">&quot;Unrecognized network&quot;</span>);
+        <span class="kw">if </span>net != expected_net {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(
+                <span class="string">&quot;UFVK is for network {:?} but we expected {:?}&quot;</span>,
+                net, expected_net,
+            ));
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>orchard = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>sapling = <span class="prelude-val">None</span>;
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span><span class="kw-2">mut </span>transparent = <span class="prelude-val">None</span>;
+
+        <span class="comment">// We can use as-parsed order here for efficiency, because we&#39;re breaking out the
+        // receivers we support from the unknown receivers.
+        </span><span class="kw">let </span>unknown = ufvk
+            .items_as_parsed()
+            .iter()
+            .filter_map(|receiver| <span class="kw">match </span>receiver {
+                unified::Fvk::Orchard(data) =&gt; orchard::keys::FullViewingKey::from_bytes(data)
+                    .ok_or(<span class="string">&quot;Invalid Orchard FVK in Unified FVK&quot;</span>)
+                    .map(|addr| {
+                        orchard = <span class="prelude-val">Some</span>(addr);
+                        <span class="prelude-val">None
+                    </span>})
+                    .transpose(),
+                unified::Fvk::Sapling(data) =&gt; {
+                    sapling_keys::DiversifiableFullViewingKey::from_bytes(data)
+                        .ok_or(<span class="string">&quot;Invalid Sapling FVK in Unified FVK&quot;</span>)
+                        .map(|pa| {
+                            sapling = <span class="prelude-val">Some</span>(pa);
+                            <span class="prelude-val">None
+                        </span>})
+                        .transpose()
+                }
+                <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+                </span>unified::Fvk::P2pkh(data) =&gt; legacy::AccountPubKey::deserialize(data)
+                    .map_err(|<span class="kw">_</span>| <span class="string">&quot;Invalid transparent FVK in Unified FVK&quot;</span>)
+                    .map(|tfvk| {
+                        transparent = <span class="prelude-val">Some</span>(tfvk);
+                        <span class="prelude-val">None
+                    </span>})
+                    .transpose(),
+                <span class="attribute">#[cfg(not(feature = <span class="string">&quot;transparent-inputs&quot;</span>))]
+                </span>unified::Fvk::P2pkh(data) =&gt; {
+                    <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((unified::Typecode::P2pkh.into(), data.to_vec())))
+                }
+                unified::Fvk::Unknown { typecode, data } =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="kw-2">*</span>typecode, data.clone()))),
+            })
+            .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>transparent,
+            sapling,
+            orchard,
+            unknown,
+        })
+    }
+
+    <span class="doccomment">/// Returns the string encoding of this `UnifiedFullViewingKey` for the given network.
+    </span><span class="kw">pub fn </span>encode&lt;P: consensus::Parameters&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, params: <span class="kw-2">&amp;</span>P) -&gt; String {
+        <span class="kw">let </span>items = std::iter::empty()
+            .chain(
+                <span class="self">self</span>.orchard
+                    .as_ref()
+                    .map(|fvk| fvk.to_bytes())
+                    .map(unified::Fvk::Orchard),
+            )
+            .chain(
+                <span class="self">self</span>.sapling
+                    .as_ref()
+                    .map(|dfvk| dfvk.to_bytes())
+                    .map(unified::Fvk::Sapling),
+            )
+            .chain(
+                <span class="self">self</span>.unknown
+                    .iter()
+                    .map(|(typecode, data)| unified::Fvk::Unknown {
+                        typecode: <span class="kw-2">*</span>typecode,
+                        data: data.clone(),
+                    }),
+            );
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span>items = items.chain(
+            <span class="self">self</span>.transparent
+                .as_ref()
+                .map(|tfvk| tfvk.serialize().try_into().unwrap())
+                .map(unified::Fvk::P2pkh),
+        );
+
+        <span class="kw">let </span>ufvk = unified::Ufvk::try_from_items(items.collect())
+            .expect(<span class="string">&quot;UnifiedFullViewingKey should only be constructed safely&quot;</span>);
+        ufvk.encode(<span class="kw-2">&amp;</span>params.address_network().expect(<span class="string">&quot;Unrecognized network&quot;</span>))
+    }
+
+    <span class="doccomment">/// Returns the transparent component of the unified key at the
+    /// BIP44 path `m/44&#39;/&lt;coin_type&gt;&#39;/&lt;account&gt;&#39;`.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span><span class="kw">pub fn </span>transparent(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>legacy::AccountPubKey&gt; {
+        <span class="self">self</span>.transparent.as_ref()
+    }
+
+    <span class="doccomment">/// Returns the Sapling diversifiable full viewing key component of this unified key.
+    </span><span class="kw">pub fn </span>sapling(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>sapling_keys::DiversifiableFullViewingKey&gt; {
+        <span class="self">self</span>.sapling.as_ref()
+    }
+
+    <span class="doccomment">/// Returns the Orchard full viewing key component of this unified key.
+    </span><span class="kw">pub fn </span>orchard(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>orchard::keys::FullViewingKey&gt; {
+        <span class="self">self</span>.orchard.as_ref()
+    }
+
+    <span class="doccomment">/// Attempts to derive the Unified Address for the given diversifier index.
+    ///
+    /// Returns `None` if the specified index does not produce a valid diversifier.
+    </span><span class="comment">// TODO: Allow filtering down by receiver types?
+    </span><span class="kw">pub fn </span>address(<span class="kw-2">&amp;</span><span class="self">self</span>, j: DiversifierIndex) -&gt; <span class="prelude-ty">Option</span>&lt;UnifiedAddress&gt; {
+        <span class="kw">let </span>sapling = <span class="kw">if let </span><span class="prelude-val">Some</span>(extfvk) = <span class="self">self</span>.sapling.as_ref() {
+            <span class="prelude-val">Some</span>(extfvk.address(j)<span class="question-mark">?</span>)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span>transparent = <span class="kw">if let </span><span class="prelude-val">Some</span>(tfvk) = <span class="self">self</span>.transparent.as_ref() {
+            <span class="kw">match </span>to_transparent_child_index(j) {
+                <span class="prelude-val">Some</span>(transparent_j) =&gt; <span class="kw">match </span>tfvk
+                    .derive_external_ivk()
+                    .and_then(|tivk| tivk.derive_address(transparent_j))
+                {
+                    <span class="prelude-val">Ok</span>(taddr) =&gt; <span class="prelude-val">Some</span>(taddr),
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+                },
+                <span class="comment">// Diversifier doesn&#39;t generate a valid transparent child index.
+                </span><span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
+            }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;transparent-inputs&quot;</span>))]
+        </span><span class="kw">let </span>transparent = <span class="prelude-val">None</span>;
+
+        UnifiedAddress::from_receivers(<span class="prelude-val">None</span>, sapling, transparent)
+    }
+
+    <span class="doccomment">/// Searches the diversifier space starting at diversifier index `j` for one which will
+    /// produce a valid diversifier, and return the Unified Address constructed using that
+    /// diversifier along with the index at which the valid diversifier was found.
+    ///
+    /// Returns `None` if no valid diversifier exists
+    </span><span class="kw">pub fn </span>find_address(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="kw-2">mut </span>j: DiversifierIndex,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;(UnifiedAddress, DiversifierIndex)&gt; {
+        <span class="comment">// If we need to generate a transparent receiver, check that the user has not
+        // specified an invalid transparent child index, from which we can never search to
+        // find a valid index.
+        </span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">if </span><span class="self">self</span>.transparent.is_some() &amp;&amp; to_transparent_child_index(j).is_none() {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
+        }
+
+        <span class="comment">// Find a working diversifier and construct the associated address.
+        </span><span class="kw">loop </span>{
+            <span class="kw">let </span>res = <span class="self">self</span>.address(j);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ua) = res {
+                <span class="kw">break </span><span class="prelude-val">Some</span>((ua, j));
+            }
+            <span class="kw">if </span>j.increment().is_err() {
+                <span class="kw">break </span><span class="prelude-val">None</span>;
+            }
+        }
+    }
+
+    <span class="doccomment">/// Returns the Unified Address corresponding to the smallest valid diversifier index,
+    /// along with that index.
+    </span><span class="kw">pub fn </span>default_address(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (UnifiedAddress, DiversifierIndex) {
+        <span class="self">self</span>.find_address(DiversifierIndex::new())
+            .expect(<span class="string">&quot;UFVK should have at least one valid diversifier&quot;</span>)
+    }
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{sapling, UnifiedFullViewingKey};
+    <span class="kw">use </span>zcash_primitives::{
+        consensus::MAIN_NETWORK,
+        zip32::{AccountId, ExtendedFullViewingKey},
+    };
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span><span class="kw">use </span>{
+        <span class="kw">crate</span>::encoding::AddressCodec,
+        zcash_primitives::legacy::{
+            <span class="self">self</span>,
+            keys::{AccountPrivKey, IncomingViewingKey},
+        },
+    };
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span><span class="kw">fn </span>seed() -&gt; Vec&lt;u8&gt; {
+        <span class="kw">let </span>seed_hex = <span class="string">&quot;6ef5f84def6f4b9d38f466586a8380a38593bd47c8cda77f091856176da47f26b5bd1c8d097486e5635df5a66e820d28e1d73346f499801c86228d43f390304f&quot;</span>;
+        hex::decode(<span class="kw-2">&amp;</span>seed_hex).unwrap()
+    }
+
+    <span class="attribute">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>spending_key_panics_on_short_seed() {
+        <span class="kw">let _ </span>= sapling::spending_key(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">31</span>][..], <span class="number">0</span>, AccountId::from(<span class="number">0</span>));
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>pk_to_taddr() {
+        <span class="kw">let </span>taddr =
+            legacy::keys::AccountPrivKey::from_seed(<span class="kw-2">&amp;</span>MAIN_NETWORK, <span class="kw-2">&amp;</span>seed(), AccountId::from(<span class="number">0</span>))
+                .unwrap()
+                .to_account_pubkey()
+                .derive_external_ivk()
+                .unwrap()
+                .derive_address(<span class="number">0</span>)
+                .unwrap()
+                .encode(<span class="kw-2">&amp;</span>MAIN_NETWORK);
+        <span class="macro">assert_eq!</span>(taddr, <span class="string">&quot;t1PKtYdJJHhc3Pxowmznkg7vdTwnhEsCvR4&quot;</span>.to_string());
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>ufvk_round_trip() {
+        <span class="kw">let </span>account = <span class="number">0</span>.into();
+
+        <span class="kw">let </span>orchard = {
+            <span class="kw">let </span>sk = orchard::keys::SpendingKey::from_zip32_seed(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>], <span class="number">0</span>, <span class="number">0</span>).unwrap();
+            <span class="prelude-val">Some</span>(orchard::keys::FullViewingKey::from(<span class="kw-2">&amp;</span>sk))
+        };
+
+        <span class="kw">let </span>sapling = {
+            <span class="kw">let </span>extsk = sapling::spending_key(<span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>], <span class="number">0</span>, account);
+            <span class="prelude-val">Some</span>(ExtendedFullViewingKey::from(<span class="kw-2">&amp;</span>extsk).into())
+        };
+
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span>transparent = {
+            <span class="kw">let </span>privkey =
+                AccountPrivKey::from_seed(<span class="kw-2">&amp;</span>MAIN_NETWORK, <span class="kw-2">&amp;</span>[<span class="number">0</span>; <span class="number">32</span>], AccountId::from(<span class="number">0</span>)).unwrap();
+            <span class="prelude-val">Some</span>(privkey.to_account_pubkey())
+        };
+
+        <span class="kw">let </span>ufvk = UnifiedFullViewingKey::new(
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>transparent,
+            sapling,
+            orchard,
+        )
+        .unwrap();
+
+        <span class="kw">let </span>encoded = ufvk.encode(<span class="kw-2">&amp;</span>MAIN_NETWORK);
+
+        <span class="comment">// test encoded form against known values
+        </span><span class="kw">let </span>encoded_with_t = <span class="string">&quot;uview1tg6rpjgju2s2j37gkgjq79qrh5lvzr6e0ed3n4sf4hu5qd35vmsh7avl80xa6mx7ryqce9hztwaqwrdthetpy4pc0kce25x453hwcmax02p80pg5savlg865sft9reat07c5vlactr6l2pxtlqtqunt2j9gmvr8spcuzf07af80h5qmut38h0gvcfa9k4rwujacwwca9vu8jev7wq6c725huv8qjmhss3hdj2vh8cfxhpqcm2qzc34msyrfxk5u6dqttt4vv2mr0aajreww5yufpk0gn4xkfm888467k7v6fmw7syqq6cceu078yw8xja502jxr0jgum43lhvpzmf7eu5dmnn6cr6f7p43yw8znzgxg598mllewnx076hljlvynhzwn5es94yrv65tdg3utuz2u3sras0wfcq4adxwdvlk387d22g3q98t5z74quw2fa4wed32escx8dwh4mw35t4jwf35xyfxnu83mk5s4kw2glkgsshmxk&quot;</span>;
+        <span class="kw">let </span>_encoded_no_t = <span class="string">&quot;uview12z384wdq76ceewlsu0esk7d97qnd23v2qnvhujxtcf2lsq8g4hwzpx44fwxssnm5tg8skyh4tnc8gydwxefnnm0hd0a6c6etmj0pp9jqkdsllkr70u8gpf7ndsfqcjlqn6dec3faumzqlqcmtjf8vp92h7kj38ph2786zx30hq2wru8ae3excdwc8w0z3t9fuw7mt7xy5sn6s4e45kwm0cjp70wytnensgdnev286t3vew3yuwt2hcz865y037k30e428dvgne37xvyeal2vu8yjnznphf9t2rw3gdp0hk5zwq00ws8f3l3j5n3qkqgsyzrwx4qzmgq0xwwk4vz2r6vtsykgz089jncvycmem3535zjwvvtvjw8v98y0d5ydwte575gjm7a7k&quot;</span>;
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="macro">assert_eq!</span>(encoded, encoded_with_t);
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;transparent-inputs&quot;</span>))]
+        </span><span class="macro">assert_eq!</span>(encoded, _encoded_no_t);
+
+        <span class="kw">let </span>decoded = UnifiedFullViewingKey::decode(<span class="kw-2">&amp;</span>MAIN_NETWORK, <span class="kw-2">&amp;</span>encoded).unwrap();
+        <span class="kw">let </span>reencoded = decoded.encode(<span class="kw-2">&amp;</span>MAIN_NETWORK);
+        <span class="macro">assert_eq!</span>(encoded, reencoded);
+
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="macro">assert_eq!</span>(
+            decoded.transparent.map(|t| t.serialize()),
+            ufvk.transparent.as_ref().map(|t| t.serialize()),
+        );
+        <span class="macro">assert_eq!</span>(
+            decoded.sapling.map(|s| s.to_bytes()),
+            ufvk.sapling.map(|s| s.to_bytes()),
+        );
+        <span class="macro">assert_eq!</span>(
+            decoded.orchard.map(|o| o.to_bytes()),
+            ufvk.orchard.map(|o| o.to_bytes()),
+        );
+
+        <span class="kw">let </span>decoded_with_t = UnifiedFullViewingKey::decode(<span class="kw-2">&amp;</span>MAIN_NETWORK, encoded_with_t).unwrap();
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="macro">assert_eq!</span>(
+            decoded_with_t.transparent.map(|t| t.serialize()),
+            ufvk.transparent.as_ref().map(|t| t.serialize()),
+        );
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;transparent-inputs&quot;</span>))]
+        </span><span class="macro">assert_eq!</span>(decoded_with_t.unknown.len(), <span class="number">1</span>);
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_backend" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_backend" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

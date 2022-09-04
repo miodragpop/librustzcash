@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_sqlite&#x2F;src&#x2F;lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_client_sqlite/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_sqlite/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_client_sqlite/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_client_sqlite/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_client_sqlite/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -744,403 +744,648 @@
 <span id="744">744</span>
 <span id="745">745</span>
 <span id="746">746</span>
-</pre><pre class="rust"><code><span class="doccomment">//! *An SQLite-based Zcash light client.*</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `zcash_client_sqlite` contains complete SQLite-based implementations of the [`WalletRead`],</span>
-<span class="doccomment">//! [`WalletWrite`], and [`BlockSource`] traits from the [`zcash_client_backend`] crate. In</span>
-<span class="doccomment">//! combination with [`zcash_client_backend`], it provides a full implementation of a SQLite-backed</span>
-<span class="doccomment">//! client for the Zcash network.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Design</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The light client is built around two SQLite databases:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - A cache database, used to inform the light client about new [`CompactBlock`]s. It is</span>
-<span class="doccomment">//!   read-only within all light client APIs *except* for [`init_cache_database`] which</span>
-<span class="doccomment">//!   can be used to initialize the database.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - A data database, where the light client&#39;s state is stored. It is read-write within</span>
-<span class="doccomment">//!   the light client APIs, and **assumed to be read-only outside these APIs**. Callers</span>
-<span class="doccomment">//!   **MUST NOT** write to the database without using these APIs. Callers **MAY** read</span>
-<span class="doccomment">//!   the database directly in order to extract information for display to users.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Features</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The `mainnet` feature configures the light client for use with the Zcash mainnet. By</span>
-<span class="doccomment">//! default, the light client is configured for use with the Zcash testnet.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`WalletRead`]: zcash_client_backend::data_api::WalletRead</span>
-<span class="doccomment">//! [`WalletWrite`]: zcash_client_backend::data_api::WalletWrite</span>
-<span class="doccomment">//! [`BlockSource`]: zcash_client_backend::data_api::BlockSource</span>
-<span class="doccomment">//! [`CompactBlock`]: zcash_client_backend::proto::compact_formats::CompactBlock</span>
-<span class="doccomment">//! [`init_cache_database`]: crate::chain::init::init_cache_database</span>
+<span id="747">747</span>
+<span id="748">748</span>
+<span id="749">749</span>
+<span id="750">750</span>
+<span id="751">751</span>
+<span id="752">752</span>
+<span id="753">753</span>
+<span id="754">754</span>
+<span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
+<span id="934">934</span>
+<span id="935">935</span>
+<span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
+<span id="942">942</span>
+<span id="943">943</span>
+<span id="944">944</span>
+<span id="945">945</span>
+<span id="946">946</span>
+<span id="947">947</span>
+<span id="948">948</span>
+<span id="949">949</span>
+<span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
+<span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+</pre><pre class="rust"><code><span class="doccomment">//! *An SQLite-based Zcash light client.*
+//!
+//! `zcash_client_sqlite` contains complete SQLite-based implementations of the [`WalletRead`],
+//! [`WalletWrite`], and [`BlockSource`] traits from the [`zcash_client_backend`] crate. In
+//! combination with [`zcash_client_backend`], it provides a full implementation of a SQLite-backed
+//! client for the Zcash network.
+//!
+//! # Design
+//!
+//! The light client is built around two SQLite databases:
+//!
+//! - A cache database, used to inform the light client about new [`CompactBlock`]s. It is
+//!   read-only within all light client APIs *except* for [`init_cache_database`] which
+//!   can be used to initialize the database.
+//!
+//! - A data database, where the light client&#39;s state is stored. It is read-write within
+//!   the light client APIs, and **assumed to be read-only outside these APIs**. Callers
+//!   **MUST NOT** write to the database without using these APIs. Callers **MAY** read
+//!   the database directly in order to extract information for display to users.
+//!
+//! # Features
+//!
+//! The `mainnet` feature configures the light client for use with the Zcash mainnet. By
+//! default, the light client is configured for use with the Zcash testnet.
+//!
+//! [`WalletRead`]: zcash_client_backend::data_api::WalletRead
+//! [`WalletWrite`]: zcash_client_backend::data_api::WalletWrite
+//! [`BlockSource`]: zcash_client_backend::data_api::BlockSource
+//! [`CompactBlock`]: zcash_client_backend::proto::compact_formats::CompactBlock
+//! [`init_cache_database`]: crate::chain::init::init_cache_database
 
-<span class="comment">// Catch documentation errors caused by code changes.</span>
-<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">broken_intra_doc_links</span>)]</span>
+</span><span class="comment">// Catch documentation errors caused by code changes.
+</span><span class="attribute">#![deny(rustdoc::broken_intra_doc_links)]
 
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
+</span><span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::path::Path;
 
-<span class="kw">use</span> <span class="ident">rusqlite</span>::{<span class="ident">Connection</span>, <span class="ident">Statement</span>, <span class="ident">NO_PARAMS</span>};
+<span class="kw">use </span>rusqlite::{Connection, NO_PARAMS};
 
-<span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-    <span class="ident">block::BlockHash</span>,
-    <span class="ident">consensus</span>::{<span class="self">self</span>, <span class="ident">BlockHeight</span>},
-    <span class="ident">memo::Memo</span>,
-    <span class="ident">merkle_tree</span>::{<span class="ident">CommitmentTree</span>, <span class="ident">IncrementalWitness</span>},
-    <span class="ident">sapling</span>::{<span class="ident">Node</span>, <span class="ident">Nullifier</span>, <span class="ident">PaymentAddress</span>},
-    <span class="ident">transaction</span>::{<span class="ident">components::Amount</span>, <span class="ident">TxId</span>},
-    <span class="ident">zip32::ExtendedFullViewingKey</span>,
+<span class="kw">use </span>zcash_primitives::{
+    block::BlockHash,
+    consensus::{<span class="self">self</span>, BlockHeight},
+    memo::Memo,
+    merkle_tree::{CommitmentTree, IncrementalWitness},
+    sapling::{Node, Nullifier, PaymentAddress},
+    transaction::{components::Amount, Transaction, TxId},
+    zip32::{AccountId, ExtendedFullViewingKey},
 };
 
-<span class="kw">use</span> <span class="ident">zcash_client_backend</span>::{
-    <span class="ident">data_api</span>::{
-        <span class="ident">BlockSource</span>, <span class="ident">PrunedBlock</span>, <span class="ident">ReceivedTransaction</span>, <span class="ident">SentTransaction</span>, <span class="ident">WalletRead</span>, <span class="ident">WalletWrite</span>,
+<span class="kw">use </span>zcash_client_backend::{
+    address::RecipientAddress,
+    data_api::{
+        BlockSource, DecryptedTransaction, PrunedBlock, SentTransaction, WalletRead, WalletWrite,
     },
-    <span class="ident">encoding::encode_payment_address</span>,
-    <span class="ident">proto::compact_formats::CompactBlock</span>,
-    <span class="ident">wallet</span>::{<span class="ident">AccountId</span>, <span class="ident">SpendableNote</span>},
+    keys::UnifiedFullViewingKey,
+    proto::compact_formats::CompactBlock,
+    wallet::SpendableNote,
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::SqliteClientError</span>;
+<span class="kw">use </span><span class="kw">crate</span>::error::SqliteClientError;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">chain</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">error</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">wallet</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">use </span>{
+    zcash_client_backend::{
+        data_api::{WalletReadTransparent, WalletWriteTransparent},
+        wallet::WalletTransparentOutput,
+    },
+    zcash_primitives::legacy::TransparentAddress,
+};
 
-<span class="doccomment">/// A newtype wrapper for sqlite primary key values for the notes</span>
-<span class="doccomment">/// table.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">NoteId</span> {
-    <span class="ident">SentNoteId</span>(<span class="ident">i64</span>),
-    <span class="ident">ReceivedNoteId</span>(<span class="ident">i64</span>),
+<span class="kw">mod </span>prepared;
+<span class="kw">pub use </span>prepared::DataConnStmtCache;
+
+<span class="kw">pub mod </span>chain;
+<span class="kw">pub mod </span>error;
+<span class="kw">pub mod </span>wallet;
+
+<span class="doccomment">/// The maximum number of blocks the wallet is allowed to rewind. This is
+/// consistent with the bound in zcashd, and allows block data deeper than
+/// this delta from the chain tip to be pruned.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>PRUNING_HEIGHT: u32 = <span class="number">100</span>;
+
+<span class="doccomment">/// A newtype wrapper for sqlite primary key values for the notes
+/// table.
+</span><span class="attribute">#[derive(Debug, Copy, Clone)]
+</span><span class="kw">pub enum </span>NoteId {
+    SentNoteId(i64),
+    ReceivedNoteId(i64),
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">NoteId</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">NoteId::SentNoteId</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Sent Note {}&quot;</span>, <span class="ident">id</span>),
-            <span class="ident">NoteId::ReceivedNoteId</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Received Note {}&quot;</span>, <span class="ident">id</span>),
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>NoteId {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            NoteId::SentNoteId(id) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Sent Note {}&quot;</span>, id),
+            NoteId::ReceivedNoteId(id) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Received Note {}&quot;</span>, id),
         }
     }
 }
 
-<span class="doccomment">/// A wrapper for the SQLite connection to the wallet database.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="ident">conn</span>: <span class="ident">Connection</span>,
-    <span class="ident">params</span>: <span class="ident">P</span>,
+<span class="doccomment">/// A newtype wrapper for sqlite primary key values for the utxos
+/// table.
+</span><span class="attribute">#[derive(Debug, Copy, Clone)]
+</span><span class="kw">pub struct </span>UtxoId(<span class="kw">pub </span>i64);
+
+<span class="doccomment">/// A wrapper for the SQLite connection to the wallet database.
+</span><span class="kw">pub struct </span>WalletDb&lt;P&gt; {
+    conn: Connection,
+    params: P,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span> <span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Construct a connection to the wallet database stored at the specified path.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_path</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">F</span>, <span class="ident">params</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">rusqlite::Error</span><span class="op">&gt;</span> {
-        <span class="ident">Connection::open</span>(<span class="ident">path</span>).<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">conn</span><span class="op">|</span> <span class="ident">WalletDb</span> { <span class="ident">conn</span>, <span class="ident">params</span> })
+<span class="kw">impl</span>&lt;P: consensus::Parameters&gt; WalletDb&lt;P&gt; {
+    <span class="doccomment">/// Construct a connection to the wallet database stored at the specified path.
+    </span><span class="kw">pub fn </span>for_path&lt;F: AsRef&lt;Path&gt;&gt;(path: F, params: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, rusqlite::Error&gt; {
+        Connection::open(path).map(<span class="kw">move </span>|conn| WalletDb { conn, params })
     }
 
-    <span class="doccomment">/// Given a wallet database connection, obtain a handle for the write operations</span>
-    <span class="doccomment">/// for that database. This operation may eagerly initialize and cache sqlite</span>
-    <span class="doccomment">/// prepared statements that are used in write operations.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_update_ops</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">P</span><span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(
-            <span class="ident">DataConnStmtCache</span> {
-                <span class="ident">wallet_db</span>: <span class="self">self</span>,
-                <span class="ident">stmt_insert_block</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO blocks (height, hash, time, sapling_tree)
-                    VALUES (?, ?, ?, ?)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_insert_tx_meta</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO transactions (txid, block, tx_index)
-                    VALUES (?, ?, ?)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_update_tx_meta</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE transactions
-                    SET block = ?, tx_index = ? WHERE txid = ?&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_insert_tx_data</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO transactions (txid, created, expiry_height, raw)
-                    VALUES (?, ?, ?, ?)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_update_tx_data</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE transactions
-                    SET expiry_height = ?, raw = ? WHERE txid = ?&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_select_tx_ref</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;SELECT id_tx FROM transactions WHERE txid = ?&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_mark_recived_note_spent</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE received_notes SET spent = ? WHERE nf = ?&quot;</span>
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_insert_received_note</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO received_notes (tx, output_index, account, diversifier, value, rcm, memo, nf, is_change)
-                    VALUES (:tx, :output_index, :account, :diversifier, :value, :rcm, :memo, :nf, :is_change)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_update_received_note</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE received_notes
-                    SET account = :account,
-                        diversifier = :diversifier,
-                        value = :value,
-                        rcm = :rcm,
-                        nf = IFNULL(:nf, nf),
-                        memo = IFNULL(:memo, memo),
-                        is_change = IFNULL(:is_change, is_change)
-                    WHERE tx = :tx AND output_index = :output_index&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_select_received_note</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;SELECT id_note FROM received_notes WHERE tx = ? AND output_index = ?&quot;</span>
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_update_sent_note</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE sent_notes
-                    SET from_account = ?, address = ?, value = ?, memo = ?
-                    WHERE tx = ? AND output_index = ?&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_insert_sent_note</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO sent_notes (tx, output_index, from_account, address, value, memo)
-                    VALUES (?, ?, ?, ?, ?, ?)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_insert_witness</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;INSERT INTO sapling_witnesses (note, block, witness)
-                    VALUES (?, ?, ?)&quot;</span>,
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_prune_witnesses</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;DELETE FROM sapling_witnesses WHERE block &lt; ?&quot;</span>
-                )<span class="question-mark">?</span>,
-                <span class="ident">stmt_update_expired</span>: <span class="self">self</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
-                    <span class="string">&quot;UPDATE received_notes SET spent = NULL WHERE EXISTS (
-                        SELECT id_tx FROM transactions
-                        WHERE id_tx = received_notes.spent AND block IS NULL AND expiry_height &lt; ?
-                    )&quot;</span>,
-                )<span class="question-mark">?</span>,
-            }
-        )
+    <span class="doccomment">/// Given a wallet database connection, obtain a handle for the write operations
+    /// for that database. This operation may eagerly initialize and cache sqlite
+    /// prepared statements that are used in write operations.
+    </span><span class="kw">pub fn </span>get_update_ops(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;DataConnStmtCache&lt;<span class="lifetime">&#39;_</span>, P&gt;, SqliteClientError&gt; {
+        DataConnStmtCache::new(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span> <span class="ident">WalletRead</span> <span class="kw">for</span> <span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">SqliteClientError</span>;
-    <span class="kw">type</span> <span class="ident">NoteRef</span> <span class="op">=</span> <span class="ident">NoteId</span>;
-    <span class="kw">type</span> <span class="ident">TxRef</span> <span class="op">=</span> <span class="ident">i64</span>;
+<span class="kw">impl</span>&lt;P: consensus::Parameters&gt; WalletRead <span class="kw">for </span>WalletDb&lt;P&gt; {
+    <span class="kw">type </span>Error = SqliteClientError;
+    <span class="kw">type </span>NoteRef = NoteId;
+    <span class="kw">type </span>TxRef = i64;
 
-    <span class="kw">fn</span> <span class="ident">block_height_extrema</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">BlockHeight</span>, <span class="ident">BlockHeight</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::block_height_extrema</span>(<span class="self">self</span>).<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    <span class="kw">fn </span>block_height_extrema(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(BlockHeight, BlockHeight)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::block_height_extrema(<span class="self">self</span>).map_err(SqliteClientError::from)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_block_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_block_hash</span>(<span class="self">self</span>, <span class="ident">block_height</span>).<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    <span class="kw">fn </span>get_block_hash(<span class="kw-2">&amp;</span><span class="self">self</span>, block_height: BlockHeight) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHash&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_block_hash(<span class="self">self</span>, block_height).map_err(SqliteClientError::from)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_tx_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="ident">TxId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHeight</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_tx_height</span>(<span class="self">self</span>, <span class="ident">txid</span>).<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    <span class="kw">fn </span>get_tx_height(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: TxId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHeight&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_tx_height(<span class="self">self</span>, txid).map_err(SqliteClientError::from)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_extended_full_viewing_keys</span>(
+    <span class="kw">fn </span>get_unified_full_viewing_keys(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ExtendedFullViewingKey</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_extended_full_viewing_keys</span>(<span class="self">self</span>)
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;AccountId, UnifiedFullViewingKey&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_unified_full_viewing_keys(<span class="self">self</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">account</span>: <span class="ident">AccountId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PaymentAddress</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_address</span>(<span class="self">self</span>, <span class="ident">account</span>)
+    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_address(<span class="self">self</span>, account)
     }
 
-    <span class="kw">fn</span> <span class="ident">is_valid_account_extfvk</span>(
+    <span class="kw">fn </span>is_valid_account_extfvk(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">extfvk</span>: <span class="kw-2">&amp;</span><span class="ident">ExtendedFullViewingKey</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::is_valid_account_extfvk</span>(<span class="self">self</span>, <span class="ident">account</span>, <span class="ident">extfvk</span>)
+        account: AccountId,
+        extfvk: <span class="kw-2">&amp;</span>ExtendedFullViewingKey,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::is_valid_account_extfvk(<span class="self">self</span>, account, extfvk)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_balance_at</span>(
+    <span class="kw">fn </span>get_balance_at(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Amount</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_balance_at</span>(<span class="self">self</span>, <span class="ident">account</span>, <span class="ident">anchor_height</span>)
+        account: AccountId,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_balance_at(<span class="self">self</span>, account, anchor_height)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_memo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id_note</span>: <span class="ident"><span class="self">Self</span>::NoteRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Memo</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="ident">id_note</span> {
-            <span class="ident">NoteId::SentNoteId</span>(<span class="ident">id_note</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">wallet::get_sent_memo</span>(<span class="self">self</span>, <span class="ident">id_note</span>),
-            <span class="ident">NoteId::ReceivedNoteId</span>(<span class="ident">id_note</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">wallet::get_received_memo</span>(<span class="self">self</span>, <span class="ident">id_note</span>),
+    <span class="kw">fn </span>get_transaction(<span class="kw-2">&amp;</span><span class="self">self</span>, id_tx: i64) -&gt; <span class="prelude-ty">Result</span>&lt;Transaction, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_transaction(<span class="self">self</span>, id_tx)
+    }
+
+    <span class="kw">fn </span>get_memo(<span class="kw-2">&amp;</span><span class="self">self</span>, id_note: <span class="self">Self</span>::NoteRef) -&gt; <span class="prelude-ty">Result</span>&lt;Memo, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span><span class="kw">match </span>id_note {
+            NoteId::SentNoteId(id_note) =&gt; wallet::get_sent_memo(<span class="self">self</span>, id_note),
+            NoteId::ReceivedNoteId(id_note) =&gt; wallet::get_received_memo(<span class="self">self</span>, id_note),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">get_commitment_tree</span>(
+    <span class="kw">fn </span>get_commitment_tree(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CommitmentTree</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_commitment_tree</span>(<span class="self">self</span>, <span class="ident">block_height</span>)
+        block_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CommitmentTree&lt;Node&gt;&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_commitment_tree(<span class="self">self</span>, block_height)
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">get_witnesses</span>(
+    <span class="attribute">#[allow(clippy::type_complexity)]
+    </span><span class="kw">fn </span>get_witnesses(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident"><span class="self">Self</span>::NoteRef</span>, <span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_witnesses</span>(<span class="self">self</span>, <span class="ident">block_height</span>)
+        block_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(<span class="self">Self</span>::NoteRef, IncrementalWitness&lt;Node&gt;)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_witnesses(<span class="self">self</span>, block_height)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_nullifiers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">AccountId</span>, <span class="ident">Nullifier</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::get_nullifiers</span>(<span class="self">self</span>)
+    <span class="kw">fn </span>get_nullifiers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_nullifiers(<span class="self">self</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">get_spendable_notes</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SpendableNote</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::transact::get_spendable_notes</span>(<span class="self">self</span>, <span class="ident">account</span>, <span class="ident">anchor_height</span>)
+    <span class="kw">fn </span>get_all_nullifiers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::get_all_nullifiers(<span class="self">self</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">select_spendable_notes</span>(
+    <span class="kw">fn </span>get_spendable_sapling_notes(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">target_value</span>: <span class="ident">Amount</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SpendableNote</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::transact::select_spendable_notes</span>(<span class="self">self</span>, <span class="ident">account</span>, <span class="ident">target_value</span>, <span class="ident">anchor_height</span>)
+        account: AccountId,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SpendableNote&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::transact::get_spendable_sapling_notes(<span class="self">self</span>, account, anchor_height)
+    }
+
+    <span class="kw">fn </span>select_spendable_sapling_notes(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+        target_value: Amount,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SpendableNote&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="attribute">#[allow(deprecated)]
+        </span>wallet::transact::select_spendable_sapling_notes(<span class="self">self</span>, account, target_value, anchor_height)
     }
 }
 
-<span class="doccomment">/// The primary type used to implement [`WalletWrite`] for the SQLite database.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A data structure that stores the SQLite prepared statements that are</span>
-<span class="doccomment">/// required for the implementation of [`WalletWrite`] against the backing</span>
-<span class="doccomment">/// store.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`WalletWrite`]: zcash_client_backend::data_api::WalletWrite</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="ident">wallet_db</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_insert_block</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_insert_tx_meta</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_update_tx_meta</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_insert_tx_data</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_update_tx_data</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_select_tx_ref</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_mark_recived_note_spent</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_insert_received_note</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_update_received_note</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_select_received_note</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_insert_sent_note</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_update_sent_note</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-
-    <span class="ident">stmt_insert_witness</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_prune_witnesses</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">stmt_update_expired</span>: <span class="ident">Statement</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span> <span class="ident">WalletRead</span> <span class="kw">for</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">SqliteClientError</span>;
-    <span class="kw">type</span> <span class="ident">NoteRef</span> <span class="op">=</span> <span class="ident">NoteId</span>;
-    <span class="kw">type</span> <span class="ident">TxRef</span> <span class="op">=</span> <span class="ident">i64</span>;
-
-    <span class="kw">fn</span> <span class="ident">block_height_extrema</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">BlockHeight</span>, <span class="ident">BlockHeight</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">block_height_extrema</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_block_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_block_hash</span>(<span class="ident">block_height</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_tx_height</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">txid</span>: <span class="ident">TxId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHeight</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_tx_height</span>(<span class="ident">txid</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_extended_full_viewing_keys</span>(
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">impl</span>&lt;P: consensus::Parameters&gt; WalletReadTransparent <span class="kw">for </span>WalletDb&lt;P&gt; {
+    <span class="kw">fn </span>get_unspent_transparent_outputs(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ExtendedFullViewingKey</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_extended_full_viewing_keys</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">account</span>: <span class="ident">AccountId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PaymentAddress</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_address</span>(<span class="ident">account</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">is_valid_account_extfvk</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">extfvk</span>: <span class="kw-2">&amp;</span><span class="ident">ExtendedFullViewingKey</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">is_valid_account_extfvk</span>(<span class="ident">account</span>, <span class="ident">extfvk</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_balance_at</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Amount</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_balance_at</span>(<span class="ident">account</span>, <span class="ident">anchor_height</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_memo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id_note</span>: <span class="ident"><span class="self">Self</span>::NoteRef</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Memo</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_memo</span>(<span class="ident">id_note</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_commitment_tree</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CommitmentTree</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_commitment_tree</span>(<span class="ident">block_height</span>)
-    }
-
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">get_witnesses</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident"><span class="self">Self</span>::NoteRef</span>, <span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_witnesses</span>(<span class="ident">block_height</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_nullifiers</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">AccountId</span>, <span class="ident">Nullifier</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_nullifiers</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">get_spendable_notes</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SpendableNote</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">get_spendable_notes</span>(<span class="ident">account</span>, <span class="ident">anchor_height</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">select_spendable_notes</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">account</span>: <span class="ident">AccountId</span>,
-        <span class="ident">target_value</span>: <span class="ident">Amount</span>,
-        <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SpendableNote</span><span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>
-            .<span class="ident">select_spendable_notes</span>(<span class="ident">account</span>, <span class="ident">target_value</span>, <span class="ident">anchor_height</span>)
+        address: <span class="kw-2">&amp;</span>TransparentAddress,
+        max_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;WalletTransparentOutput&gt;, <span class="self">Self</span>::Error&gt; {
+        wallet::get_unspent_transparent_outputs(<span class="self">self</span>, address, max_height)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">transactionally</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">A</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; WalletRead <span class="kw">for </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="kw">type </span>Error = SqliteClientError;
+    <span class="kw">type </span>NoteRef = NoteId;
+    <span class="kw">type </span>TxRef = i64;
+
+    <span class="kw">fn </span>block_height_extrema(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(BlockHeight, BlockHeight)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.block_height_extrema()
+    }
+
+    <span class="kw">fn </span>get_block_hash(<span class="kw-2">&amp;</span><span class="self">self</span>, block_height: BlockHeight) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHash&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_block_hash(block_height)
+    }
+
+    <span class="kw">fn </span>get_tx_height(<span class="kw-2">&amp;</span><span class="self">self</span>, txid: TxId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHeight&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_tx_height(txid)
+    }
+
+    <span class="kw">fn </span>get_unified_full_viewing_keys(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;AccountId, UnifiedFullViewingKey&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_unified_full_viewing_keys()
+    }
+
+    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_address(account)
+    }
+
+    <span class="kw">fn </span>is_valid_account_extfvk(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+        extfvk: <span class="kw-2">&amp;</span>ExtendedFullViewingKey,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.is_valid_account_extfvk(account, extfvk)
+    }
+
+    <span class="kw">fn </span>get_balance_at(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_balance_at(account, anchor_height)
+    }
+
+    <span class="kw">fn </span>get_transaction(<span class="kw-2">&amp;</span><span class="self">self</span>, id_tx: i64) -&gt; <span class="prelude-ty">Result</span>&lt;Transaction, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_transaction(id_tx)
+    }
+
+    <span class="kw">fn </span>get_memo(<span class="kw-2">&amp;</span><span class="self">self</span>, id_note: <span class="self">Self</span>::NoteRef) -&gt; <span class="prelude-ty">Result</span>&lt;Memo, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_memo(id_note)
+    }
+
+    <span class="kw">fn </span>get_commitment_tree(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        block_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CommitmentTree&lt;Node&gt;&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_commitment_tree(block_height)
+    }
+
+    <span class="attribute">#[allow(clippy::type_complexity)]
+    </span><span class="kw">fn </span>get_witnesses(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        block_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(<span class="self">Self</span>::NoteRef, IncrementalWitness&lt;Node&gt;)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_witnesses(block_height)
+    }
+
+    <span class="kw">fn </span>get_nullifiers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_nullifiers()
+    }
+
+    <span class="kw">fn </span>get_all_nullifiers(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_all_nullifiers()
+    }
+
+    <span class="kw">fn </span>get_spendable_sapling_notes(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SpendableNote&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db
+            .get_spendable_sapling_notes(account, anchor_height)
+    }
+
+    <span class="kw">fn </span>select_spendable_sapling_notes(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+        target_value: Amount,
+        anchor_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SpendableNote&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db
+            .select_spendable_sapling_notes(account, target_value, anchor_height)
+    }
+}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; WalletReadTransparent <span class="kw">for </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="kw">fn </span>get_unspent_transparent_outputs(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        address: <span class="kw-2">&amp;</span>TransparentAddress,
+        max_height: BlockHeight,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;WalletTransparentOutput&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db
+            .get_unspent_transparent_outputs(address, max_height)
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="kw">fn </span>transactionally&lt;F, A&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, f: F) -&gt; <span class="prelude-ty">Result</span>&lt;A, SqliteClientError&gt;
+    <span class="kw">where
+        </span>F: FnOnce(<span class="kw-2">&amp;mut </span><span class="self">Self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;A, SqliteClientError&gt;,
     {
-        <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;BEGIN IMMEDIATE&quot;</span>, <span class="ident">NO_PARAMS</span>)<span class="question-mark">?</span>;
-        <span class="kw">match</span> <span class="ident">f</span>(<span class="self">self</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">result</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;COMMIT&quot;</span>, <span class="ident">NO_PARAMS</span>)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
+        <span class="self">self</span>.wallet_db.conn.execute(<span class="string">&quot;BEGIN IMMEDIATE&quot;</span>, NO_PARAMS)<span class="question-mark">?</span>;
+        <span class="kw">match </span>f(<span class="self">self</span>) {
+            <span class="prelude-val">Ok</span>(result) =&gt; {
+                <span class="self">self</span>.wallet_db.conn.execute(<span class="string">&quot;COMMIT&quot;</span>, NO_PARAMS)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(result)
             }
-            <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(<span class="string">&quot;ROLLBACK&quot;</span>, <span class="ident">NO_PARAMS</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">error</span>),
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span>
-                        <span class="comment">// Panicking here is probably the right thing to do, because it</span>
-                        <span class="comment">// means the database is corrupt.</span>
-                        <span class="macro">panic!</span>(
+            <span class="prelude-val">Err</span>(error) =&gt; {
+                <span class="kw">match </span><span class="self">self</span>.wallet_db.conn.execute(<span class="string">&quot;ROLLBACK&quot;</span>, NO_PARAMS) {
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(error),
+                    <span class="prelude-val">Err</span>(e) =&gt;
+                        <span class="comment">// Panicking here is probably the right thing to do, because it
+                        // means the database is corrupt.
+                        </span><span class="macro">panic!</span>(
                             <span class="string">&quot;Rollback failed with error {} while attempting to recover from error {}; database is likely corrupt.&quot;</span>,
-                            <span class="ident">e</span>,
-                            <span class="ident">error</span>
+                            e,
+                            error
                         )
                 }
             }
@@ -1148,349 +1393,640 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span> <span class="ident">WalletWrite</span> <span class="kw">for</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span> {
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">advance_by_block</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">block</span>: <span class="kw-2">&amp;</span><span class="ident">PrunedBlock</span>,
-        <span class="ident">updated_witnesses</span>: <span class="kw-2">&amp;</span>[(<span class="ident"><span class="self">Self</span>::NoteRef</span>, <span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>)],
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident"><span class="self">Self</span>::NoteRef</span>, <span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="comment">// database updates for each block are transactional</span>
-        <span class="self">self</span>.<span class="ident">transactionally</span>(<span class="op">|</span><span class="ident">up</span><span class="op">|</span> {
-            <span class="comment">// Insert the block into the database.</span>
-            <span class="ident">wallet::insert_block</span>(
-                <span class="ident">up</span>,
-                <span class="ident">block</span>.<span class="ident">block_height</span>,
-                <span class="ident">block</span>.<span class="ident">block_hash</span>,
-                <span class="ident">block</span>.<span class="ident">block_time</span>,
-                <span class="kw-2">&amp;</span><span class="ident">block</span>.<span class="ident">commitment_tree</span>,
+<span class="attribute">#[allow(deprecated)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; WalletWrite <span class="kw">for </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="attribute">#[allow(clippy::type_complexity)]
+    </span><span class="kw">fn </span>advance_by_block(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        block: <span class="kw-2">&amp;</span>PrunedBlock,
+        updated_witnesses: <span class="kw-2">&amp;</span>[(<span class="self">Self</span>::NoteRef, IncrementalWitness&lt;Node&gt;)],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(<span class="self">Self</span>::NoteRef, IncrementalWitness&lt;Node&gt;)&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="comment">// database updates for each block are transactional
+        </span><span class="self">self</span>.transactionally(|up| {
+            <span class="comment">// Insert the block into the database.
+            </span>wallet::insert_block(
+                up,
+                block.block_height,
+                block.block_hash,
+                block.block_time,
+                block.commitment_tree,
             )<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_witnesses</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-            <span class="kw">for</span> <span class="ident">tx</span> <span class="kw">in</span> <span class="ident">block</span>.<span class="ident">transactions</span> {
-                <span class="kw">let</span> <span class="ident">tx_row</span> <span class="op">=</span> <span class="ident">wallet::put_tx_meta</span>(<span class="ident">up</span>, <span class="kw-2">&amp;</span><span class="ident">tx</span>, <span class="ident">block</span>.<span class="ident">block_height</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>new_witnesses = <span class="macro">vec!</span>[];
+            <span class="kw">for </span>tx <span class="kw">in </span>block.transactions {
+                <span class="kw">let </span>tx_row = wallet::put_tx_meta(up, tx, block.block_height)<span class="question-mark">?</span>;
 
-                <span class="comment">// Mark notes as spent and remove them from the scanning cache</span>
-                <span class="kw">for</span> <span class="ident">spend</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">shielded_spends</span> {
-                    <span class="ident">wallet::mark_spent</span>(<span class="ident">up</span>, <span class="ident">tx_row</span>, <span class="kw-2">&amp;</span><span class="ident">spend</span>.<span class="ident">nf</span>)<span class="question-mark">?</span>;
+                <span class="comment">// Mark notes as spent and remove them from the scanning cache
+                </span><span class="kw">for </span>spend <span class="kw">in </span><span class="kw-2">&amp;</span>tx.shielded_spends {
+                    wallet::mark_sapling_note_spent(up, tx_row, <span class="kw-2">&amp;</span>spend.nf)<span class="question-mark">?</span>;
                 }
 
-                <span class="kw">for</span> <span class="ident">output</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">tx</span>.<span class="ident">shielded_outputs</span> {
-                    <span class="kw">let</span> <span class="ident">received_note_id</span> <span class="op">=</span> <span class="ident">wallet::put_received_note</span>(<span class="ident">up</span>, <span class="ident">output</span>, <span class="ident">tx_row</span>)<span class="question-mark">?</span>;
+                <span class="kw">for </span>output <span class="kw">in </span><span class="kw-2">&amp;</span>tx.shielded_outputs {
+                    <span class="kw">let </span>received_note_id = wallet::put_received_note(up, output, tx_row)<span class="question-mark">?</span>;
 
-                    <span class="comment">// Save witness for note.</span>
-                    <span class="ident">new_witnesses</span>.<span class="ident">push</span>((<span class="ident">received_note_id</span>, <span class="ident">output</span>.<span class="ident">witness</span>.<span class="ident">clone</span>()));
+                    <span class="comment">// Save witness for note.
+                    </span>new_witnesses.push((received_note_id, output.witness.clone()));
                 }
             }
 
-            <span class="comment">// Insert current new_witnesses into the database.</span>
-            <span class="kw">for</span> (<span class="ident">received_note_id</span>, <span class="ident">witness</span>) <span class="kw">in</span> <span class="ident">updated_witnesses</span>.<span class="ident">iter</span>().<span class="ident">chain</span>(<span class="ident">new_witnesses</span>.<span class="ident">iter</span>())
+            <span class="comment">// Insert current new_witnesses into the database.
+            </span><span class="kw">for </span>(received_note_id, witness) <span class="kw">in </span>updated_witnesses.iter().chain(new_witnesses.iter())
             {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NoteId::ReceivedNoteId</span>(<span class="ident">rnid</span>) <span class="op">=</span> <span class="kw-2">*</span><span class="ident">received_note_id</span> {
-                    <span class="ident">wallet::insert_witness</span>(<span class="ident">up</span>, <span class="ident">rnid</span>, <span class="ident">witness</span>, <span class="ident">block</span>.<span class="ident">block_height</span>)<span class="question-mark">?</span>;
-                } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">SqliteClientError::InvalidNoteId</span>);
+                <span class="kw">if let </span>NoteId::ReceivedNoteId(rnid) = <span class="kw-2">*</span>received_note_id {
+                    wallet::insert_witness(up, rnid, witness, block.block_height)<span class="question-mark">?</span>;
+                } <span class="kw">else </span>{
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(SqliteClientError::InvalidNoteId);
                 }
             }
 
-            <span class="comment">// Prune the stored witnesses (we only expect rollbacks of at most 100 blocks).</span>
-            <span class="ident">wallet::prune_witnesses</span>(<span class="ident">up</span>, <span class="ident">block</span>.<span class="ident">block_height</span> <span class="op">-</span> <span class="number">100</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Prune the stored witnesses (we only expect rollbacks of at most PRUNING_HEIGHT blocks).
+            </span>wallet::prune_witnesses(up, block.block_height - PRUNING_HEIGHT)<span class="question-mark">?</span>;
 
-            <span class="comment">// Update now-expired transactions that didn&#39;t get mined.</span>
-            <span class="ident">wallet::update_expired_notes</span>(<span class="ident">up</span>, <span class="ident">block</span>.<span class="ident">block_height</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Update now-expired transactions that didn&#39;t get mined.
+            </span>wallet::update_expired_notes(up, block.block_height)<span class="question-mark">?</span>;
 
-            <span class="prelude-val">Ok</span>(<span class="ident">new_witnesses</span>)
+            <span class="prelude-val">Ok</span>(new_witnesses)
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">store_received_tx</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">received_tx</span>: <span class="kw-2">&amp;</span><span class="ident">ReceivedTransaction</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::TxRef</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">transactionally</span>(<span class="op">|</span><span class="ident">up</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">tx_ref</span> <span class="op">=</span> <span class="ident">wallet::put_tx_data</span>(<span class="ident">up</span>, <span class="ident">received_tx</span>.<span class="ident">tx</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn </span>store_decrypted_tx(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        d_tx: <span class="kw-2">&amp;</span>DecryptedTransaction,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::TxRef, <span class="self">Self</span>::Error&gt; {
+        <span class="kw">let </span>nullifiers = <span class="self">self</span>.wallet_db.get_all_nullifiers()<span class="question-mark">?</span>;
+        <span class="self">self</span>.transactionally(|up| {
+            <span class="kw">let </span>tx_ref = wallet::put_tx_data(up, d_tx.tx, <span class="prelude-val">None</span>)<span class="question-mark">?</span>;
 
-            <span class="kw">for</span> <span class="ident">output</span> <span class="kw">in</span> <span class="ident">received_tx</span>.<span class="ident">outputs</span> {
-                <span class="kw">if</span> <span class="ident">output</span>.<span class="ident">outgoing</span> {
-                    <span class="ident">wallet::put_sent_note</span>(<span class="ident">up</span>, <span class="ident">output</span>, <span class="ident">tx_ref</span>)<span class="question-mark">?</span>;
-                } <span class="kw">else</span> {
-                    <span class="ident">wallet::put_received_note</span>(<span class="ident">up</span>, <span class="ident">output</span>, <span class="ident">tx_ref</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>spending_account_id: <span class="prelude-ty">Option</span>&lt;AccountId&gt; = <span class="prelude-val">None</span>;
+            <span class="kw">for </span>output <span class="kw">in </span>d_tx.sapling_outputs {
+                <span class="kw">if </span>output.outgoing {
+                    wallet::put_sent_note(
+                        up,
+                        tx_ref,
+                        output.index,
+                        output.account,
+                        <span class="kw-2">&amp;</span>output.to,
+                        Amount::from_u64(output.note.value)
+                            .map_err(|<span class="kw">_</span>| SqliteClientError::CorruptedData(<span class="string">&quot;Note value invalid.&quot;</span>.to_string()))<span class="question-mark">?</span>,
+                        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>output.memo),
+                    )<span class="question-mark">?</span>;
+                } <span class="kw">else </span>{
+                    <span class="kw">match </span>spending_account_id {
+                        <span class="prelude-val">Some</span>(id) =&gt;
+                            <span class="kw">if </span>id != output.account {
+                                <span class="macro">panic!</span>(<span class="string">&quot;Unable to determine a unique account identifier for z-&gt;t spend.&quot;</span>);
+                            }
+                        <span class="prelude-val">None </span>=&gt; {
+                            spending_account_id = <span class="prelude-val">Some</span>(output.account);
+                        }
+                    }
+
+                    wallet::put_received_note(up, output, tx_ref)<span class="question-mark">?</span>;
                 }
             }
 
-            <span class="prelude-val">Ok</span>(<span class="ident">tx_ref</span>)
+            <span class="comment">// If we have some transparent outputs:
+            </span><span class="kw">if </span>!d_tx.tx.transparent_bundle().iter().any(|b| b.vout.is_empty()) {
+                <span class="comment">// If the transaction contains shielded spends from our wallet, we will store z-&gt;t
+                // transactions we observe in the same way they would be stored by
+                // create_spend_to_address. 
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>((account_id, <span class="kw">_</span>)) = nullifiers.iter().find(
+                    |(<span class="kw">_</span>, nf)|
+                        d_tx.tx.sapling_bundle().iter().flat_map(|b| b.shielded_spends.iter())
+                        .any(|input| <span class="kw-2">*</span>nf == input.nullifier)
+                ) {
+                    <span class="kw">for </span>(output_index, txout) <span class="kw">in </span>d_tx.tx.transparent_bundle().iter().flat_map(|b| b.vout.iter()).enumerate() {
+                        wallet::put_sent_utxo(
+                            up,
+                            tx_ref,
+                            output_index,
+                            <span class="kw-2">*</span>account_id,
+                            <span class="kw-2">&amp;</span>txout.script_pubkey.address().unwrap(),
+                            txout.value,
+                        )<span class="question-mark">?</span>;
+                    }
+                }
+            }
+            <span class="prelude-val">Ok</span>(tx_ref)
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">store_sent_tx</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">sent_tx</span>: <span class="kw-2">&amp;</span><span class="ident">SentTransaction</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::TxRef</span>, <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="comment">// Update the database atomically, to ensure the result is internally consistent.</span>
-        <span class="self">self</span>.<span class="ident">transactionally</span>(<span class="op">|</span><span class="ident">up</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">tx_ref</span> <span class="op">=</span> <span class="ident">wallet::put_tx_data</span>(<span class="ident">up</span>, <span class="kw-2">&amp;</span><span class="ident">sent_tx</span>.<span class="ident">tx</span>, <span class="prelude-val">Some</span>(<span class="ident">sent_tx</span>.<span class="ident">created</span>))<span class="question-mark">?</span>;
+    <span class="kw">fn </span>store_sent_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, sent_tx: <span class="kw-2">&amp;</span>SentTransaction) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::TxRef, <span class="self">Self</span>::Error&gt; {
+        <span class="comment">// Update the database atomically, to ensure the result is internally consistent.
+        </span><span class="self">self</span>.transactionally(|up| {
+            <span class="kw">let </span>tx_ref = wallet::put_tx_data(up, sent_tx.tx, <span class="prelude-val">Some</span>(sent_tx.created))<span class="question-mark">?</span>;
 
-            <span class="comment">// Mark notes as spent.</span>
-            <span class="comment">//</span>
-            <span class="comment">// This locks the notes so they aren&#39;t selected again by a subsequent call to</span>
-            <span class="comment">// create_spend_to_address() before this transaction has been mined (at which point the notes</span>
-            <span class="comment">// get re-marked as spent).</span>
-            <span class="comment">//</span>
-            <span class="comment">// Assumes that create_spend_to_address() will never be called in parallel, which is a</span>
-            <span class="comment">// reasonable assumption for a light client such as a mobile phone.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">bundle</span>) <span class="op">=</span> <span class="ident">sent_tx</span>.<span class="ident">tx</span>.<span class="ident">sapling_bundle</span>() {
-                <span class="kw">for</span> <span class="ident">spend</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">bundle</span>.<span class="ident">shielded_spends</span> {
-                    <span class="ident">wallet::mark_spent</span>(<span class="ident">up</span>, <span class="ident">tx_ref</span>, <span class="kw-2">&amp;</span><span class="ident">spend</span>.<span class="ident">nullifier</span>)<span class="question-mark">?</span>;
+            <span class="comment">// Mark notes as spent.
+            //
+            // This locks the notes so they aren&#39;t selected again by a subsequent call to
+            // create_spend_to_address() before this transaction has been mined (at which point the notes
+            // get re-marked as spent).
+            //
+            // Assumes that create_spend_to_address() will never be called in parallel, which is a
+            // reasonable assumption for a light client such as a mobile phone.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(bundle) = sent_tx.tx.sapling_bundle() {
+                <span class="kw">for </span>spend <span class="kw">in </span><span class="kw-2">&amp;</span>bundle.shielded_spends {
+                    wallet::mark_sapling_note_spent(up, tx_ref, <span class="kw-2">&amp;</span>spend.nullifier)<span class="question-mark">?</span>;
                 }
             }
 
-            <span class="ident">wallet::insert_sent_note</span>(
-                <span class="ident">up</span>,
-                <span class="ident">tx_ref</span>,
-                <span class="ident">sent_tx</span>.<span class="ident">output_index</span>,
-                <span class="ident">sent_tx</span>.<span class="ident">account</span>,
-                <span class="ident">sent_tx</span>.<span class="ident">recipient_address</span>,
-                <span class="ident">sent_tx</span>.<span class="ident">value</span>,
-                <span class="ident">sent_tx</span>.<span class="ident">memo</span>.<span class="ident">as_ref</span>(),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span><span class="kw">for </span>utxo_outpoint <span class="kw">in </span><span class="kw-2">&amp;</span>sent_tx.utxos_spent {
+                wallet::mark_transparent_utxo_spent(up, tx_ref, utxo_outpoint)<span class="question-mark">?</span>;
+            }
+
+            <span class="kw">for </span>output <span class="kw">in </span><span class="kw-2">&amp;</span>sent_tx.outputs {
+                <span class="kw">match </span>output.recipient_address {
+                    <span class="comment">// TODO: Store the entire UA, not just the Sapling component.
+                    // This will require more info about the output index.
+                    </span>RecipientAddress::Unified(ua) =&gt; wallet::insert_sent_note(
+                        up,
+                        tx_ref,
+                        output.output_index,
+                        sent_tx.account,
+                        ua.sapling().expect(<span class="string">&quot;TODO: Add Orchard support&quot;</span>),
+                        output.value,
+                        output.memo.as_ref(),
+                    )<span class="question-mark">?</span>,
+                    RecipientAddress::Shielded(addr) =&gt; wallet::insert_sent_note(
+                        up,
+                        tx_ref,
+                        output.output_index,
+                        sent_tx.account,
+                        addr,
+                        output.value,
+                        output.memo.as_ref(),
+                    )<span class="question-mark">?</span>,
+                    RecipientAddress::Transparent(addr) =&gt; wallet::insert_sent_utxo(
+                        up,
+                        tx_ref,
+                        output.output_index,
+                        sent_tx.account,
+                        addr,
+                        output.value,
+                    )<span class="question-mark">?</span>,
+                }
+            }
+
+            <span class="comment">// Return the row number of the transaction, so the caller can fetch it for sending.
+            </span><span class="prelude-val">Ok</span>(tx_ref)
+        })
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;unstable&quot;</span>)]
+    </span><span class="kw">fn </span>remove_unmined_tx(<span class="kw-2">&amp;mut </span><span class="self">self</span>, txid: <span class="kw-2">&amp;</span>TxId) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.transactionally(|up| {
+            <span class="comment">// Find the transaction to be deleted.
+            </span><span class="kw">let </span>tx_ref = up.stmt_select_tx_ref(txid)<span class="question-mark">?</span>;
+
+            <span class="comment">// Check that the transaction has not been mined (otherwise deleting it would
+            // require deleting child transactions that we haven&#39;t been authorized to
+            // remove).
+            </span><span class="kw">if </span>up
+                .wallet_db
+                .conn
+                .query_row_named(
+                    <span class="string">&quot;SELECT block FROM transactions WHERE id_tx = :tx&quot;</span>,
+                    <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)],
+                    |row| row.get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;u32&gt;&gt;(<span class="number">0</span>),
+                )<span class="question-mark">?
+                </span>.is_some()
+            {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(SqliteClientError::TransactionIsMined(<span class="kw-2">*</span>txid));
+            }
+
+            <span class="comment">// Delete received notes that were outputs of the given transaction.
+            </span>up.wallet_db.conn.execute_named(
+                <span class="string">&quot;DELETE FROM received_notes WHERE tx = :tx&quot;</span>,
+                <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)],
             )<span class="question-mark">?</span>;
 
-            <span class="comment">// Return the row number of the transaction, so the caller can fetch it for sending.</span>
-            <span class="prelude-val">Ok</span>(<span class="ident">tx_ref</span>)
+            <span class="comment">// Unmine received notes that were inputs to the given transaction.
+            </span>up.wallet_db.conn.execute_named(
+                <span class="string">&quot;UPDATE received_notes SET spent = null WHERE spent = :tx&quot;</span>,
+                <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)],
+            )<span class="question-mark">?</span>;
+
+            <span class="comment">// We don&#39;t normally want to delete sent notes, as this can contain data that
+            // is not recoverable from the chain. However, given that the caller wants to
+            // delete the transaction in which these notes were sent, we cannot keep these
+            // database entries around.
+            </span>up.wallet_db
+                .conn
+                .execute_named(<span class="string">&quot;DELETE FROM sent_notes WHERE tx = :tx&quot;</span>, <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)])<span class="question-mark">?</span>;
+
+            <span class="comment">// Delete the UTXOs because these are effectively cached and we don&#39;t have a
+            // good way of knowing whether they&#39;re spent.
+            </span>up.wallet_db.conn.execute_named(
+                <span class="string">&quot;DELETE FROM utxos WHERE spent_in_tx = :tx&quot;</span>,
+                <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)],
+            )<span class="question-mark">?</span>;
+
+            <span class="comment">// Now that it isn&#39;t depended on, delete the transaction.
+            </span>up.wallet_db.conn.execute_named(
+                <span class="string">&quot;DELETE FROM transactions WHERE id_tx = :tx&quot;</span>,
+                <span class="kw-2">&amp;</span>[(<span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span>tx_ref)],
+            )<span class="question-mark">?</span>;
+
+            <span class="prelude-val">Ok</span>(())
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">rewind_to_height</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span> {
-        <span class="ident">wallet::rewind_to_height</span>(<span class="self">self</span>.<span class="ident">wallet_db</span>, <span class="ident">block_height</span>)
+    <span class="kw">fn </span>rewind_to_height(<span class="kw-2">&amp;mut </span><span class="self">self</span>, block_height: BlockHeight) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt; {
+        wallet::rewind_to_height(<span class="self">self</span>.wallet_db, block_height)
     }
 }
 
-<span class="doccomment">/// A wrapper for the SQLite connection to the block cache database.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BlockDb</span>(<span class="ident">Connection</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; WalletWriteTransparent <span class="kw">for </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="kw">type </span>UtxoRef = UtxoId;
 
-<span class="kw">impl</span> <span class="ident">BlockDb</span> {
-    <span class="doccomment">/// Opens a connection to the wallet database stored at the specified path.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_path</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Path</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">rusqlite::Error</span><span class="op">&gt;</span> {
-        <span class="ident">Connection::open</span>(<span class="ident">path</span>).<span class="ident">map</span>(<span class="ident">BlockDb</span>)
+    <span class="kw">fn </span>put_received_transparent_utxo(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        output: <span class="kw-2">&amp;</span>WalletTransparentOutput,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::UtxoRef, <span class="self">Self</span>::Error&gt; {
+        wallet::put_received_transparent_utxo(<span class="self">self</span>, output)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">BlockSource</span> <span class="kw">for</span> <span class="ident">BlockDb</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">SqliteClientError</span>;
+<span class="doccomment">/// A wrapper for the SQLite connection to the block cache database.
+</span><span class="kw">pub struct </span>BlockDb(Connection);
 
-    <span class="kw">fn</span> <span class="ident">with_blocks</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(
+<span class="kw">impl </span>BlockDb {
+    <span class="doccomment">/// Opens a connection to the wallet database stored at the specified path.
+    </span><span class="kw">pub fn </span>for_path&lt;P: AsRef&lt;Path&gt;&gt;(path: P) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, rusqlite::Error&gt; {
+        Connection::open(path).map(BlockDb)
+    }
+}
+
+<span class="kw">impl </span>BlockSource <span class="kw">for </span>BlockDb {
+    <span class="kw">type </span>Error = SqliteClientError;
+
+    <span class="kw">fn </span>with_blocks&lt;F&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">from_height</span>: <span class="ident">BlockHeight</span>,
-        <span class="ident">limit</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-        <span class="ident">with_row</span>: <span class="ident">F</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">CompactBlock</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="self">Self</span>::Error</span><span class="op">&gt;</span>,
+        from_height: BlockHeight,
+        limit: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+        with_row: F,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;
+    <span class="kw">where
+        </span>F: FnMut(CompactBlock) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="self">Self</span>::Error&gt;,
     {
-        <span class="ident">chain::with_blocks</span>(<span class="self">self</span>, <span class="ident">from_height</span>, <span class="ident">limit</span>, <span class="ident">with_row</span>)
+        chain::with_blocks(<span class="self">self</span>, from_height, limit, with_row)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">address_from_extfvk</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    <span class="ident">extfvk</span>: <span class="kw-2">&amp;</span><span class="ident">ExtendedFullViewingKey</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="ident">addr</span> <span class="op">=</span> <span class="ident">extfvk</span>.<span class="ident">default_address</span>().<span class="ident">unwrap</span>().<span class="number">1</span>;
-    <span class="ident">encode_payment_address</span>(<span class="ident">params</span>.<span class="ident">hrp_sapling_payment_address</span>(), <span class="kw-2">&amp;</span><span class="ident">addr</span>)
-}
+<span class="attribute">#[cfg(test)]
+#[allow(deprecated)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>ff::PrimeField;
+    <span class="kw">use </span>group::GroupEncoding;
+    <span class="kw">use </span>protobuf::Message;
+    <span class="kw">use </span>rand_core::{OsRng, RngCore};
+    <span class="kw">use </span>rusqlite::params;
+    <span class="kw">use </span>std::collections::HashMap;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">ff::PrimeField</span>;
-    <span class="kw">use</span> <span class="ident">group::GroupEncoding</span>;
-    <span class="kw">use</span> <span class="ident">protobuf::Message</span>;
-    <span class="kw">use</span> <span class="ident">rand_core</span>::{<span class="ident">OsRng</span>, <span class="ident">RngCore</span>};
-    <span class="kw">use</span> <span class="ident">rusqlite::params</span>;
-
-    <span class="kw">use</span> <span class="ident">zcash_client_backend::proto::compact_formats</span>::{
-        <span class="ident">CompactBlock</span>, <span class="ident">CompactOutput</span>, <span class="ident">CompactSpend</span>, <span class="ident">CompactTx</span>,
-    };
-
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">block::BlockHash</span>,
-        <span class="ident">consensus</span>::{<span class="ident">BlockHeight</span>, <span class="ident">Network</span>, <span class="ident">NetworkUpgrade</span>, <span class="ident">Parameters</span>},
-        <span class="ident">memo::MemoBytes</span>,
-        <span class="ident">sapling</span>::{
-            <span class="ident">note_encryption::sapling_note_encryption</span>, <span class="ident">util::generate_random_rseed</span>, <span class="ident">Note</span>, <span class="ident">Nullifier</span>,
-            <span class="ident">PaymentAddress</span>,
+    <span class="kw">use </span>zcash_client_backend::{
+        keys::{sapling, UnifiedFullViewingKey},
+        proto::compact_formats::{
+            CompactBlock, CompactSaplingOutput, CompactSaplingSpend, CompactTx,
         },
-        <span class="ident">transaction::components::Amount</span>,
-        <span class="ident">zip32::ExtendedFullViewingKey</span>,
     };
 
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::BlockDb</span>;
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span><span class="kw">use </span>zcash_primitives::{legacy, legacy::keys::IncomingViewingKey};
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;mainnet&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">network</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Network</span> {
-        <span class="ident">Network::MainNetwork</span>
+    <span class="kw">use </span>zcash_primitives::{
+        block::BlockHash,
+        consensus::{BlockHeight, Network, NetworkUpgrade, Parameters},
+        legacy::TransparentAddress,
+        memo::MemoBytes,
+        sapling::{
+            keys::DiversifiableFullViewingKey, note_encryption::sapling_note_encryption,
+            util::generate_random_rseed, Note, Nullifier, PaymentAddress,
+        },
+        transaction::components::Amount,
+        zip32::ExtendedFullViewingKey,
+    };
+
+    <span class="kw">use crate</span>::{wallet::init::init_accounts_table, AccountId, WalletDb};
+
+    <span class="kw">use </span><span class="kw">super</span>::BlockDb;
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;mainnet&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>network() -&gt; Network {
+        Network::MainNetwork
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;mainnet&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">network</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Network</span> {
-        <span class="ident">Network::TestNetwork</span>
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;mainnet&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>network() -&gt; Network {
+        Network::TestNetwork
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;mainnet&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">sapling_activation_height</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BlockHeight</span> {
-        <span class="ident">Network::MainNetwork</span>
-            .<span class="ident">activation_height</span>(<span class="ident">NetworkUpgrade::Sapling</span>)
-            .<span class="ident">unwrap</span>()
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;mainnet&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>sapling_activation_height() -&gt; BlockHeight {
+        Network::MainNetwork
+            .activation_height(NetworkUpgrade::Sapling)
+            .unwrap()
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;mainnet&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">sapling_activation_height</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BlockHeight</span> {
-        <span class="ident">Network::TestNetwork</span>
-            .<span class="ident">activation_height</span>(<span class="ident">NetworkUpgrade::Sapling</span>)
-            .<span class="ident">unwrap</span>()
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;mainnet&quot;</span>))]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>sapling_activation_height() -&gt; BlockHeight {
+        Network::TestNetwork
+            .activation_height(NetworkUpgrade::Sapling)
+            .unwrap()
     }
 
-    <span class="doccomment">/// Create a fake CompactBlock at the given height, containing a single output paying</span>
-    <span class="doccomment">/// the given address. Returns the CompactBlock and the nullifier for the new note.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">fake_compact_block</span>(
-        <span class="ident">height</span>: <span class="ident">BlockHeight</span>,
-        <span class="ident">prev_hash</span>: <span class="ident">BlockHash</span>,
-        <span class="ident">extfvk</span>: <span class="ident">ExtendedFullViewingKey</span>,
-        <span class="ident">value</span>: <span class="ident">Amount</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">CompactBlock</span>, <span class="ident">Nullifier</span>) {
-        <span class="kw">let</span> <span class="ident">to</span> <span class="op">=</span> <span class="ident">extfvk</span>.<span class="ident">default_address</span>().<span class="ident">unwrap</span>().<span class="number">1</span>;
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>init_test_accounts_table(
+        db_data: <span class="kw-2">&amp;</span>WalletDb&lt;Network&gt;,
+    ) -&gt; (DiversifiableFullViewingKey, <span class="prelude-ty">Option</span>&lt;TransparentAddress&gt;) {
+        <span class="kw">let </span>seed = [<span class="number">0u8</span>; <span class="number">32</span>];
+        <span class="kw">let </span>account = AccountId::from(<span class="number">0</span>);
+        <span class="kw">let </span>extsk = sapling::spending_key(<span class="kw-2">&amp;</span>seed, network().coin_type(), account);
+        <span class="kw">let </span>dfvk = DiversifiableFullViewingKey::from(ExtendedFullViewingKey::from(<span class="kw-2">&amp;</span>extsk));
 
-        <span class="comment">// Create a fake Note for the account</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">OsRng</span>;
-        <span class="kw">let</span> <span class="ident">rseed</span> <span class="op">=</span> <span class="ident">generate_random_rseed</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>(), <span class="ident">height</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-        <span class="kw">let</span> <span class="ident">note</span> <span class="op">=</span> <span class="ident">Note</span> {
-            <span class="ident">g_d</span>: <span class="ident">to</span>.<span class="ident">diversifier</span>().<span class="ident">g_d</span>().<span class="ident">unwrap</span>(),
-            <span class="ident">pk_d</span>: <span class="kw-2">*</span><span class="ident">to</span>.<span class="ident">pk_d</span>(),
-            <span class="ident">value</span>: <span class="ident">value</span>.<span class="ident">into</span>(),
-            <span class="ident">rseed</span>,
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+        </span><span class="kw">let </span>(tkey, taddr) = {
+            <span class="kw">let </span>tkey = legacy::keys::AccountPrivKey::from_seed(<span class="kw-2">&amp;</span>network(), <span class="kw-2">&amp;</span>seed, account)
+                .unwrap()
+                .to_account_pubkey();
+            <span class="kw">let </span>taddr = tkey.derive_external_ivk().unwrap().default_address().<span class="number">0</span>;
+            (<span class="prelude-val">Some</span>(tkey), <span class="prelude-val">Some</span>(taddr))
         };
-        <span class="kw">let</span> <span class="ident">encryptor</span> <span class="op">=</span> <span class="ident">sapling_note_encryption</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Network</span><span class="op">&gt;</span>(
-            <span class="prelude-val">Some</span>(<span class="ident">extfvk</span>.<span class="ident">fvk</span>.<span class="ident">ovk</span>),
-            <span class="ident">note</span>.<span class="ident">clone</span>(),
-            <span class="ident">to</span>,
-            <span class="ident">MemoBytes::empty</span>(),
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>,
+
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;transparent-inputs&quot;</span>))]
+        </span><span class="kw">let </span>taddr = <span class="prelude-val">None</span>;
+
+        <span class="kw">let </span>ufvk = UnifiedFullViewingKey::new(
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>tkey,
+            <span class="prelude-val">Some</span>(dfvk.clone()),
+            <span class="prelude-val">None</span>,
+        )
+        .unwrap();
+
+        <span class="kw">let </span>ufvks = HashMap::from([(account, ufvk)]);
+        init_accounts_table(db_data, <span class="kw-2">&amp;</span>ufvks).unwrap();
+
+        (dfvk, taddr)
+    }
+
+    <span class="doccomment">/// Create a fake CompactBlock at the given height, containing a single output paying
+    /// the given address. Returns the CompactBlock and the nullifier for the new note.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>fake_compact_block(
+        height: BlockHeight,
+        prev_hash: BlockHash,
+        dfvk: <span class="kw-2">&amp;</span>DiversifiableFullViewingKey,
+        value: Amount,
+    ) -&gt; (CompactBlock, Nullifier) {
+        <span class="kw">let </span>to = dfvk.default_address().<span class="number">1</span>;
+
+        <span class="comment">// Create a fake Note for the account
+        </span><span class="kw">let </span><span class="kw-2">mut </span>rng = OsRng;
+        <span class="kw">let </span>rseed = generate_random_rseed(<span class="kw-2">&amp;</span>network(), height, <span class="kw-2">&amp;mut </span>rng);
+        <span class="kw">let </span>note = Note {
+            g_d: to.diversifier().g_d().unwrap(),
+            pk_d: <span class="kw-2">*</span>to.pk_d(),
+            value: value.into(),
+            rseed,
+        };
+        <span class="kw">let </span>encryptor = sapling_note_encryption::&lt;<span class="kw">_</span>, Network&gt;(
+            <span class="prelude-val">Some</span>(dfvk.fvk().ovk),
+            note.clone(),
+            to,
+            MemoBytes::empty(),
+            <span class="kw-2">&amp;mut </span>rng,
         );
-        <span class="kw">let</span> <span class="ident">cmu</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">cmu</span>().<span class="ident">to_repr</span>().<span class="ident">as_ref</span>().<span class="ident">to_vec</span>();
-        <span class="kw">let</span> <span class="ident">epk</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">epk</span>().<span class="ident">to_bytes</span>().<span class="ident">to_vec</span>();
-        <span class="kw">let</span> <span class="ident">enc_ciphertext</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">encrypt_note_plaintext</span>();
+        <span class="kw">let </span>cmu = note.cmu().to_repr().as_ref().to_vec();
+        <span class="kw">let </span>epk = encryptor.epk().to_bytes().to_vec();
+        <span class="kw">let </span>enc_ciphertext = encryptor.encrypt_note_plaintext();
 
-        <span class="comment">// Create a fake CompactBlock containing the note</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cout</span> <span class="op">=</span> <span class="ident">CompactOutput::new</span>();
-        <span class="ident">cout</span>.<span class="ident">set_cmu</span>(<span class="ident">cmu</span>);
-        <span class="ident">cout</span>.<span class="ident">set_epk</span>(<span class="ident">epk</span>);
-        <span class="ident">cout</span>.<span class="ident">set_ciphertext</span>(<span class="ident">enc_ciphertext</span>.<span class="ident">as_ref</span>()[..<span class="number">52</span>].<span class="ident">to_vec</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">CompactTx::new</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">txid</span>);
-        <span class="ident">ctx</span>.<span class="ident">set_hash</span>(<span class="ident">txid</span>);
-        <span class="ident">ctx</span>.<span class="ident">outputs</span>.<span class="ident">push</span>(<span class="ident">cout</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cb</span> <span class="op">=</span> <span class="ident">CompactBlock::new</span>();
-        <span class="ident">cb</span>.<span class="ident">set_height</span>(<span class="ident">u64::from</span>(<span class="ident">height</span>));
-        <span class="ident">cb</span>.<span class="ident">hash</span>.<span class="ident">resize</span>(<span class="number">32</span>, <span class="number">0</span>);
-        <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cb</span>.<span class="ident">hash</span>);
-        <span class="ident">cb</span>.<span class="ident">prevHash</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">prev_hash</span>.<span class="number">0</span>);
-        <span class="ident">cb</span>.<span class="ident">vtx</span>.<span class="ident">push</span>(<span class="ident">ctx</span>);
-        (<span class="ident">cb</span>, <span class="ident">note</span>.<span class="ident">nf</span>(<span class="kw-2">&amp;</span><span class="ident">extfvk</span>.<span class="ident">fvk</span>.<span class="ident">vk</span>, <span class="number">0</span>))
+        <span class="comment">// Create a fake CompactBlock containing the note
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cout = CompactSaplingOutput::new();
+        cout.set_cmu(cmu);
+        cout.set_ephemeralKey(epk);
+        cout.set_ciphertext(enc_ciphertext.as_ref()[..<span class="number">52</span>].to_vec());
+        <span class="kw">let </span><span class="kw-2">mut </span>ctx = CompactTx::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>txid = <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">32</span>];
+        rng.fill_bytes(<span class="kw-2">&amp;mut </span>txid);
+        ctx.set_hash(txid);
+        ctx.outputs.push(cout);
+        <span class="kw">let </span><span class="kw-2">mut </span>cb = CompactBlock::new();
+        cb.set_height(u64::from(height));
+        cb.hash.resize(<span class="number">32</span>, <span class="number">0</span>);
+        rng.fill_bytes(<span class="kw-2">&amp;mut </span>cb.hash);
+        cb.prevHash.extend_from_slice(<span class="kw-2">&amp;</span>prev_hash.<span class="number">0</span>);
+        cb.vtx.push(ctx);
+        (cb, note.nf(<span class="kw-2">&amp;</span>dfvk.fvk().vk.nk, <span class="number">0</span>))
     }
 
-    <span class="doccomment">/// Create a fake CompactBlock at the given height, spending a single note from the</span>
-    <span class="doccomment">/// given address.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">fake_compact_block_spending</span>(
-        <span class="ident">height</span>: <span class="ident">BlockHeight</span>,
-        <span class="ident">prev_hash</span>: <span class="ident">BlockHash</span>,
-        (<span class="ident">nf</span>, <span class="ident">in_value</span>): (<span class="ident">Nullifier</span>, <span class="ident">Amount</span>),
-        <span class="ident">extfvk</span>: <span class="ident">ExtendedFullViewingKey</span>,
-        <span class="ident">to</span>: <span class="ident">PaymentAddress</span>,
-        <span class="ident">value</span>: <span class="ident">Amount</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CompactBlock</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rng</span> <span class="op">=</span> <span class="ident">OsRng</span>;
-        <span class="kw">let</span> <span class="ident">rseed</span> <span class="op">=</span> <span class="ident">generate_random_rseed</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>(), <span class="ident">height</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
+    <span class="doccomment">/// Create a fake CompactBlock at the given height, spending a single note from the
+    /// given address.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>fake_compact_block_spending(
+        height: BlockHeight,
+        prev_hash: BlockHash,
+        (nf, in_value): (Nullifier, Amount),
+        dfvk: <span class="kw-2">&amp;</span>DiversifiableFullViewingKey,
+        to: PaymentAddress,
+        value: Amount,
+    ) -&gt; CompactBlock {
+        <span class="kw">let </span><span class="kw-2">mut </span>rng = OsRng;
+        <span class="kw">let </span>rseed = generate_random_rseed(<span class="kw-2">&amp;</span>network(), height, <span class="kw-2">&amp;mut </span>rng);
 
-        <span class="comment">// Create a fake CompactBlock containing the note</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cspend</span> <span class="op">=</span> <span class="ident">CompactSpend::new</span>();
-        <span class="ident">cspend</span>.<span class="ident">set_nf</span>(<span class="ident">nf</span>.<span class="ident">to_vec</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="ident">CompactTx::new</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">txid</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">32</span>];
-        <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">txid</span>);
-        <span class="ident">ctx</span>.<span class="ident">set_hash</span>(<span class="ident">txid</span>);
-        <span class="ident">ctx</span>.<span class="ident">spends</span>.<span class="ident">push</span>(<span class="ident">cspend</span>);
+        <span class="comment">// Create a fake CompactBlock containing the note
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cspend = CompactSaplingSpend::new();
+        cspend.set_nf(nf.to_vec());
+        <span class="kw">let </span><span class="kw-2">mut </span>ctx = CompactTx::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>txid = <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">32</span>];
+        rng.fill_bytes(<span class="kw-2">&amp;mut </span>txid);
+        ctx.set_hash(txid);
+        ctx.spends.push(cspend);
 
-        <span class="comment">// Create a fake Note for the payment</span>
-        <span class="ident">ctx</span>.<span class="ident">outputs</span>.<span class="ident">push</span>({
-            <span class="kw">let</span> <span class="ident">note</span> <span class="op">=</span> <span class="ident">Note</span> {
-                <span class="ident">g_d</span>: <span class="ident">to</span>.<span class="ident">diversifier</span>().<span class="ident">g_d</span>().<span class="ident">unwrap</span>(),
-                <span class="ident">pk_d</span>: <span class="kw-2">*</span><span class="ident">to</span>.<span class="ident">pk_d</span>(),
-                <span class="ident">value</span>: <span class="ident">value</span>.<span class="ident">into</span>(),
-                <span class="ident">rseed</span>,
+        <span class="comment">// Create a fake Note for the payment
+        </span>ctx.outputs.push({
+            <span class="kw">let </span>note = Note {
+                g_d: to.diversifier().g_d().unwrap(),
+                pk_d: <span class="kw-2">*</span>to.pk_d(),
+                value: value.into(),
+                rseed,
             };
-            <span class="kw">let</span> <span class="ident">encryptor</span> <span class="op">=</span> <span class="ident">sapling_note_encryption</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Network</span><span class="op">&gt;</span>(
-                <span class="prelude-val">Some</span>(<span class="ident">extfvk</span>.<span class="ident">fvk</span>.<span class="ident">ovk</span>),
-                <span class="ident">note</span>.<span class="ident">clone</span>(),
-                <span class="ident">to</span>,
-                <span class="ident">MemoBytes::empty</span>(),
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>,
+            <span class="kw">let </span>encryptor = sapling_note_encryption::&lt;<span class="kw">_</span>, Network&gt;(
+                <span class="prelude-val">Some</span>(dfvk.fvk().ovk),
+                note.clone(),
+                to,
+                MemoBytes::empty(),
+                <span class="kw-2">&amp;mut </span>rng,
             );
-            <span class="kw">let</span> <span class="ident">cmu</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">cmu</span>().<span class="ident">to_repr</span>().<span class="ident">as_ref</span>().<span class="ident">to_vec</span>();
-            <span class="kw">let</span> <span class="ident">epk</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">epk</span>().<span class="ident">to_bytes</span>().<span class="ident">to_vec</span>();
-            <span class="kw">let</span> <span class="ident">enc_ciphertext</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">encrypt_note_plaintext</span>();
+            <span class="kw">let </span>cmu = note.cmu().to_repr().as_ref().to_vec();
+            <span class="kw">let </span>epk = encryptor.epk().to_bytes().to_vec();
+            <span class="kw">let </span>enc_ciphertext = encryptor.encrypt_note_plaintext();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cout</span> <span class="op">=</span> <span class="ident">CompactOutput::new</span>();
-            <span class="ident">cout</span>.<span class="ident">set_cmu</span>(<span class="ident">cmu</span>);
-            <span class="ident">cout</span>.<span class="ident">set_epk</span>(<span class="ident">epk</span>);
-            <span class="ident">cout</span>.<span class="ident">set_ciphertext</span>(<span class="ident">enc_ciphertext</span>.<span class="ident">as_ref</span>()[..<span class="number">52</span>].<span class="ident">to_vec</span>());
-            <span class="ident">cout</span>
+            <span class="kw">let </span><span class="kw-2">mut </span>cout = CompactSaplingOutput::new();
+            cout.set_cmu(cmu);
+            cout.set_ephemeralKey(epk);
+            cout.set_ciphertext(enc_ciphertext.as_ref()[..<span class="number">52</span>].to_vec());
+            cout
         });
 
-        <span class="comment">// Create a fake Note for the change</span>
-        <span class="ident">ctx</span>.<span class="ident">outputs</span>.<span class="ident">push</span>({
-            <span class="kw">let</span> <span class="ident">change_addr</span> <span class="op">=</span> <span class="ident">extfvk</span>.<span class="ident">default_address</span>().<span class="ident">unwrap</span>().<span class="number">1</span>;
-            <span class="kw">let</span> <span class="ident">rseed</span> <span class="op">=</span> <span class="ident">generate_random_rseed</span>(<span class="kw-2">&amp;</span><span class="ident">network</span>(), <span class="ident">height</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>);
-            <span class="kw">let</span> <span class="ident">note</span> <span class="op">=</span> <span class="ident">Note</span> {
-                <span class="ident">g_d</span>: <span class="ident">change_addr</span>.<span class="ident">diversifier</span>().<span class="ident">g_d</span>().<span class="ident">unwrap</span>(),
-                <span class="ident">pk_d</span>: <span class="kw-2">*</span><span class="ident">change_addr</span>.<span class="ident">pk_d</span>(),
-                <span class="ident">value</span>: (<span class="ident">in_value</span> <span class="op">-</span> <span class="ident">value</span>).<span class="ident">unwrap</span>().<span class="ident">into</span>(),
-                <span class="ident">rseed</span>,
+        <span class="comment">// Create a fake Note for the change
+        </span>ctx.outputs.push({
+            <span class="kw">let </span>change_addr = dfvk.default_address().<span class="number">1</span>;
+            <span class="kw">let </span>rseed = generate_random_rseed(<span class="kw-2">&amp;</span>network(), height, <span class="kw-2">&amp;mut </span>rng);
+            <span class="kw">let </span>note = Note {
+                g_d: change_addr.diversifier().g_d().unwrap(),
+                pk_d: <span class="kw-2">*</span>change_addr.pk_d(),
+                value: (in_value - value).unwrap().into(),
+                rseed,
             };
-            <span class="kw">let</span> <span class="ident">encryptor</span> <span class="op">=</span> <span class="ident">sapling_note_encryption</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Network</span><span class="op">&gt;</span>(
-                <span class="prelude-val">Some</span>(<span class="ident">extfvk</span>.<span class="ident">fvk</span>.<span class="ident">ovk</span>),
-                <span class="ident">note</span>.<span class="ident">clone</span>(),
-                <span class="ident">change_addr</span>,
-                <span class="ident">MemoBytes::empty</span>(),
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rng</span>,
+            <span class="kw">let </span>encryptor = sapling_note_encryption::&lt;<span class="kw">_</span>, Network&gt;(
+                <span class="prelude-val">Some</span>(dfvk.fvk().ovk),
+                note.clone(),
+                change_addr,
+                MemoBytes::empty(),
+                <span class="kw-2">&amp;mut </span>rng,
             );
-            <span class="kw">let</span> <span class="ident">cmu</span> <span class="op">=</span> <span class="ident">note</span>.<span class="ident">cmu</span>().<span class="ident">to_repr</span>().<span class="ident">as_ref</span>().<span class="ident">to_vec</span>();
-            <span class="kw">let</span> <span class="ident">epk</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">epk</span>().<span class="ident">to_bytes</span>().<span class="ident">to_vec</span>();
-            <span class="kw">let</span> <span class="ident">enc_ciphertext</span> <span class="op">=</span> <span class="ident">encryptor</span>.<span class="ident">encrypt_note_plaintext</span>();
+            <span class="kw">let </span>cmu = note.cmu().to_repr().as_ref().to_vec();
+            <span class="kw">let </span>epk = encryptor.epk().to_bytes().to_vec();
+            <span class="kw">let </span>enc_ciphertext = encryptor.encrypt_note_plaintext();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cout</span> <span class="op">=</span> <span class="ident">CompactOutput::new</span>();
-            <span class="ident">cout</span>.<span class="ident">set_cmu</span>(<span class="ident">cmu</span>);
-            <span class="ident">cout</span>.<span class="ident">set_epk</span>(<span class="ident">epk</span>);
-            <span class="ident">cout</span>.<span class="ident">set_ciphertext</span>(<span class="ident">enc_ciphertext</span>.<span class="ident">as_ref</span>()[..<span class="number">52</span>].<span class="ident">to_vec</span>());
-            <span class="ident">cout</span>
+            <span class="kw">let </span><span class="kw-2">mut </span>cout = CompactSaplingOutput::new();
+            cout.set_cmu(cmu);
+            cout.set_ephemeralKey(epk);
+            cout.set_ciphertext(enc_ciphertext.as_ref()[..<span class="number">52</span>].to_vec());
+            cout
         });
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cb</span> <span class="op">=</span> <span class="ident">CompactBlock::new</span>();
-        <span class="ident">cb</span>.<span class="ident">set_height</span>(<span class="ident">u64::from</span>(<span class="ident">height</span>));
-        <span class="ident">cb</span>.<span class="ident">hash</span>.<span class="ident">resize</span>(<span class="number">32</span>, <span class="number">0</span>);
-        <span class="ident">rng</span>.<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">cb</span>.<span class="ident">hash</span>);
-        <span class="ident">cb</span>.<span class="ident">prevHash</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">prev_hash</span>.<span class="number">0</span>);
-        <span class="ident">cb</span>.<span class="ident">vtx</span>.<span class="ident">push</span>(<span class="ident">ctx</span>);
-        <span class="ident">cb</span>
+        <span class="kw">let </span><span class="kw-2">mut </span>cb = CompactBlock::new();
+        cb.set_height(u64::from(height));
+        cb.hash.resize(<span class="number">32</span>, <span class="number">0</span>);
+        rng.fill_bytes(<span class="kw-2">&amp;mut </span>cb.hash);
+        cb.prevHash.extend_from_slice(<span class="kw-2">&amp;</span>prev_hash.<span class="number">0</span>);
+        cb.vtx.push(ctx);
+        cb
     }
 
-    <span class="doccomment">/// Insert a fake CompactBlock into the cache DB.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">insert_into_cache</span>(<span class="ident">db_cache</span>: <span class="kw-2">&amp;</span><span class="ident">BlockDb</span>, <span class="ident">cb</span>: <span class="kw-2">&amp;</span><span class="ident">CompactBlock</span>) {
-        <span class="kw">let</span> <span class="ident">cb_bytes</span> <span class="op">=</span> <span class="ident">cb</span>.<span class="ident">write_to_bytes</span>().<span class="ident">unwrap</span>();
-        <span class="ident">db_cache</span>
-            .<span class="number">0</span>
-            .<span class="ident">prepare</span>(<span class="string">&quot;INSERT INTO compactblocks (height, data) VALUES (?, ?)&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">execute</span>(<span class="macro">params!</span>[<span class="ident">u32::from</span>(<span class="ident">cb</span>.<span class="ident">height</span>()), <span class="ident">cb_bytes</span>,])
-            .<span class="ident">unwrap</span>();
+    <span class="doccomment">/// Insert a fake CompactBlock into the cache DB.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>insert_into_cache(db_cache: <span class="kw-2">&amp;</span>BlockDb, cb: <span class="kw-2">&amp;</span>CompactBlock) {
+        <span class="kw">let </span>cb_bytes = cb.write_to_bytes().unwrap();
+        db_cache
+            .<span class="number">0
+            </span>.prepare(<span class="string">&quot;INSERT INTO compactblocks (height, data) VALUES (?, ?)&quot;</span>)
+            .unwrap()
+            .execute(<span class="macro">params!</span>[u32::from(cb.height()), cb_bytes,])
+            .unwrap();
+    }
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;unstable&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>remove_unmined_tx_reverts_balance() {
+        <span class="kw">use </span>secrecy::Secret;
+        <span class="kw">use </span>tempfile::NamedTempFile;
+        <span class="kw">use </span>zcash_client_backend::data_api::{chain::scan_cached_blocks, WalletWrite};
+        <span class="kw">use </span>zcash_primitives::zip32::ExtendedSpendingKey;
+
+        <span class="kw">use crate</span>::{
+            chain::init::init_cache_database,
+            error::SqliteClientError,
+            wallet::{get_balance, init::init_wallet_db, rewind_to_height},
+        };
+
+        <span class="kw">let </span>cache_file = NamedTempFile::new().unwrap();
+        <span class="kw">let </span>db_cache = BlockDb::for_path(cache_file.path()).unwrap();
+        init_cache_database(<span class="kw-2">&amp;</span>db_cache).unwrap();
+
+        <span class="kw">let </span>data_file = NamedTempFile::new().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>db_data = WalletDb::for_path(data_file.path(), network()).unwrap();
+        init_wallet_db(<span class="kw-2">&amp;mut </span>db_data, <span class="prelude-val">Some</span>(Secret::new(<span class="macro">vec!</span>[]))).unwrap();
+
+        <span class="comment">// Add an account to the wallet.
+        </span><span class="kw">let </span>(dfvk, _taddr) = init_test_accounts_table(<span class="kw-2">&amp;</span>db_data);
+
+        <span class="comment">// Account balance should be zero.
+        </span><span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            Amount::zero()
+        );
+
+        <span class="comment">// Create a fake CompactBlock sending value to the address.
+        </span><span class="kw">let </span>value = Amount::from_u64(<span class="number">5</span>).unwrap();
+        <span class="kw">let </span>(cb, nf) = fake_compact_block(
+            sapling_activation_height(),
+            BlockHash([<span class="number">0</span>; <span class="number">32</span>]),
+            <span class="kw-2">&amp;</span>dfvk,
+            value,
+        );
+        insert_into_cache(<span class="kw-2">&amp;</span>db_cache, <span class="kw-2">&amp;</span>cb);
+
+        <span class="comment">// Create a second fake CompactBlock spending value from the address.
+        </span><span class="kw">let </span>extsk2 = ExtendedSpendingKey::master(<span class="kw-2">&amp;</span>[<span class="number">0</span>]);
+        <span class="kw">let </span>to2 = extsk2.default_address().<span class="number">1</span>;
+        <span class="kw">let </span>value2 = Amount::from_u64(<span class="number">2</span>).unwrap();
+        <span class="kw">let </span>cb2 = fake_compact_block_spending(
+            sapling_activation_height() + <span class="number">1</span>,
+            cb.hash(),
+            (nf, value),
+            <span class="kw-2">&amp;</span>dfvk,
+            to2,
+            value2,
+        );
+        insert_into_cache(<span class="kw-2">&amp;</span>db_cache, <span class="kw-2">&amp;</span>cb2);
+
+        <span class="comment">// Scan the cache.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>db_write = db_data.get_update_ops().unwrap();
+        scan_cached_blocks(<span class="kw-2">&amp;</span>network(), <span class="kw-2">&amp;</span>db_cache, <span class="kw-2">&amp;mut </span>db_write, <span class="prelude-val">None</span>).unwrap();
+
+        <span class="comment">// Account balance should equal the change.
+        </span><span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            (value - value2).unwrap()
+        );
+
+        <span class="comment">// Attempting to remove the first transaction should fail because it is mined.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>db_ops = db_data.get_update_ops().unwrap();
+        <span class="kw">let </span>txid = cb.vtx.get(<span class="number">0</span>).unwrap().txid();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            db_ops.remove_unmined_tx(<span class="kw-2">&amp;</span>txid).unwrap_err(),
+            SqliteClientError::TransactionIsMined(x) <span class="kw">if </span>x == txid,
+        ));
+
+        <span class="comment">// Attempting to remove the second transaction should fail because it is mined.
+        </span><span class="kw">let </span>txid2 = cb2.vtx.get(<span class="number">0</span>).unwrap().txid();
+        <span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            db_ops.remove_unmined_tx(<span class="kw-2">&amp;</span>txid2).unwrap_err(),
+            SqliteClientError::TransactionIsMined(x) <span class="kw">if </span>x == txid2,
+        ));
+
+        <span class="comment">// Rewind the wallet by one block, to unmine the second transaction.
+        </span>rewind_to_height(<span class="kw-2">&amp;</span>db_data, sapling_activation_height()).unwrap();
+
+        <span class="comment">// Account balance should be zero: the first transaction is spent, but the second
+        // transaction is unmined.
+        </span><span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            Amount::zero()
+        );
+
+        <span class="comment">// Attempting to remove the first transaction should still fail.
+        </span><span class="macro">assert!</span>(<span class="macro">matches!</span>(
+            db_ops.remove_unmined_tx(<span class="kw-2">&amp;</span>txid).unwrap_err(),
+            SqliteClientError::TransactionIsMined(x) <span class="kw">if </span>x == txid,
+        ));
+
+        <span class="comment">// The second transaction can be removed.
+        </span>db_ops.remove_unmined_tx(<span class="kw-2">&amp;</span>txid2).unwrap();
+
+        <span class="comment">// Account balance should now reflect the first received note.
+        </span><span class="macro">assert_eq!</span>(get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(), value);
+
+        <span class="comment">// Scan the cache again.
+        </span>scan_cached_blocks(<span class="kw-2">&amp;</span>network(), <span class="kw-2">&amp;</span>db_cache, <span class="kw-2">&amp;mut </span>db_write, <span class="prelude-val">None</span>).unwrap();
+
+        <span class="comment">// Account balance should once again equal the change.
+        </span><span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            (value - value2).unwrap()
+        );
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

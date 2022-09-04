@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_sqlite&#x2F;src&#x2F;wallet.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>wallet.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../zcash_client_sqlite/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_sqlite/src/wallet.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>wallet.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../zcash_client_sqlite/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../zcash_client_sqlite/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../zcash_client_sqlite/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -889,898 +889,1470 @@
 <span id="889">889</span>
 <span id="890">890</span>
 <span id="891">891</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Functions for querying information in the wdb database.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! These functions should generally not be used directly; instead,</span>
-<span class="doccomment">//! their functionality is available via the [`WalletRead`] and</span>
-<span class="doccomment">//! [`WalletWrite`] traits.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`WalletRead`]: zcash_client_backend::data_api::WalletRead</span>
-<span class="doccomment">//! [`WalletWrite`]: zcash_client_backend::data_api::WalletWrite</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
+<span id="928">928</span>
+<span id="929">929</span>
+<span id="930">930</span>
+<span id="931">931</span>
+<span id="932">932</span>
+<span id="933">933</span>
+<span id="934">934</span>
+<span id="935">935</span>
+<span id="936">936</span>
+<span id="937">937</span>
+<span id="938">938</span>
+<span id="939">939</span>
+<span id="940">940</span>
+<span id="941">941</span>
+<span id="942">942</span>
+<span id="943">943</span>
+<span id="944">944</span>
+<span id="945">945</span>
+<span id="946">946</span>
+<span id="947">947</span>
+<span id="948">948</span>
+<span id="949">949</span>
+<span id="950">950</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
+<span id="972">972</span>
+<span id="973">973</span>
+<span id="974">974</span>
+<span id="975">975</span>
+<span id="976">976</span>
+<span id="977">977</span>
+<span id="978">978</span>
+<span id="979">979</span>
+<span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
+<span id="1010">1010</span>
+<span id="1011">1011</span>
+<span id="1012">1012</span>
+<span id="1013">1013</span>
+<span id="1014">1014</span>
+<span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
+<span id="1070">1070</span>
+<span id="1071">1071</span>
+<span id="1072">1072</span>
+<span id="1073">1073</span>
+<span id="1074">1074</span>
+<span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
+<span id="1142">1142</span>
+<span id="1143">1143</span>
+<span id="1144">1144</span>
+<span id="1145">1145</span>
+<span id="1146">1146</span>
+<span id="1147">1147</span>
+<span id="1148">1148</span>
+<span id="1149">1149</span>
+<span id="1150">1150</span>
+<span id="1151">1151</span>
+<span id="1152">1152</span>
+<span id="1153">1153</span>
+<span id="1154">1154</span>
+<span id="1155">1155</span>
+<span id="1156">1156</span>
+<span id="1157">1157</span>
+<span id="1158">1158</span>
+<span id="1159">1159</span>
+<span id="1160">1160</span>
+<span id="1161">1161</span>
+<span id="1162">1162</span>
+<span id="1163">1163</span>
+<span id="1164">1164</span>
+<span id="1165">1165</span>
+<span id="1166">1166</span>
+<span id="1167">1167</span>
+<span id="1168">1168</span>
+<span id="1169">1169</span>
+<span id="1170">1170</span>
+<span id="1171">1171</span>
+<span id="1172">1172</span>
+<span id="1173">1173</span>
+<span id="1174">1174</span>
+<span id="1175">1175</span>
+<span id="1176">1176</span>
+<span id="1177">1177</span>
+<span id="1178">1178</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Functions for querying information in the wdb database.
+//!
+//! These functions should generally not be used directly; instead,
+//! their functionality is available via the [`WalletRead`] and
+//! [`WalletWrite`] traits.
+//!
+//! [`WalletRead`]: zcash_client_backend::data_api::WalletRead
+//! [`WalletWrite`]: zcash_client_backend::data_api::WalletWrite
 
-<span class="kw">use</span> <span class="ident">ff::PrimeField</span>;
-<span class="kw">use</span> <span class="ident">rusqlite</span>::{<span class="ident">params</span>, <span class="ident">OptionalExtension</span>, <span class="ident">ToSql</span>, <span class="ident">NO_PARAMS</span>};
-<span class="kw">use</span> <span class="ident">std::collections::HashMap</span>;
-<span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
+</span><span class="kw">use </span>ff::PrimeField;
+<span class="kw">use </span>rusqlite::{OptionalExtension, ToSql, NO_PARAMS};
+<span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>std::convert::TryFrom;
 
-<span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-    <span class="ident">block::BlockHash</span>,
-    <span class="ident">consensus</span>::{<span class="self">self</span>, <span class="ident">BlockHeight</span>, <span class="ident">NetworkUpgrade</span>},
-    <span class="ident">memo</span>::{<span class="ident">Memo</span>, <span class="ident">MemoBytes</span>},
-    <span class="ident">merkle_tree</span>::{<span class="ident">CommitmentTree</span>, <span class="ident">IncrementalWitness</span>},
-    <span class="ident">sapling</span>::{<span class="ident">Node</span>, <span class="ident">Note</span>, <span class="ident">Nullifier</span>, <span class="ident">PaymentAddress</span>},
-    <span class="ident">transaction</span>::{<span class="ident">components::Amount</span>, <span class="ident">Transaction</span>, <span class="ident">TxId</span>},
-    <span class="ident">zip32::ExtendedFullViewingKey</span>,
+<span class="kw">use </span>zcash_primitives::{
+    block::BlockHash,
+    consensus::{<span class="self">self</span>, BlockHeight, BranchId, NetworkUpgrade, Parameters},
+    memo::{Memo, MemoBytes},
+    merkle_tree::{CommitmentTree, IncrementalWitness},
+    sapling::{keys::DiversifiableFullViewingKey, Node, Note, Nullifier, PaymentAddress},
+    transaction::{components::Amount, Transaction, TxId},
+    zip32::{AccountId, ExtendedFullViewingKey},
 };
 
-<span class="kw">use</span> <span class="ident">zcash_client_backend</span>::{
-    <span class="ident">address::RecipientAddress</span>,
-    <span class="ident">data_api::error::Error</span>,
-    <span class="ident">encoding</span>::{
-        <span class="ident">decode_extended_full_viewing_key</span>, <span class="ident">decode_payment_address</span>, <span class="ident">encode_extended_full_viewing_key</span>,
-        <span class="ident">encode_payment_address</span>,
+<span class="kw">use </span>zcash_client_backend::{
+    address::RecipientAddress,
+    data_api::error::Error,
+    encoding::{encode_payment_address_p, encode_transparent_address_p},
+    keys::UnifiedFullViewingKey,
+    wallet::{WalletShieldedOutput, WalletTx},
+    DecryptedOutput,
+};
+
+<span class="kw">use crate</span>::{error::SqliteClientError, DataConnStmtCache, NoteId, WalletDb, PRUNING_HEIGHT};
+
+<span class="kw">use </span>zcash_primitives::legacy::TransparentAddress;
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">use </span>{
+    <span class="kw">crate</span>::UtxoId,
+    rusqlite::params,
+    zcash_client_backend::{encoding::AddressCodec, wallet::WalletTransparentOutput},
+    zcash_primitives::{
+        legacy::Script,
+        transaction::components::{OutPoint, TxOut},
     },
-    <span class="ident">wallet</span>::{<span class="ident">AccountId</span>, <span class="ident">WalletShieldedOutput</span>, <span class="ident">WalletTx</span>},
-    <span class="ident">DecryptedOutput</span>,
 };
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">error::SqliteClientError</span>, <span class="ident">DataConnStmtCache</span>, <span class="ident">NoteId</span>, <span class="ident">WalletDb</span>};
+<span class="kw">pub mod </span>init;
+<span class="kw">pub mod </span>transact;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">init</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">transact</span>;
-
-<span class="doccomment">/// This trait provides a generalization over shielded output representations.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ShieldedOutput</span> {
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span>;
-    <span class="kw">fn</span> <span class="ident">account</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AccountId</span>;
-    <span class="kw">fn</span> <span class="ident">to</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">PaymentAddress</span>;
-    <span class="kw">fn</span> <span class="ident">note</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Note</span>;
-    <span class="kw">fn</span> <span class="ident">memo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MemoBytes</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">is_change</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">nullifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>PoolType {
+    Transparent,
+    Sapling,
 }
 
-<span class="kw">impl</span> <span class="ident">ShieldedOutput</span> <span class="kw">for</span> <span class="ident">WalletShieldedOutput</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">index</span>
-    }
-    <span class="kw">fn</span> <span class="ident">account</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AccountId</span> {
-        <span class="self">self</span>.<span class="ident">account</span>
-    }
-    <span class="kw">fn</span> <span class="ident">to</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">PaymentAddress</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to</span>
-    }
-    <span class="kw">fn</span> <span class="ident">note</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Note</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">note</span>
-    }
-    <span class="kw">fn</span> <span class="ident">memo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MemoBytes</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
-    <span class="kw">fn</span> <span class="ident">is_change</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">is_change</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">nullifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">nf</span>)
+<span class="kw">impl </span>PoolType {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>typecode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i64 {
+        <span class="comment">// These constants are *incidentally* shared with the typecodes
+        // for unified addresses, but this is exclusively an internal
+        // implementation detail.
+        </span><span class="kw">match </span><span class="self">self </span>{
+            PoolType::Transparent =&gt; <span class="number">0i64</span>,
+            PoolType::Sapling =&gt; <span class="number">2i64</span>,
+        }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ShieldedOutput</span> <span class="kw">for</span> <span class="ident">DecryptedOutput</span> {
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">index</span>
+<span class="doccomment">/// This trait provides a generalization over shielded output representations.
+</span><span class="attribute">#[deprecated(note = <span class="string">&quot;This trait will be removed in a future release.&quot;</span>)]
+</span><span class="kw">pub trait </span>ShieldedOutput {
+    <span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
+    <span class="kw">fn </span>account(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId;
+    <span class="kw">fn </span>to(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>PaymentAddress;
+    <span class="kw">fn </span>note(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Note;
+    <span class="kw">fn </span>memo(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MemoBytes&gt;;
+    <span class="kw">fn </span>is_change(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt;;
+    <span class="kw">fn </span>nullifier(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Nullifier&gt;;
+}
+
+<span class="attribute">#[allow(deprecated)]
+</span><span class="kw">impl </span>ShieldedOutput <span class="kw">for </span>WalletShieldedOutput&lt;Nullifier&gt; {
+    <span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.index
     }
-    <span class="kw">fn</span> <span class="ident">account</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AccountId</span> {
-        <span class="self">self</span>.<span class="ident">account</span>
+    <span class="kw">fn </span>account(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
+        <span class="self">self</span>.account
     }
-    <span class="kw">fn</span> <span class="ident">to</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">PaymentAddress</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to</span>
+    <span class="kw">fn </span>to(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>PaymentAddress {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.to
     }
-    <span class="kw">fn</span> <span class="ident">note</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Note</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">note</span>
+    <span class="kw">fn </span>note(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Note {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.note
     }
-    <span class="kw">fn</span> <span class="ident">memo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MemoBytes</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">memo</span>)
+    <span class="kw">fn </span>memo(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MemoBytes&gt; {
+        <span class="prelude-val">None
+    </span>}
+    <span class="kw">fn </span>is_change(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
+        <span class="prelude-val">Some</span>(<span class="self">self</span>.is_change)
     }
-    <span class="kw">fn</span> <span class="ident">is_change</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
-    <span class="kw">fn</span> <span class="ident">nullifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
+
+    <span class="kw">fn </span>nullifier(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Nullifier&gt; {
+        <span class="prelude-val">Some</span>(<span class="self">self</span>.nf)
     }
 }
 
-<span class="doccomment">/// Returns the address for the account.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::{</span>
-<span class="doccomment">///     consensus::{self, Network},</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">/// use zcash_client_backend::wallet::AccountId;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_address,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let addr = get_address(&amp;db, AccountId(0));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_address</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">account</span>: <span class="ident">AccountId</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PaymentAddress</span><span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">addr</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">query_row</span>(
+<span class="attribute">#[allow(deprecated)]
+</span><span class="kw">impl </span>ShieldedOutput <span class="kw">for </span>DecryptedOutput {
+    <span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.index
+    }
+    <span class="kw">fn </span>account(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; AccountId {
+        <span class="self">self</span>.account
+    }
+    <span class="kw">fn </span>to(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>PaymentAddress {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.to
+    }
+    <span class="kw">fn </span>note(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Note {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.note
+    }
+    <span class="kw">fn </span>memo(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MemoBytes&gt; {
+        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.memo)
+    }
+    <span class="kw">fn </span>is_change(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
+        <span class="prelude-val">None
+    </span>}
+    <span class="kw">fn </span>nullifier(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Nullifier&gt; {
+        <span class="prelude-val">None
+    </span>}
+}
+
+<span class="doccomment">/// Returns the address for the account.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::{
+///     consensus::{self, Network},
+///     zip32::AccountId,
+/// };
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_address,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let addr = get_address(&amp;db, AccountId::from(0));
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_address instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_address&lt;P: consensus::Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    account: AccountId,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;, SqliteClientError&gt; {
+    <span class="kw">let </span>addr: String = wdb.conn.query_row(
         <span class="string">&quot;SELECT address FROM accounts
         WHERE account = ?&quot;</span>,
-        <span class="kw-2">&amp;</span>[<span class="ident">account</span>.<span class="number">0</span>],
-        <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
+        <span class="kw-2">&amp;</span>[u32::from(account)],
+        |row| row.get(<span class="number">0</span>),
     )<span class="question-mark">?</span>;
 
-    <span class="ident">decode_payment_address</span>(<span class="ident">wdb</span>.<span class="ident">params</span>.<span class="ident">hrp_sapling_payment_address</span>(), <span class="kw-2">&amp;</span><span class="ident">addr</span>)
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::Bech32</span>)
+    RecipientAddress::decode(<span class="kw-2">&amp;</span>wdb.params, <span class="kw-2">&amp;</span>addr)
+        .ok_or_else(|| {
+            SqliteClientError::CorruptedData(<span class="string">&quot;Not a valid Zcash recipient address&quot;</span>.to_owned())
+        })
+        .map(|addr| <span class="kw">match </span>addr {
+            <span class="comment">// TODO: Return the UA, not its Sapling component.
+            </span>RecipientAddress::Unified(ua) =&gt; ua.sapling().cloned(),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+        })
 }
 
-<span class="doccomment">/// Returns the [`ExtendedFullViewingKey`]s for the wallet.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ExtendedFullViewingKey`]: zcash_primitives::zip32::ExtendedFullViewingKey</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_extended_full_viewing_keys</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ExtendedFullViewingKey</span><span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="comment">// Fetch the ExtendedFullViewingKeys we are tracking</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stmt_fetch_accounts</span> <span class="op">=</span> <span class="ident">wdb</span>
-        .<span class="ident">conn</span>
-        .<span class="ident">prepare</span>(<span class="string">&quot;SELECT account, extfvk FROM accounts ORDER BY account ASC&quot;</span>)<span class="question-mark">?</span>;
+<span class="doccomment">/// Returns the [`UnifiedFullViewingKey`]s for the wallet.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_unified_full_viewing_keys&lt;P: consensus::Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;AccountId, UnifiedFullViewingKey&gt;, SqliteClientError&gt; {
+    <span class="comment">// Fetch the UnifiedFullViewingKeys we are tracking
+    </span><span class="kw">let </span><span class="kw-2">mut </span>stmt_fetch_accounts = wdb
+        .conn
+        .prepare(<span class="string">&quot;SELECT account, ufvk FROM accounts ORDER BY account ASC&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">rows</span> <span class="op">=</span> <span class="ident">stmt_fetch_accounts</span>
-        .<span class="ident">query_map</span>(<span class="ident">NO_PARAMS</span>, <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">acct</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="ident">AccountId</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">extfvk</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">extfvk</span>: <span class="ident">String</span><span class="op">|</span> {
-                <span class="ident">decode_extended_full_viewing_key</span>(
-                    <span class="ident">wdb</span>.<span class="ident">params</span>.<span class="ident">hrp_sapling_extended_full_viewing_key</span>(),
-                    <span class="kw-2">&amp;</span><span class="ident">extfvk</span>,
-                )
-                .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::Bech32</span>)
-                .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span>.<span class="ident">ok_or</span>(<span class="ident">SqliteClientError::IncorrectHrpExtFvk</span>))
-            })<span class="question-mark">?</span>;
+    <span class="kw">let </span>rows = stmt_fetch_accounts.query_map(NO_PARAMS, |row| {
+        <span class="kw">let </span>acct: u32 = row.get(<span class="number">0</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>account = AccountId::from(acct);
+        <span class="kw">let </span>ufvk_str: String = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>ufvk = UnifiedFullViewingKey::decode(<span class="kw-2">&amp;</span>wdb.params, <span class="kw-2">&amp;</span>ufvk_str)
+            .map_err(SqliteClientError::CorruptedData);
 
-            <span class="prelude-val">Ok</span>((<span class="ident">acct</span>, <span class="ident">extfvk</span>))
-        })
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((account, ufvk))
+    })<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">AccountId</span>, <span class="ident">ExtendedFullViewingKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="ident">rows</span> {
-        <span class="kw">let</span> (<span class="ident">account_id</span>, <span class="ident">efvkr</span>) <span class="op">=</span> <span class="ident">row</span><span class="question-mark">?</span>;
-        <span class="ident">res</span>.<span class="ident">insert</span>(<span class="ident">account_id</span>, <span class="ident">efvkr</span><span class="question-mark">?</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>res: HashMap&lt;AccountId, UnifiedFullViewingKey&gt; = HashMap::new();
+    <span class="kw">for </span>row <span class="kw">in </span>rows {
+        <span class="kw">let </span>(account_id, ufvkr) = row<span class="question-mark">?</span>;
+        res.insert(account_id, ufvkr<span class="question-mark">?</span>);
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
+    <span class="prelude-val">Ok</span>(res)
 }
 
-<span class="doccomment">/// Checks whether the specified [`ExtendedFullViewingKey`] is valid and corresponds to the</span>
-<span class="doccomment">/// specified account.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ExtendedFullViewingKey`]: zcash_primitives::zip32::ExtendedFullViewingKey</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_account_extfvk</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">account</span>: <span class="ident">AccountId</span>,
-    <span class="ident">extfvk</span>: <span class="kw-2">&amp;</span><span class="ident">ExtendedFullViewingKey</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="ident">wdb</span>.<span class="ident">conn</span>
-        .<span class="ident">prepare</span>(<span class="string">&quot;SELECT * FROM accounts WHERE account = ? AND extfvk = ?&quot;</span>)<span class="question-mark">?</span>
-        .<span class="ident">exists</span>(<span class="kw-2">&amp;</span>[
-            <span class="ident">account</span>.<span class="number">0</span>.<span class="ident">to_sql</span>()<span class="question-mark">?</span>,
-            <span class="ident">encode_extended_full_viewing_key</span>(
-                <span class="ident">wdb</span>.<span class="ident">params</span>.<span class="ident">hrp_sapling_extended_full_viewing_key</span>(),
-                <span class="ident">extfvk</span>,
-            )
-            .<span class="ident">to_sql</span>()<span class="question-mark">?</span>,
-        ])
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+<span class="doccomment">/// Checks whether the specified [`ExtendedFullViewingKey`] is valid and corresponds to the
+/// specified account.
+///
+/// [`ExtendedFullViewingKey`]: zcash_primitives::zip32::ExtendedFullViewingKey
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::is_valid_account_extfvk instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>is_valid_account_extfvk&lt;P: consensus::Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    account: AccountId,
+    extfvk: <span class="kw-2">&amp;</span>ExtendedFullViewingKey,
+) -&gt; <span class="prelude-ty">Result</span>&lt;bool, SqliteClientError&gt; {
+    wdb.conn
+        .prepare(<span class="string">&quot;SELECT ufvk FROM accounts WHERE account = ?&quot;</span>)<span class="question-mark">?
+        </span>.query_row(<span class="kw-2">&amp;</span>[u32::from(account).to_sql()<span class="question-mark">?</span>], |row| {
+            row.get(<span class="number">0</span>).map(|ufvk_str: String| {
+                UnifiedFullViewingKey::decode(<span class="kw-2">&amp;</span>wdb.params, <span class="kw-2">&amp;</span>ufvk_str)
+                    .map_err(SqliteClientError::CorruptedData)
+            })
+        })
+        .optional()
+        .map_err(SqliteClientError::from)
+        .and_then(|row| {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ufvk) = row {
+                ufvk.map(|ufvk| {
+                    ufvk.sapling().map(|dfvk| dfvk.to_bytes())
+                        == <span class="prelude-val">Some</span>(DiversifiableFullViewingKey::from(extfvk.clone()).to_bytes())
+                })
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
+            }
+        })
 }
 
-<span class="doccomment">/// Returns the balance for the account, including all mined unspent notes that we know</span>
-<span class="doccomment">/// about.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// WARNING: This balance is potentially unreliable, as mined notes may become unmined due</span>
-<span class="doccomment">/// to chain reorgs. You should generally not show this balance to users without some</span>
-<span class="doccomment">/// caveat. Use [`get_balance_at`] where you need a more reliable indication of the</span>
-<span class="doccomment">/// wallet balance.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::Network;</span>
-<span class="doccomment">/// use zcash_client_backend::wallet::AccountId;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_balance,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let addr = get_balance(&amp;db, AccountId(0));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_balance</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>, <span class="ident">account</span>: <span class="ident">AccountId</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Amount</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the balance for the account, including all mined unspent notes that we know
+/// about.
+///
+/// WARNING: This balance is potentially unreliable, as mined notes may become unmined due
+/// to chain reorgs. You should generally not show this balance to users without some
+/// caveat. Use [`get_balance_at`] where you need a more reliable indication of the
+/// wallet balance.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::{
+///     consensus::Network,
+///     zip32::AccountId,
+/// };
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_balance,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let addr = get_balance(&amp;db, AccountId::from(0));
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_balance_at instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_balance&lt;P&gt;(wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, SqliteClientError&gt; {
+    <span class="kw">let </span>balance = wdb.conn.query_row(
         <span class="string">&quot;SELECT SUM(value) FROM received_notes
         INNER JOIN transactions ON transactions.id_tx = received_notes.tx
         WHERE account = ? AND spent IS NULL AND transactions.block IS NOT NULL&quot;</span>,
-        <span class="kw-2">&amp;</span>[<span class="ident">account</span>.<span class="number">0</span>],
-        <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">or</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>)),
+        <span class="kw-2">&amp;</span>[u32::from(account)],
+        |row| row.get(<span class="number">0</span>).or(<span class="prelude-val">Ok</span>(<span class="number">0</span>)),
     )<span class="question-mark">?</span>;
 
-    <span class="kw">match</span> <span class="ident">Amount::from_i64</span>(<span class="ident">balance</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">amount</span>) <span class="kw">if</span> <span class="op">!</span><span class="ident">amount</span>.<span class="ident">is_negative</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">amount</span>),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">SqliteClientError::CorruptedData</span>(
-            <span class="string">&quot;Sum of values in received_notes is out of range&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="kw">match </span>Amount::from_i64(balance) {
+        <span class="prelude-val">Ok</span>(amount) <span class="kw">if </span>!amount.is_negative() =&gt; <span class="prelude-val">Ok</span>(amount),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(SqliteClientError::CorruptedData(
+            <span class="string">&quot;Sum of values in received_notes is out of range&quot;</span>.to_string(),
         )),
     }
 }
 
-<span class="doccomment">/// Returns the verified balance for the account at the specified height,</span>
-<span class="doccomment">/// This may be used to obtain a balance that ignores notes that have been</span>
-<span class="doccomment">/// received so recently that they are not yet deemed spendable.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::{BlockHeight, Network};</span>
-<span class="doccomment">/// use zcash_client_backend::wallet::AccountId;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_balance_at,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let addr = get_balance_at(&amp;db, AccountId(0), BlockHeight::from_u32(0));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_balance_at</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">account</span>: <span class="ident">AccountId</span>,
-    <span class="ident">anchor_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Amount</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">balance</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the verified balance for the account at the specified height,
+/// This may be used to obtain a balance that ignores notes that have been
+/// received so recently that they are not yet deemed spendable.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::{
+///     consensus::{BlockHeight, Network},
+///     zip32::AccountId,
+/// };
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_balance_at,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let addr = get_balance_at(&amp;db, AccountId::from(0), BlockHeight::from_u32(0));
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_balance_at instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_balance_at&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    account: AccountId,
+    anchor_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Amount, SqliteClientError&gt; {
+    <span class="kw">let </span>balance = wdb.conn.query_row(
         <span class="string">&quot;SELECT SUM(value) FROM received_notes
         INNER JOIN transactions ON transactions.id_tx = received_notes.tx
         WHERE account = ? AND spent IS NULL AND transactions.block &lt;= ?&quot;</span>,
-        <span class="kw-2">&amp;</span>[<span class="ident">account</span>.<span class="number">0</span>, <span class="ident">u32::from</span>(<span class="ident">anchor_height</span>)],
-        <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">or</span>(<span class="prelude-val">Ok</span>(<span class="number">0</span>)),
+        <span class="kw-2">&amp;</span>[u32::from(account), u32::from(anchor_height)],
+        |row| row.get(<span class="number">0</span>).or(<span class="prelude-val">Ok</span>(<span class="number">0</span>)),
     )<span class="question-mark">?</span>;
 
-    <span class="kw">match</span> <span class="ident">Amount::from_i64</span>(<span class="ident">balance</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">amount</span>) <span class="kw">if</span> <span class="op">!</span><span class="ident">amount</span>.<span class="ident">is_negative</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">amount</span>),
-        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">SqliteClientError::CorruptedData</span>(
-            <span class="string">&quot;Sum of values in received_notes is out of range&quot;</span>.<span class="ident">to_string</span>(),
+    <span class="kw">match </span>Amount::from_i64(balance) {
+        <span class="prelude-val">Ok</span>(amount) <span class="kw">if </span>!amount.is_negative() =&gt; <span class="prelude-val">Ok</span>(amount),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(SqliteClientError::CorruptedData(
+            <span class="string">&quot;Sum of values in received_notes is out of range&quot;</span>.to_string(),
         )),
     }
 }
 
-<span class="doccomment">/// Returns the memo for a received note.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The note is identified by its row index in the `received_notes` table within the wdb</span>
-<span class="doccomment">/// database.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::Network;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     NoteId,</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_received_memo,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let memo = get_received_memo(&amp;db, 27);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_received_memo</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>, <span class="ident">id_note</span>: <span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Memo</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">memo_bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the memo for a received note.
+///
+/// The note is identified by its row index in the `received_notes` table within the wdb
+/// database.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::Network;
+/// use zcash_client_sqlite::{
+///     NoteId,
+///     WalletDb,
+///     wallet::get_received_memo,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let memo = get_received_memo(&amp;db, 27);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_memo instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_received_memo&lt;P&gt;(wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;, id_note: i64) -&gt; <span class="prelude-ty">Result</span>&lt;Memo, SqliteClientError&gt; {
+    <span class="kw">let </span>memo_bytes: Vec&lt;<span class="kw">_</span>&gt; = wdb.conn.query_row(
         <span class="string">&quot;SELECT memo FROM received_notes
         WHERE id_note = ?&quot;</span>,
-        <span class="kw-2">&amp;</span>[<span class="ident">id_note</span>],
-        <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
+        <span class="kw-2">&amp;</span>[id_note],
+        |row| row.get(<span class="number">0</span>),
     )<span class="question-mark">?</span>;
 
-    <span class="ident">MemoBytes::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">memo_bytes</span>)
-        .<span class="ident">and_then</span>(<span class="ident">Memo::try_from</span>)
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    MemoBytes::from_bytes(<span class="kw-2">&amp;</span>memo_bytes)
+        .and_then(Memo::try_from)
+        .map_err(SqliteClientError::from)
 }
 
-<span class="doccomment">/// Returns the memo for a sent note.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The note is identified by its row index in the `sent_notes` table within the wdb</span>
-<span class="doccomment">/// database.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::Network;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     NoteId,</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_sent_memo,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let memo = get_sent_memo(&amp;db, 12);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_sent_memo</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>, <span class="ident">id_note</span>: <span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Memo</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">memo_bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">query_row</span>(
+<span class="doccomment">/// Looks up a transaction by its internal database identifier.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_transaction&lt;P: Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    id_tx: i64,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Transaction, SqliteClientError&gt; {
+    <span class="kw">let </span>(tx_bytes, block_height): (Vec&lt;<span class="kw">_</span>&gt;, BlockHeight) = wdb.conn.query_row(
+        <span class="string">&quot;SELECT raw, block FROM transactions
+        WHERE id_tx = ?&quot;</span>,
+        <span class="kw-2">&amp;</span>[id_tx],
+        |row| {
+            <span class="kw">let </span>h: u32 = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>((row.get(<span class="number">0</span>)<span class="question-mark">?</span>, BlockHeight::from(h)))
+        },
+    )<span class="question-mark">?</span>;
+
+    Transaction::read(
+        <span class="kw-2">&amp;</span>tx_bytes[..],
+        BranchId::for_height(<span class="kw-2">&amp;</span>wdb.params, block_height),
+    )
+    .map_err(SqliteClientError::from)
+}
+
+<span class="doccomment">/// Returns the memo for a sent note.
+///
+/// The note is identified by its row index in the `sent_notes` table within the wdb
+/// database.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::Network;
+/// use zcash_client_sqlite::{
+///     NoteId,
+///     WalletDb,
+///     wallet::get_sent_memo,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let memo = get_sent_memo(&amp;db, 12);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_memo instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_sent_memo&lt;P&gt;(wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;, id_note: i64) -&gt; <span class="prelude-ty">Result</span>&lt;Memo, SqliteClientError&gt; {
+    <span class="kw">let </span>memo_bytes: Vec&lt;<span class="kw">_</span>&gt; = wdb.conn.query_row(
         <span class="string">&quot;SELECT memo FROM sent_notes
         WHERE id_note = ?&quot;</span>,
-        <span class="kw-2">&amp;</span>[<span class="ident">id_note</span>],
-        <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>),
+        <span class="kw-2">&amp;</span>[id_note],
+        |row| row.get(<span class="number">0</span>),
     )<span class="question-mark">?</span>;
 
-    <span class="ident">MemoBytes::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">memo_bytes</span>)
-        .<span class="ident">and_then</span>(<span class="ident">Memo::try_from</span>)
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    MemoBytes::from_bytes(<span class="kw-2">&amp;</span>memo_bytes)
+        .and_then(Memo::try_from)
+        .map_err(SqliteClientError::from)
 }
 
-<span class="doccomment">/// Returns the minimum and maximum heights for blocks stored in the wallet database.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::Network;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::block_height_extrema,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let bounds = block_height_extrema(&amp;db);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">block_height_extrema</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">BlockHeight</span>, <span class="ident">BlockHeight</span>)<span class="op">&gt;</span>, <span class="ident">rusqlite::Error</span><span class="op">&gt;</span> {
-    <span class="ident">wdb</span>.<span class="ident">conn</span>
-        .<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the minimum and maximum heights for blocks stored in the wallet database.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::Network;
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::block_height_extrema,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let bounds = block_height_extrema(&amp;db);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::block_height_extrema instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>block_height_extrema&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(BlockHeight, BlockHeight)&gt;, rusqlite::Error&gt; {
+    wdb.conn
+        .query_row(
             <span class="string">&quot;SELECT MIN(height), MAX(height) FROM blocks&quot;</span>,
-            <span class="ident">NO_PARAMS</span>,
-            <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">min_height</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">max_height</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
+            NO_PARAMS,
+            |row| {
+                <span class="kw">let </span>min_height: u32 = row.get(<span class="number">0</span>)<span class="question-mark">?</span>;
+                <span class="kw">let </span>max_height: u32 = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>((
-                    <span class="ident">BlockHeight::from</span>(<span class="ident">min_height</span>),
-                    <span class="ident">BlockHeight::from</span>(<span class="ident">max_height</span>),
+                    BlockHeight::from(min_height),
+                    BlockHeight::from(max_height),
                 )))
             },
         )
-        <span class="comment">//.optional() doesn&#39;t work here because a failed aggregate function</span>
-        <span class="comment">//produces a runtime error, not an empty set of rows.</span>
-        .<span class="ident">or</span>(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>))
+        <span class="comment">//.optional() doesn&#39;t work here because a failed aggregate function
+        //produces a runtime error, not an empty set of rows.
+        </span>.or(<span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>))
 }
 
-<span class="doccomment">/// Returns the block height at which the specified transaction was mined,</span>
-<span class="doccomment">/// if any.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::Network;</span>
-<span class="doccomment">/// use zcash_primitives::transaction::TxId;</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_tx_height,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let height = get_tx_height(&amp;db, TxId::from_bytes([0u8; 32]));</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_tx_height</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">txid</span>: <span class="ident">TxId</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHeight</span><span class="op">&gt;</span>, <span class="ident">rusqlite::Error</span><span class="op">&gt;</span> {
-    <span class="ident">wdb</span>.<span class="ident">conn</span>
-        .<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the block height at which the specified transaction was mined,
+/// if any.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::Network;
+/// use zcash_primitives::transaction::TxId;
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_tx_height,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let height = get_tx_height(&amp;db, TxId::from_bytes([0u8; 32]));
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_tx_height instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_tx_height&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    txid: TxId,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHeight&gt;, rusqlite::Error&gt; {
+    wdb.conn
+        .query_row(
             <span class="string">&quot;SELECT block FROM transactions WHERE txid = ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">txid</span>.<span class="ident">as_ref</span>().<span class="ident">to_vec</span>()],
-            <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="ident">u32::into</span>),
+            <span class="kw-2">&amp;</span>[txid.as_ref().to_vec()],
+            |row| row.get(<span class="number">0</span>).map(u32::into),
         )
-        .<span class="ident">optional</span>()
+        .optional()
 }
 
-<span class="doccomment">/// Returns the block hash for the block at the specified height,</span>
-<span class="doccomment">/// if any.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::{H0, Network};</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_block_hash,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let hash = get_block_hash(&amp;db, H0);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_block_hash</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span>, <span class="ident">rusqlite::Error</span><span class="op">&gt;</span> {
-    <span class="ident">wdb</span>.<span class="ident">conn</span>
-        .<span class="ident">query_row</span>(
+<span class="doccomment">/// Returns the block hash for the block at the specified height,
+/// if any.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::{H0, Network};
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_block_hash,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let hash = get_block_hash(&amp;db, H0);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_block_hash instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_block_hash&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    block_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHash&gt;, rusqlite::Error&gt; {
+    wdb.conn
+        .query_row(
             <span class="string">&quot;SELECT hash FROM blocks WHERE height = ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)],
-            <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">row_data</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
-                <span class="prelude-val">Ok</span>(<span class="ident">BlockHash::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">row_data</span>))
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+            |row| {
+                <span class="kw">let </span>row_data = row.get::&lt;<span class="kw">_</span>, Vec&lt;<span class="kw">_</span>&gt;&gt;(<span class="number">0</span>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(BlockHash::from_slice(<span class="kw-2">&amp;</span>row_data))
             },
         )
-        .<span class="ident">optional</span>()
+        .optional()
 }
 
-<span class="doccomment">/// Rewinds the database to the given height.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the requested height is greater than or equal to the height of the last scanned</span>
-<span class="doccomment">/// block, this function does nothing.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This should only be executed inside a transactional context.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rewind_to_height</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">sapling_activation_height</span> <span class="op">=</span> <span class="ident">wdb</span>
-        .<span class="ident">params</span>
-        .<span class="ident">activation_height</span>(<span class="ident">NetworkUpgrade::Sapling</span>)
-        .<span class="ident">ok_or</span>(<span class="ident">SqliteClientError::BackendError</span>(<span class="ident">Error::SaplingNotActive</span>))<span class="question-mark">?</span>;
+<span class="doccomment">/// Gets the height to which the database must be rewound if any rewind greater than the pruning
+/// height is attempted.
+</span><span class="attribute">#[deprecated(note = <span class="string">&quot;This function will be removed in a future release.&quot;</span>)]
+</span><span class="kw">pub fn </span>get_rewind_height&lt;P&gt;(wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;BlockHeight&gt;, SqliteClientError&gt; {
+    wdb.conn
+        .query_row(
+            <span class="string">&quot;SELECT MIN(tx.block) 
+             FROM received_notes n
+             JOIN transactions tx ON tx.id_tx = n.tx
+             WHERE n.spent IS NULL&quot;</span>,
+            NO_PARAMS,
+            |row| {
+                row.get(<span class="number">0</span>)
+                    .map(|maybe_height: <span class="prelude-ty">Option</span>&lt;u32&gt;| maybe_height.map(|height| height.into()))
+            },
+        )
+        .map_err(SqliteClientError::from)
+}
 
-    <span class="comment">// Recall where we synced up to previously.</span>
-    <span class="kw">let</span> <span class="ident">last_scanned_height</span> <span class="op">=</span>
-        <span class="ident">wdb</span>.<span class="ident">conn</span>
-            .<span class="ident">query_row</span>(<span class="string">&quot;SELECT MAX(height) FROM blocks&quot;</span>, <span class="ident">NO_PARAMS</span>, <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-                <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">h</span>: <span class="ident">u32</span><span class="op">|</span> <span class="ident">h</span>.<span class="ident">into</span>())
-                    .<span class="ident">or</span>(<span class="prelude-val">Ok</span>(<span class="ident">sapling_activation_height</span> <span class="op">-</span> <span class="number">1</span>))
+<span class="doccomment">/// Rewinds the database to the given height.
+///
+/// If the requested height is greater than or equal to the height of the last scanned
+/// block, this function does nothing.
+///
+/// This should only be executed inside a transactional context.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rewind_to_height&lt;P: consensus::Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    block_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    <span class="kw">let </span>sapling_activation_height = wdb
+        .params
+        .activation_height(NetworkUpgrade::Sapling)
+        .ok_or(SqliteClientError::BackendError(Error::SaplingNotActive))<span class="question-mark">?</span>;
+
+    <span class="comment">// Recall where we synced up to previously.
+    </span><span class="kw">let </span>last_scanned_height =
+        wdb.conn
+            .query_row(<span class="string">&quot;SELECT MAX(height) FROM blocks&quot;</span>, NO_PARAMS, |row| {
+                row.get(<span class="number">0</span>)
+                    .map(|h: u32| h.into())
+                    .or_else(|<span class="kw">_</span>| <span class="prelude-val">Ok</span>(sapling_activation_height - <span class="number">1</span>))
             })<span class="question-mark">?</span>;
 
-    <span class="comment">// nothing to do if we&#39;re deleting back down to the max height</span>
-    <span class="kw">if</span> <span class="ident">block_height</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">last_scanned_height</span> {
-        <span class="prelude-val">Ok</span>(())
-    } <span class="kw">else</span> {
-        <span class="comment">// Decrement witnesses.</span>
-        <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(
-            <span class="string">&quot;DELETE FROM sapling_witnesses WHERE block &gt; ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)],
-        )<span class="question-mark">?</span>;
-
-        <span class="comment">// Un-mine transactions.</span>
-        <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(
-            <span class="string">&quot;UPDATE transactions SET block = NULL, tx_index = NULL WHERE block &gt; ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)],
-        )<span class="question-mark">?</span>;
-
-        <span class="comment">// Now that they aren&#39;t depended on, delete scanned blocks.</span>
-        <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">execute</span>(
-            <span class="string">&quot;DELETE FROM blocks WHERE height &gt; ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)],
-        )<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(())
+    <span class="kw">if </span>block_height &lt; last_scanned_height - PRUNING_HEIGHT {
+        <span class="attribute">#[allow(deprecated)]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(h) = get_rewind_height(wdb)<span class="question-mark">? </span>{
+            <span class="kw">if </span>block_height &gt; h {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(SqliteClientError::RequestedRewindInvalid(h, block_height));
+            }
+        }
     }
+
+    <span class="comment">// nothing to do if we&#39;re deleting back down to the max height
+    </span><span class="kw">if </span>block_height &lt; last_scanned_height {
+        <span class="comment">// Decrement witnesses.
+        </span>wdb.conn.execute(
+            <span class="string">&quot;DELETE FROM sapling_witnesses WHERE block &gt; ?&quot;</span>,
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+        )<span class="question-mark">?</span>;
+
+        <span class="comment">// Rewind received notes
+        </span>wdb.conn.execute(
+            <span class="string">&quot;DELETE FROM received_notes
+                WHERE id_note IN (
+                    SELECT rn.id_note
+                    FROM received_notes rn
+                    LEFT OUTER JOIN transactions tx
+                    ON tx.id_tx = rn.tx
+                    WHERE tx.block IS NOT NULL AND tx.block &gt; ?
+                );&quot;</span>,
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+        )<span class="question-mark">?</span>;
+
+        <span class="comment">// Do not delete sent notes; this can contain data that is not recoverable
+        // from the chain. Wallets must continue to operate correctly in the
+        // presence of stale sent notes that link to unmined transactions.
+
+        // Rewind utxos
+        </span>wdb.conn.execute(
+            <span class="string">&quot;DELETE FROM utxos WHERE height &gt; ?&quot;</span>,
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+        )<span class="question-mark">?</span>;
+
+        <span class="comment">// Un-mine transactions.
+        </span>wdb.conn.execute(
+            <span class="string">&quot;UPDATE transactions SET block = NULL, tx_index = NULL WHERE block IS NOT NULL AND block &gt; ?&quot;</span>,
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+        )<span class="question-mark">?</span>;
+
+        <span class="comment">// Now that they aren&#39;t depended on, delete scanned blocks.
+        </span>wdb.conn.execute(
+            <span class="string">&quot;DELETE FROM blocks WHERE height &gt; ?&quot;</span>,
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+        )<span class="question-mark">?</span>;
+    }
+
+    <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Returns the commitment tree for the block at the specified height,</span>
-<span class="doccomment">/// if any.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::{Network, H0};</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_commitment_tree,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let tree = get_commitment_tree(&amp;db, H0);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_commitment_tree</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CommitmentTree</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="ident">wdb</span>.<span class="ident">conn</span>
-        .<span class="ident">query_row_and_then</span>(
+<span class="doccomment">/// Returns the commitment tree for the block at the specified height,
+/// if any.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::{Network, H0};
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_commitment_tree,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let tree = get_commitment_tree(&amp;db, H0);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_commitment_tree instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_commitment_tree&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    block_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CommitmentTree&lt;Node&gt;&gt;, SqliteClientError&gt; {
+    wdb.conn
+        .query_row_and_then(
             <span class="string">&quot;SELECT sapling_tree FROM blocks WHERE height = ?&quot;</span>,
-            <span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)],
-            <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">row_data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>;
-                <span class="ident">CommitmentTree::read</span>(<span class="kw-2">&amp;</span><span class="ident">row_data</span>[..]).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
-                    <span class="ident">rusqlite::Error::FromSqlConversionFailure</span>(
-                        <span class="ident">row_data</span>.<span class="ident">len</span>(),
-                        <span class="ident">rusqlite::types::Type::Blob</span>,
-                        <span class="ident">Box::new</span>(<span class="ident">e</span>),
+            <span class="kw-2">&amp;</span>[u32::from(block_height)],
+            |row| {
+                <span class="kw">let </span>row_data: Vec&lt;u8&gt; = row.get(<span class="number">0</span>)<span class="question-mark">?</span>;
+                CommitmentTree::read(<span class="kw-2">&amp;</span>row_data[..]).map_err(|e| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        row_data.len(),
+                        rusqlite::types::Type::Blob,
+                        Box::new(e),
                     )
                 })
             },
         )
-        .<span class="ident">optional</span>()
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+        .optional()
+        .map_err(SqliteClientError::from)
 }
 
-<span class="doccomment">/// Returns the incremental witnesses for the block at the specified height,</span>
-<span class="doccomment">/// if any.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::{Network, H0};</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     wallet::get_witnesses,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();</span>
-<span class="doccomment">/// let witnesses = get_witnesses(&amp;db, H0);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_witnesses</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">NoteId</span>, <span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>)<span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stmt_fetch_witnesses</span> <span class="op">=</span> <span class="ident">wdb</span>
-        .<span class="ident">conn</span>
-        .<span class="ident">prepare</span>(<span class="string">&quot;SELECT note, witness FROM sapling_witnesses WHERE block = ?&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">witnesses</span> <span class="op">=</span> <span class="ident">stmt_fetch_witnesses</span>
-        .<span class="ident">query_map</span>(<span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">block_height</span>)], <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">id_note</span> <span class="op">=</span> <span class="ident">NoteId::ReceivedNoteId</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>)<span class="question-mark">?</span>);
-            <span class="kw">let</span> <span class="ident">wdb</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident">IncrementalWitness::read</span>(<span class="kw-2">&amp;</span><span class="ident">wdb</span>[..]).<span class="ident">map</span>(<span class="op">|</span><span class="ident">witness</span><span class="op">|</span> (<span class="ident">id_note</span>, <span class="ident">witness</span>)))
+<span class="doccomment">/// Returns the incremental witnesses for the block at the specified height,
+/// if any.
+///
+/// # Examples
+///
+/// ```
+/// use tempfile::NamedTempFile;
+/// use zcash_primitives::consensus::{Network, H0};
+/// use zcash_client_sqlite::{
+///     WalletDb,
+///     wallet::get_witnesses,
+/// };
+///
+/// let data_file = NamedTempFile::new().unwrap();
+/// let db = WalletDb::for_path(data_file, Network::TestNetwork).unwrap();
+/// let witnesses = get_witnesses(&amp;db, H0);
+/// ```
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_witnesses instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_witnesses&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    block_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(NoteId, IncrementalWitness&lt;Node&gt;)&gt;, SqliteClientError&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>stmt_fetch_witnesses = wdb
+        .conn
+        .prepare(<span class="string">&quot;SELECT note, witness FROM sapling_witnesses WHERE block = ?&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>witnesses = stmt_fetch_witnesses
+        .query_map(<span class="kw-2">&amp;</span>[u32::from(block_height)], |row| {
+            <span class="kw">let </span>id_note = NoteId::ReceivedNoteId(row.get(<span class="number">0</span>)<span class="question-mark">?</span>);
+            <span class="kw">let </span>wdb: Vec&lt;u8&gt; = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(IncrementalWitness::read(<span class="kw-2">&amp;</span>wdb[..]).map(|witness| (id_note, witness)))
         })
-        .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)<span class="question-mark">?</span>;
+        .map_err(SqliteClientError::from)<span class="question-mark">?</span>;
 
-    <span class="comment">// unwrap database error &amp; IO error from IncrementalWitness::read</span>
-    <span class="kw">let</span> <span class="ident">res</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">witnesses</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
+    <span class="comment">// unwrap database error &amp; IO error from IncrementalWitness::read
+    </span><span class="kw">let </span>res: Vec&lt;<span class="kw">_</span>&gt; = witnesses.collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">??</span>;
+    <span class="prelude-val">Ok</span>(res)
 }
 
-<span class="doccomment">/// Retrieve the nullifiers for notes that the wallet is tracking</span>
-<span class="doccomment">/// that have not yet been confirmed as a consequence of the spending</span>
-<span class="doccomment">/// transaction being included in a block.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_nullifiers</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">wdb</span>: <span class="kw-2">&amp;</span><span class="ident">WalletDb</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">AccountId</span>, <span class="ident">Nullifier</span>)<span class="op">&gt;</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="comment">// Get the nullifiers for the notes we are tracking</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stmt_fetch_nullifiers</span> <span class="op">=</span> <span class="ident">wdb</span>.<span class="ident">conn</span>.<span class="ident">prepare</span>(
+<span class="doccomment">/// Retrieve the nullifiers for notes that the wallet is tracking
+/// that have not yet been confirmed as a consequence of the spending
+/// transaction being included in a block.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletRead::get_nullifiers instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>get_nullifiers&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, SqliteClientError&gt; {
+    <span class="comment">// Get the nullifiers for the notes we are tracking
+    </span><span class="kw">let </span><span class="kw-2">mut </span>stmt_fetch_nullifiers = wdb.conn.prepare(
         <span class="string">&quot;SELECT rn.id_note, rn.account, rn.nf, tx.block as block
             FROM received_notes rn
             LEFT OUTER JOIN transactions tx
             ON tx.id_tx = rn.spent
             WHERE block IS NULL&quot;</span>,
     )<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">nullifiers</span> <span class="op">=</span> <span class="ident">stmt_fetch_nullifiers</span>.<span class="ident">query_map</span>(<span class="ident">NO_PARAMS</span>, <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">account</span> <span class="op">=</span> <span class="ident">AccountId</span>(<span class="ident">row</span>.<span class="ident">get</span>(<span class="number">1</span>)<span class="question-mark">?</span>);
-        <span class="kw">let</span> <span class="ident">nf_bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>((<span class="ident">account</span>, <span class="ident">Nullifier::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">nf_bytes</span>).<span class="ident">unwrap</span>()))
+    <span class="kw">let </span>nullifiers = stmt_fetch_nullifiers.query_map(NO_PARAMS, |row| {
+        <span class="kw">let </span>account: u32 = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>nf_bytes: Vec&lt;u8&gt; = row.get(<span class="number">2</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((
+            AccountId::from(account),
+            Nullifier::from_slice(<span class="kw-2">&amp;</span>nf_bytes).unwrap(),
+        ))
     })<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">res</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">nullifiers</span>.<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">res</span>)
+    <span class="kw">let </span>res: Vec&lt;<span class="kw">_</span>&gt; = nullifiers.collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(res)
 }
 
-<span class="doccomment">/// Inserts information about a scanned block into the database.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_block</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">block_height</span>: <span class="ident">BlockHeight</span>,
-    <span class="ident">block_hash</span>: <span class="ident">BlockHash</span>,
-    <span class="ident">block_time</span>: <span class="ident">u32</span>,
-    <span class="ident">commitment_tree</span>: <span class="kw-2">&amp;</span><span class="ident">CommitmentTree</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">encoded_tree</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="ident">commitment_tree</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">encoded_tree</span>).<span class="ident">unwrap</span>();
-
-    <span class="ident">stmts</span>.<span class="ident">stmt_insert_block</span>.<span class="ident">execute</span>(<span class="macro">params!</span>[
-        <span class="ident">u32::from</span>(<span class="ident">block_height</span>),
-        <span class="kw-2">&amp;</span><span class="ident">block_hash</span>.<span class="number">0</span>[..],
-        <span class="ident">block_time</span>,
-        <span class="ident">encoded_tree</span>
-    ])<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Inserts information about a mined transaction that was observed to</span>
-<span class="doccomment">/// contain a note related to this wallet into the database.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_tx_meta</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>, <span class="ident">N</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">WalletTx</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span>,
-    <span class="ident">height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>.<span class="ident">as_ref</span>().<span class="ident">to_vec</span>();
-    <span class="kw">if</span> <span class="ident">stmts</span>
-        .<span class="ident">stmt_update_tx_meta</span>
-        .<span class="ident">execute</span>(<span class="macro">params!</span>[<span class="ident">u32::from</span>(<span class="ident">height</span>), (<span class="ident">tx</span>.<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i64</span>), <span class="ident">txid</span>])<span class="question-mark">?</span>
-        <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
-    {
-        <span class="comment">// It isn&#39;t there, so insert our transaction into the database.</span>
-        <span class="ident">stmts</span>
-            .<span class="ident">stmt_insert_tx_meta</span>
-            .<span class="ident">execute</span>(<span class="macro">params!</span>[<span class="ident">txid</span>, <span class="ident">u32::from</span>(<span class="ident">height</span>), (<span class="ident">tx</span>.<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i64</span>),])<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(<span class="ident">stmts</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">last_insert_rowid</span>())
-    } <span class="kw">else</span> {
-        <span class="comment">// It was there, so grab its row number.</span>
-        <span class="ident">stmts</span>
-            .<span class="ident">stmt_select_tx_ref</span>
-            .<span class="ident">query_row</span>(<span class="kw-2">&amp;</span>[<span class="ident">txid</span>], <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>))
-            .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
-    }
-}
-
-<span class="doccomment">/// Inserts full transaction data into the database.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_tx_data</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">Transaction</span>,
-    <span class="ident">created_at</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">time::OffsetDateTime</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">txid</span>().<span class="ident">as_ref</span>().<span class="ident">to_vec</span>();
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw_tx</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-    <span class="ident">tx</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">raw_tx</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">if</span> <span class="ident">stmts</span>
-        .<span class="ident">stmt_update_tx_data</span>
-        .<span class="ident">execute</span>(<span class="macro">params!</span>[<span class="ident">u32::from</span>(<span class="ident">tx</span>.<span class="ident">expiry_height</span>()), <span class="ident">raw_tx</span>, <span class="ident">txid</span>,])<span class="question-mark">?</span>
-        <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
-    {
-        <span class="comment">// It isn&#39;t there, so insert our transaction into the database.</span>
-        <span class="ident">stmts</span>.<span class="ident">stmt_insert_tx_data</span>.<span class="ident">execute</span>(<span class="macro">params!</span>[
-            <span class="ident">txid</span>,
-            <span class="ident">created_at</span>,
-            <span class="ident">u32::from</span>(<span class="ident">tx</span>.<span class="ident">expiry_height</span>()),
-            <span class="ident">raw_tx</span>
-        ])<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(<span class="ident">stmts</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">last_insert_rowid</span>())
-    } <span class="kw">else</span> {
-        <span class="comment">// It was there, so grab its row number.</span>
-        <span class="ident">stmts</span>
-            .<span class="ident">stmt_select_tx_ref</span>
-            .<span class="ident">query_row</span>(<span class="kw-2">&amp;</span>[<span class="ident">txid</span>], <span class="op">|</span><span class="ident">row</span><span class="op">|</span> <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>))
-            .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
-    }
-}
-
-<span class="doccomment">/// Marks a given nullifier as having been revealed in the construction</span>
-<span class="doccomment">/// of the specified transaction.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Marking a note spent in this fashion does NOT imply that the</span>
-<span class="doccomment">/// spending transaction has been mined.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mark_spent</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">tx_ref</span>: <span class="ident">i64</span>,
-    <span class="ident">nf</span>: <span class="kw-2">&amp;</span><span class="ident">Nullifier</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="ident">stmts</span>
-        .<span class="ident">stmt_mark_recived_note_spent</span>
-        .<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[<span class="ident">tx_ref</span>.<span class="ident">to_sql</span>()<span class="question-mark">?</span>, <span class="ident">nf</span>.<span class="number">0</span>.<span class="ident">to_sql</span>()<span class="question-mark">?</span>])<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Records the specified shielded output as having been received.</span>
-<span class="comment">// Assumptions:</span>
-<span class="comment">// - A transaction will not contain more than 2^63 shielded outputs.</span>
-<span class="comment">// - A note value will never exceed 2^63 zatoshis.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_received_note</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>, <span class="ident">T</span>: <span class="ident">ShieldedOutput</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>,
-    <span class="ident">tx_ref</span>: <span class="ident">i64</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NoteId</span>, <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">note</span>().<span class="ident">rcm</span>().<span class="ident">to_repr</span>();
-    <span class="kw">let</span> <span class="ident">account</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">account</span>().<span class="number">0</span> <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">diversifier</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">to</span>().<span class="ident">diversifier</span>().<span class="number">0</span>.<span class="ident">to_vec</span>();
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">note</span>().<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">rcm</span> <span class="op">=</span> <span class="ident">rcm</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">memo</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">memo</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_slice</span>());
-    <span class="kw">let</span> <span class="ident">is_change</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">is_change</span>();
-    <span class="kw">let</span> <span class="ident">tx</span> <span class="op">=</span> <span class="ident">tx_ref</span>;
-    <span class="kw">let</span> <span class="ident">output_index</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">index</span>() <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">nf_bytes</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">nullifier</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">nf</span><span class="op">|</span> <span class="ident">nf</span>.<span class="number">0</span>.<span class="ident">to_vec</span>());
-
-    <span class="kw">let</span> <span class="ident">sql_args</span>: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ToSql</span>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:account&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">account</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:diversifier&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">diversifier</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:value&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">value</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:rcm&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">rcm</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:nf&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">nf_bytes</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:memo&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">memo</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:is_change&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">is_change</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:tx&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">tx</span>),
-        (<span class="kw-2">&amp;</span><span class="string">&quot;:output_index&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">output_index</span>),
-    ];
-
-    <span class="comment">// First try updating an existing received note into the database.</span>
-    <span class="kw">if</span> <span class="ident">stmts</span>.<span class="ident">stmt_update_received_note</span>.<span class="ident">execute_named</span>(<span class="kw-2">&amp;</span><span class="ident">sql_args</span>)<span class="question-mark">?</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="comment">// It isn&#39;t there, so insert our note into the database.</span>
-        <span class="ident">stmts</span>.<span class="ident">stmt_insert_received_note</span>.<span class="ident">execute_named</span>(<span class="kw-2">&amp;</span><span class="ident">sql_args</span>)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(<span class="ident">NoteId::ReceivedNoteId</span>(
-            <span class="ident">stmts</span>.<span class="ident">wallet_db</span>.<span class="ident">conn</span>.<span class="ident">last_insert_rowid</span>(),
+<span class="doccomment">/// Returns the nullifiers for the notes that this wallet is tracking.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_all_nullifiers&lt;P&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(AccountId, Nullifier)&gt;, SqliteClientError&gt; {
+    <span class="comment">// Get the nullifiers for the notes we are tracking
+    </span><span class="kw">let </span><span class="kw-2">mut </span>stmt_fetch_nullifiers = wdb.conn.prepare(
+        <span class="string">&quot;SELECT rn.id_note, rn.account, rn.nf
+            FROM received_notes rn&quot;</span>,
+    )<span class="question-mark">?</span>;
+    <span class="kw">let </span>nullifiers = stmt_fetch_nullifiers.query_map(NO_PARAMS, |row| {
+        <span class="kw">let </span>account: u32 = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>nf_bytes: Vec&lt;u8&gt; = row.get(<span class="number">2</span>)<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>((
+            AccountId::from(account),
+            Nullifier::from_slice(<span class="kw-2">&amp;</span>nf_bytes).unwrap(),
         ))
-    } <span class="kw">else</span> {
-        <span class="comment">// It was there, so grab its row number.</span>
-        <span class="ident">stmts</span>
-            .<span class="ident">stmt_select_received_note</span>
-            .<span class="ident">query_row</span>(<span class="macro">params!</span>[<span class="ident">tx_ref</span>, (<span class="ident">output</span>.<span class="ident">index</span>() <span class="kw">as</span> <span class="ident">i64</span>)], <span class="op">|</span><span class="ident">row</span><span class="op">|</span> {
-                <span class="ident">row</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="ident">NoteId::ReceivedNoteId</span>)
-            })
-            .<span class="ident">map_err</span>(<span class="ident">SqliteClientError::from</span>)
+    })<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>res: Vec&lt;<span class="kw">_</span>&gt; = nullifiers.collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(res)
+}
+
+<span class="doccomment">/// Returns unspent transparent outputs that have been received by this wallet at the given
+/// transparent address, such that the block that included the transaction was mined at a
+/// height less than or equal to the provided `max_height`.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_unspent_transparent_outputs&lt;P: consensus::Parameters&gt;(
+    wdb: <span class="kw-2">&amp;</span>WalletDb&lt;P&gt;,
+    address: <span class="kw-2">&amp;</span>TransparentAddress,
+    max_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;WalletTransparentOutput&gt;, SqliteClientError&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>stmt_blocks = wdb.conn.prepare(
+        <span class="string">&quot;SELECT u.prevout_txid, u.prevout_idx, u.script, u.value_zat, u.height, tx.block as block
+         FROM utxos u
+         LEFT OUTER JOIN transactions tx
+         ON tx.id_tx = u.spent_in_tx
+         WHERE u.address = ?
+         AND u.height &lt;= ?
+         AND block IS NULL&quot;</span>,
+    )<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>addr_str = address.encode(<span class="kw-2">&amp;</span>wdb.params);
+
+    <span class="kw">let </span>rows = stmt_blocks.query_map(<span class="macro">params!</span>[addr_str, u32::from(max_height)], |row| {
+        <span class="kw">let </span>id: Vec&lt;u8&gt; = row.get(<span class="number">0</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>txid_bytes = [<span class="number">0u8</span>; <span class="number">32</span>];
+        txid_bytes.copy_from_slice(<span class="kw-2">&amp;</span>id);
+        <span class="kw">let </span>index: u32 = row.get(<span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>script_pubkey = Script(row.get(<span class="number">2</span>)<span class="question-mark">?</span>);
+        <span class="kw">let </span>value = Amount::from_i64(row.get(<span class="number">3</span>)<span class="question-mark">?</span>).unwrap();
+        <span class="kw">let </span>height: u32 = row.get(<span class="number">4</span>)<span class="question-mark">?</span>;
+
+        <span class="prelude-val">Ok</span>(WalletTransparentOutput {
+            outpoint: OutPoint::new(txid_bytes, index),
+            txout: TxOut {
+                value,
+                script_pubkey,
+            },
+            height: BlockHeight::from(height),
+        })
+    })<span class="question-mark">?</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>utxos = Vec::&lt;WalletTransparentOutput&gt;::new();
+
+    <span class="kw">for </span>utxo <span class="kw">in </span>rows {
+        utxos.push(utxo.unwrap())
+    }
+    <span class="prelude-val">Ok</span>(utxos)
+}
+
+<span class="doccomment">/// Inserts information about a scanned block into the database.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::advance_by_block instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>insert_block&lt;<span class="lifetime">&#39;a</span>, P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    block_height: BlockHeight,
+    block_hash: BlockHash,
+    block_time: u32,
+    commitment_tree: <span class="kw-2">&amp;</span>CommitmentTree&lt;Node&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_insert_block(block_height, block_hash, block_time, commitment_tree)
+}
+
+<span class="doccomment">/// Inserts information about a mined transaction that was observed to
+/// contain a note related to this wallet into the database.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::advance_by_block instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>put_tx_meta&lt;<span class="lifetime">&#39;a</span>, P, N&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx: <span class="kw-2">&amp;</span>WalletTx&lt;N&gt;,
+    height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;i64, SqliteClientError&gt; {
+    <span class="kw">if </span>!stmts.stmt_update_tx_meta(height, tx.index, <span class="kw-2">&amp;</span>tx.txid)<span class="question-mark">? </span>{
+        <span class="comment">// It isn&#39;t there, so insert our transaction into the database.
+        </span>stmts.stmt_insert_tx_meta(<span class="kw-2">&amp;</span>tx.txid, height, tx.index)
+    } <span class="kw">else </span>{
+        <span class="comment">// It was there, so grab its row number.
+        </span>stmts.stmt_select_tx_ref(<span class="kw-2">&amp;</span>tx.txid)
     }
 }
 
-<span class="doccomment">/// Records the incremental witness for the specified note,</span>
-<span class="doccomment">/// as of the given block height.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_witness</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">note_id</span>: <span class="ident">i64</span>,
-    <span class="ident">witness</span>: <span class="kw-2">&amp;</span><span class="ident">IncrementalWitness</span><span class="op">&lt;</span><span class="ident">Node</span><span class="op">&gt;</span>,
-    <span class="ident">height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">encoded</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="ident">witness</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">encoded</span>).<span class="ident">unwrap</span>();
+<span class="doccomment">/// Inserts full transaction data into the database.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::store_decrypted_tx instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>put_tx_data&lt;<span class="lifetime">&#39;a</span>, P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx: <span class="kw-2">&amp;</span>Transaction,
+    created_at: <span class="prelude-ty">Option</span>&lt;time::OffsetDateTime&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;i64, SqliteClientError&gt; {
+    <span class="kw">let </span>txid = tx.txid();
 
-    <span class="ident">stmts</span>
-        .<span class="ident">stmt_insert_witness</span>
-        .<span class="ident">execute</span>(<span class="macro">params!</span>[<span class="ident">note_id</span>, <span class="ident">u32::from</span>(<span class="ident">height</span>), <span class="ident">encoded</span>])<span class="question-mark">?</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>raw_tx = <span class="macro">vec!</span>[];
+    tx.write(<span class="kw-2">&amp;mut </span>raw_tx)<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Removes old incremental witnesses up to the given block height.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prune_witnesses</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">below_height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="ident">stmts</span>
-        .<span class="ident">stmt_prune_witnesses</span>
-        .<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">below_height</span>)])<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Marks notes that have not been mined in transactions</span>
-<span class="doccomment">/// as expired, up to the given block height.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_expired_notes</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">height</span>: <span class="ident">BlockHeight</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="ident">stmts</span>.<span class="ident">stmt_update_expired</span>.<span class="ident">execute</span>(<span class="kw-2">&amp;</span>[<span class="ident">u32::from</span>(<span class="ident">height</span>)])<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="doccomment">/// Records information about a note that your wallet created.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_sent_note</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">output</span>: <span class="kw-2">&amp;</span><span class="ident">DecryptedOutput</span>,
-    <span class="ident">tx_ref</span>: <span class="ident">i64</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">output_index</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">index</span> <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">account</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">account</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">output</span>.<span class="ident">note</span>.<span class="ident">value</span> <span class="kw">as</span> <span class="ident">i64</span>;
-    <span class="kw">let</span> <span class="ident">to_str</span> <span class="op">=</span> <span class="ident">encode_payment_address</span>(
-        <span class="ident">stmts</span>.<span class="ident">wallet_db</span>.<span class="ident">params</span>.<span class="ident">hrp_sapling_payment_address</span>(),
-        <span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">to</span>,
-    );
-
-    <span class="comment">// Try updating an existing sent note.</span>
-    <span class="kw">if</span> <span class="ident">stmts</span>.<span class="ident">stmt_update_sent_note</span>.<span class="ident">execute</span>(<span class="macro">params!</span>[
-        <span class="ident">account</span>,
-        <span class="ident">to_str</span>,
-        <span class="ident">value</span>,
-        <span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">memo</span>.<span class="ident">as_slice</span>(),
-        <span class="ident">tx_ref</span>,
-        <span class="ident">output_index</span>
-    ])<span class="question-mark">?</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
-    {
-        <span class="comment">// It isn&#39;t there, so insert.</span>
-        <span class="ident">insert_sent_note</span>(
-            <span class="ident">stmts</span>,
-            <span class="ident">tx_ref</span>,
-            <span class="ident">output</span>.<span class="ident">index</span>,
-            <span class="ident">output</span>.<span class="ident">account</span>,
-            <span class="kw-2">&amp;</span><span class="ident">RecipientAddress::Shielded</span>(<span class="ident">output</span>.<span class="ident">to</span>.<span class="ident">clone</span>()),
-            <span class="ident">Amount::from_u64</span>(<span class="ident">output</span>.<span class="ident">note</span>.<span class="ident">value</span>)
-                .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">SqliteClientError::CorruptedData</span>(<span class="string">&quot;Note value invalid.&quot;</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">output</span>.<span class="ident">memo</span>),
-        )<span class="question-mark">?</span>
+    <span class="kw">if </span>!stmts.stmt_update_tx_data(tx.expiry_height(), <span class="kw-2">&amp;</span>raw_tx, <span class="kw-2">&amp;</span>txid)<span class="question-mark">? </span>{
+        <span class="comment">// It isn&#39;t there, so insert our transaction into the database.
+        </span>stmts.stmt_insert_tx_data(<span class="kw-2">&amp;</span>txid, created_at, tx.expiry_height(), <span class="kw-2">&amp;</span>raw_tx)
+    } <span class="kw">else </span>{
+        <span class="comment">// It was there, so grab its row number.
+        </span>stmts.stmt_select_tx_ref(<span class="kw-2">&amp;</span>txid)
     }
+}
+
+<span class="doccomment">/// Marks a given nullifier as having been revealed in the construction
+/// of the specified transaction.
+///
+/// Marking a note spent in this fashion does NOT imply that the
+/// spending transaction has been mined.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This function will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::store_sent_tx instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>mark_sapling_note_spent&lt;<span class="lifetime">&#39;a</span>, P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    nf: <span class="kw-2">&amp;</span>Nullifier,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_mark_sapling_note_spent(tx_ref, nf)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="doccomment">/// Marks the given UTXO as having been spent.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mark_transparent_utxo_spent&lt;<span class="lifetime">&#39;a</span>, P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    outpoint: <span class="kw-2">&amp;</span>OutPoint,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_mark_transparent_utxo_spent(tx_ref, outpoint)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Inserts a sent note into the wallet database.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `output_index` is the index within the transaction that contains the recipient output:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// - If `to` is a Sapling address, this is an index into the Sapling outputs of the</span>
-<span class="doccomment">///   transaction.</span>
-<span class="doccomment">/// - If `to` is a transparent address, this is an index into the transparent outputs of</span>
-<span class="doccomment">///   the transaction.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_sent_note</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>: <span class="ident">consensus::Parameters</span><span class="op">&gt;</span>(
-    <span class="ident">stmts</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">DataConnStmtCache</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span><span class="op">&gt;</span>,
-    <span class="ident">tx_ref</span>: <span class="ident">i64</span>,
-    <span class="ident">output_index</span>: <span class="ident">usize</span>,
-    <span class="ident">account</span>: <span class="ident">AccountId</span>,
-    <span class="ident">to</span>: <span class="kw-2">&amp;</span><span class="ident">RecipientAddress</span>,
-    <span class="ident">value</span>: <span class="ident">Amount</span>,
-    <span class="ident">memo</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">MemoBytes</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">SqliteClientError</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">to_str</span> <span class="op">=</span> <span class="ident">to</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="ident">stmts</span>.<span class="ident">wallet_db</span>.<span class="ident">params</span>);
-    <span class="kw">let</span> <span class="ident">ivalue</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">into</span>();
-    <span class="ident">stmts</span>.<span class="ident">stmt_insert_sent_note</span>.<span class="ident">execute</span>(<span class="macro">params!</span>[
-        <span class="ident">tx_ref</span>,
-        (<span class="ident">output_index</span> <span class="kw">as</span> <span class="ident">i64</span>),
-        <span class="ident">account</span>.<span class="number">0</span>,
-        <span class="ident">to_str</span>,
-        <span class="ident">ivalue</span>,
-        <span class="ident">memo</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">as_slice</span>().<span class="ident">to_vec</span>()),
-    ])<span class="question-mark">?</span>;
+<span class="doccomment">/// Adds the given received UTXO to the datastore.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>put_received_transparent_utxo&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    output: <span class="kw-2">&amp;</span>WalletTransparentOutput,
+) -&gt; <span class="prelude-ty">Result</span>&lt;UtxoId, SqliteClientError&gt; {
+    stmts
+        .stmt_insert_received_transparent_utxo(output)
+        .map(UtxoId)
+}
+
+<span class="doccomment">/// Removes all records of UTXOs that were recorded as having been received
+/// at block heights greater than the given height.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::rewind_to_height instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>delete_utxos_above&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    taddr: <span class="kw-2">&amp;</span>TransparentAddress,
+    height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;usize, SqliteClientError&gt; {
+    stmts.stmt_delete_utxos(taddr, height)
+}
+
+<span class="doccomment">/// Records the specified shielded output as having been received.
+///
+/// This implementation relies on the facts that:
+/// - A transaction will not contain more than 2^63 shielded outputs.
+/// - A note value will never exceed 2^63 zatoshis.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::store_decrypted_tx instead.&quot;
+</span>)]
+#[allow(deprecated)]
+</span><span class="kw">pub fn </span>put_received_note&lt;<span class="lifetime">&#39;a</span>, P, T: ShieldedOutput&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    output: <span class="kw-2">&amp;</span>T,
+    tx_ref: i64,
+) -&gt; <span class="prelude-ty">Result</span>&lt;NoteId, SqliteClientError&gt; {
+    <span class="kw">let </span>rcm = output.note().rcm().to_repr();
+    <span class="kw">let </span>account = output.account();
+    <span class="kw">let </span>diversifier = output.to().diversifier();
+    <span class="kw">let </span>value = output.note().value;
+    <span class="kw">let </span>memo = output.memo();
+    <span class="kw">let </span>is_change = output.is_change();
+    <span class="kw">let </span>output_index = output.index();
+    <span class="kw">let </span>nf = output.nullifier();
+
+    <span class="comment">// First try updating an existing received note into the database.
+    </span><span class="kw">if </span>!stmts.stmt_update_received_note(
+        account,
+        diversifier,
+        value,
+        rcm,
+        <span class="kw-2">&amp;</span>nf,
+        memo,
+        is_change,
+        tx_ref,
+        output_index,
+    )<span class="question-mark">? </span>{
+        <span class="comment">// It isn&#39;t there, so insert our note into the database.
+        </span>stmts.stmt_insert_received_note(
+            tx_ref,
+            output_index,
+            account,
+            diversifier,
+            value,
+            rcm,
+            <span class="kw-2">&amp;</span>nf,
+            memo,
+            is_change,
+        )
+    } <span class="kw">else </span>{
+        <span class="comment">// It was there, so grab its row number.
+        </span>stmts.stmt_select_received_note(tx_ref, output.index())
+    }
+}
+
+<span class="doccomment">/// Records the incremental witness for the specified note,
+/// as of the given block height.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future release. Use zcash_client_backend::data_api::WalletWrite::store_decrypted_tx instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>insert_witness&lt;<span class="lifetime">&#39;a</span>, P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    note_id: i64,
+    witness: <span class="kw-2">&amp;</span>IncrementalWitness&lt;Node&gt;,
+    height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_insert_witness(NoteId::ReceivedNoteId(note_id), height, witness)
+}
+
+<span class="doccomment">/// Removes old incremental witnesses up to the given block height.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::advance_by_block instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>prune_witnesses&lt;P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;_</span>, P&gt;,
+    below_height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_prune_witnesses(below_height)
+}
+
+<span class="doccomment">/// Marks notes that have not been mined in transactions
+/// as expired, up to the given block height.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::advance_by_block instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>update_expired_notes&lt;P&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;_</span>, P&gt;,
+    height: BlockHeight,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    stmts.stmt_update_expired(height)
+}
+
+<span class="doccomment">/// Records information about a note that your wallet created.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::store_decrypted_tx instead.&quot;
+</span>)]
+#[allow(deprecated)]
+</span><span class="kw">pub fn </span>put_sent_note&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    output_index: usize,
+    account: AccountId,
+    to: <span class="kw-2">&amp;</span>PaymentAddress,
+    value: Amount,
+    memo: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MemoBytes&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    <span class="comment">// Try updating an existing sent note.
+    </span><span class="kw">if </span>!stmts.stmt_update_sent_note(
+        account,
+        <span class="kw-2">&amp;</span>encode_payment_address_p(<span class="kw-2">&amp;</span>stmts.wallet_db.params, to),
+        value,
+        memo,
+        tx_ref,
+        PoolType::Sapling,
+        output_index,
+    )<span class="question-mark">? </span>{
+        <span class="comment">// It isn&#39;t there, so insert.
+        </span>insert_sent_note(stmts, tx_ref, output_index, account, to, value, memo)<span class="question-mark">?
+    </span>}
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">tempfile::NamedTempFile</span>;
+<span class="doccomment">/// Adds information about a sent transparent UTXO to the database if it does not already
+/// exist, or updates it if a record for the UTXO already exists.
+///
+/// `output_index` is the index within transparent UTXOs of the transaction that contains the recipient output.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::store_decrypted_tx instead.&quot;
+</span>)]
+#[allow(deprecated)]
+</span><span class="kw">pub fn </span>put_sent_utxo&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    output_index: usize,
+    account: AccountId,
+    to: <span class="kw-2">&amp;</span>TransparentAddress,
+    value: Amount,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    <span class="comment">// Try updating an existing sent UTXO.
+    </span><span class="kw">if </span>!stmts.stmt_update_sent_note(
+        account,
+        <span class="kw-2">&amp;</span>encode_transparent_address_p(<span class="kw-2">&amp;</span>stmts.wallet_db.params, to),
+        value,
+        <span class="prelude-val">None</span>,
+        tx_ref,
+        PoolType::Transparent,
+        output_index,
+    )<span class="question-mark">? </span>{
+        <span class="comment">// It isn&#39;t there, so insert.
+        </span>insert_sent_utxo(stmts, tx_ref, output_index, account, to, value)<span class="question-mark">?
+    </span>}
 
-    <span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-        <span class="ident">transaction::components::Amount</span>,
-        <span class="ident">zip32</span>::{<span class="ident">ExtendedFullViewingKey</span>, <span class="ident">ExtendedSpendingKey</span>},
-    };
+    <span class="prelude-val">Ok</span>(())
+}
 
-    <span class="kw">use</span> <span class="ident">zcash_client_backend::data_api::WalletRead</span>;
+<span class="doccomment">/// Inserts a sent note into the wallet database.
+///
+/// `output_index` is the index within the transaction that contains the recipient output:
+///
+/// - If `to` is a Sapling address, this is an index into the Sapling outputs of the
+///   transaction.
+/// - If `to` is a transparent address, this is an index into the transparent outputs of
+///   the transaction.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::store_sent_tx instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>insert_sent_note&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    output_index: usize,
+    account: AccountId,
+    to: <span class="kw-2">&amp;</span>PaymentAddress,
+    value: Amount,
+    memo: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>MemoBytes&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    <span class="kw">let </span>to_str = encode_payment_address_p(<span class="kw-2">&amp;</span>stmts.wallet_db.params, to);
 
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">tests</span>,
-        <span class="ident">wallet::init</span>::{<span class="ident">init_accounts_table</span>, <span class="ident">init_wallet_db</span>},
-        <span class="ident">AccountId</span>, <span class="ident">WalletDb</span>,
-    };
+    stmts.stmt_insert_sent_note(
+        tx_ref,
+        PoolType::Sapling,
+        output_index,
+        account,
+        <span class="kw-2">&amp;</span>to_str,
+        value,
+        memo,
+    )
+}
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">get_address</span>, <span class="ident">get_balance</span>};
+<span class="doccomment">/// Inserts information about a sent transparent UTXO into the wallet database.
+///
+/// `output_index` is the index within transparent UTXOs of the transaction that contains the recipient output.
+</span><span class="attribute">#[deprecated(
+    note = <span class="string">&quot;This method will be removed in a future update. Use zcash_client_backend::data_api::WalletWrite::store_sent_tx instead.&quot;
+</span>)]
+</span><span class="kw">pub fn </span>insert_sent_utxo&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt;(
+    stmts: <span class="kw-2">&amp;mut </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+    tx_ref: i64,
+    output_index: usize,
+    account: AccountId,
+    to: <span class="kw-2">&amp;</span>TransparentAddress,
+    value: Amount,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), SqliteClientError&gt; {
+    <span class="kw">let </span>to_str = encode_transparent_address_p(<span class="kw-2">&amp;</span>stmts.wallet_db.params, to);
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">empty_database_has_no_balance</span>() {
-        <span class="kw">let</span> <span class="ident">data_file</span> <span class="op">=</span> <span class="ident">NamedTempFile::new</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">db_data</span> <span class="op">=</span> <span class="ident">WalletDb::for_path</span>(<span class="ident">data_file</span>.<span class="ident">path</span>(), <span class="ident">tests::network</span>()).<span class="ident">unwrap</span>();
-        <span class="ident">init_wallet_db</span>(<span class="kw-2">&amp;</span><span class="ident">db_data</span>).<span class="ident">unwrap</span>();
+    stmts.stmt_insert_sent_note(
+        tx_ref,
+        PoolType::Transparent,
+        output_index,
+        account,
+        <span class="kw-2">&amp;</span>to_str,
+        value,
+        <span class="prelude-val">None</span>,
+    )
+}
 
-        <span class="comment">// Add an account to the wallet</span>
-        <span class="kw">let</span> <span class="ident">extsk</span> <span class="op">=</span> <span class="ident">ExtendedSpendingKey::master</span>(<span class="kw-2">&amp;</span>[]);
-        <span class="kw">let</span> <span class="ident">extfvks</span> <span class="op">=</span> [<span class="ident">ExtendedFullViewingKey::from</span>(<span class="kw-2">&amp;</span><span class="ident">extsk</span>)];
-        <span class="ident">init_accounts_table</span>(<span class="kw-2">&amp;</span><span class="ident">db_data</span>, <span class="kw-2">&amp;</span><span class="ident">extfvks</span>).<span class="ident">unwrap</span>();
+<span class="attribute">#[cfg(test)]
+#[allow(deprecated)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>secrecy::Secret;
+    <span class="kw">use </span>tempfile::NamedTempFile;
 
-        <span class="comment">// The account should be empty</span>
-        <span class="macro">assert_eq!</span>(<span class="ident">get_balance</span>(<span class="kw-2">&amp;</span><span class="ident">db_data</span>, <span class="ident">AccountId</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>(), <span class="ident">Amount::zero</span>());
+    <span class="kw">use </span>zcash_primitives::transaction::components::Amount;
 
-        <span class="comment">// We can&#39;t get an anchor height, as we have not scanned any blocks.</span>
-        <span class="macro">assert_eq!</span>((<span class="kw-2">&amp;</span><span class="ident">db_data</span>).<span class="ident">get_target_and_anchor_heights</span>().<span class="ident">unwrap</span>(), <span class="prelude-val">None</span>);
+    <span class="kw">use </span>zcash_client_backend::data_api::WalletRead;
 
-        <span class="comment">// An invalid account has zero balance</span>
-        <span class="macro">assert!</span>(<span class="ident">get_address</span>(<span class="kw-2">&amp;</span><span class="ident">db_data</span>, <span class="ident">AccountId</span>(<span class="number">1</span>)).<span class="ident">is_err</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">get_balance</span>(<span class="kw-2">&amp;</span><span class="ident">db_data</span>, <span class="ident">AccountId</span>(<span class="number">0</span>)).<span class="ident">unwrap</span>(), <span class="ident">Amount::zero</span>());
+    <span class="kw">use crate</span>::{tests, wallet::init::init_wallet_db, AccountId, WalletDb};
+
+    <span class="kw">use super</span>::{get_address, get_balance};
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>empty_database_has_no_balance() {
+        <span class="kw">let </span>data_file = NamedTempFile::new().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>db_data = WalletDb::for_path(data_file.path(), tests::network()).unwrap();
+        init_wallet_db(<span class="kw-2">&amp;mut </span>db_data, <span class="prelude-val">Some</span>(Secret::new(<span class="macro">vec!</span>[]))).unwrap();
+
+        <span class="comment">// Add an account to the wallet
+        </span>tests::init_test_accounts_table(<span class="kw-2">&amp;</span>db_data);
+
+        <span class="comment">// The account should be empty
+        </span><span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            Amount::zero()
+        );
+
+        <span class="comment">// We can&#39;t get an anchor height, as we have not scanned any blocks.
+        </span><span class="macro">assert_eq!</span>((<span class="kw-2">&amp;</span>db_data).get_target_and_anchor_heights(<span class="number">10</span>).unwrap(), <span class="prelude-val">None</span>);
+
+        <span class="comment">// An invalid account has zero balance
+        </span><span class="macro">assert!</span>(get_address(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">1</span>)).is_err());
+        <span class="macro">assert_eq!</span>(
+            get_balance(<span class="kw-2">&amp;</span>db_data, AccountId::from(<span class="number">0</span>)).unwrap(),
+            Amount::zero()
+        );
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
-    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

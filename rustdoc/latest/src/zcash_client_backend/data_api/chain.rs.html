@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend&#x2F;src&#x2F;data_api&#x2F;chain.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chain.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../zcash_client_backend/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_client_backend/src/data_api/chain.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>chain.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../zcash_client_backend/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../zcash_client_backend/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -326,386 +326,328 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
-<span id="332">332</span>
-<span id="333">333</span>
-<span id="334">334</span>
-<span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::needless_doctest_main</span>)]</span>
-<span class="doccomment">//! Tools for blockchain validation &amp; scanning</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! use tempfile::NamedTempFile;</span>
-<span class="doccomment">//! use zcash_primitives::{</span>
-<span class="doccomment">//!     consensus::{BlockHeight, Network, Parameters}</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use zcash_client_backend::{</span>
-<span class="doccomment">//!     data_api::{</span>
-<span class="doccomment">//!         BlockSource, WalletRead, WalletWrite,</span>
-<span class="doccomment">//!         chain::{</span>
-<span class="doccomment">//!             validate_chain,</span>
-<span class="doccomment">//!             scan_cached_blocks,</span>
-<span class="doccomment">//!         },</span>
-<span class="doccomment">//!         error::Error,</span>
-<span class="doccomment">//!     },</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use zcash_client_sqlite::{</span>
-<span class="doccomment">//!     BlockDb,</span>
-<span class="doccomment">//!     WalletDb,</span>
-<span class="doccomment">//!     error::SqliteClientError,</span>
-<span class="doccomment">//!     wallet::{rewind_to_height},</span>
-<span class="doccomment">//!     wallet::init::{init_wallet_db},</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # // doctests have a problem with sqlite IO, so we ignore errors</span>
-<span class="doccomment">//! # // generated in this example code as it&#39;s not really testing anything</span>
-<span class="doccomment">//! # fn main() {</span>
-<span class="doccomment">//! #   test();</span>
-<span class="doccomment">//! # }</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! # fn test() -&gt; Result&lt;(), SqliteClientError&gt; {</span>
-<span class="doccomment">//! let network = Network::TestNetwork;</span>
-<span class="doccomment">//! let cache_file = NamedTempFile::new()?;</span>
-<span class="doccomment">//! let db_cache = BlockDb::for_path(cache_file)?;</span>
-<span class="doccomment">//! let db_file = NamedTempFile::new()?;</span>
-<span class="doccomment">//! let db_read = WalletDb::for_path(db_file, network)?;</span>
-<span class="doccomment">//! init_wallet_db(&amp;db_read)?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let mut db_data = db_read.get_update_ops()?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // 1) Download new CompactBlocks into db_cache.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // 2) Run the chain validator on the received blocks.</span>
-<span class="doccomment">//! //</span>
-<span class="doccomment">//! // Given that we assume the server always gives us correct-at-the-time blocks, any</span>
-<span class="doccomment">//! // errors are in the blocks we have previously cached or scanned.</span>
-<span class="doccomment">//! if let Err(e) = validate_chain(&amp;network, &amp;db_cache, db_data.get_max_height_hash()?) {</span>
-<span class="doccomment">//!     match e {</span>
-<span class="doccomment">//!         SqliteClientError::BackendError(Error::InvalidChain(lower_bound, _)) =&gt; {</span>
-<span class="doccomment">//!             // a) Pick a height to rewind to.</span>
-<span class="doccomment">//!             //</span>
-<span class="doccomment">//!             // This might be informed by some external chain reorg information, or</span>
-<span class="doccomment">//!             // heuristics such as the platform, available bandwidth, size of recent</span>
-<span class="doccomment">//!             // CompactBlocks, etc.</span>
-<span class="doccomment">//!             let rewind_height = lower_bound - 10;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!             // b) Rewind scanned block information.</span>
-<span class="doccomment">//!             db_data.rewind_to_height(rewind_height);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!             // c) Delete cached blocks from rewind_height onwards.</span>
-<span class="doccomment">//!             //</span>
-<span class="doccomment">//!             // This does imply that assumed-valid blocks will be re-downloaded, but it</span>
-<span class="doccomment">//!             // is also possible that in the intervening time, a chain reorg has</span>
-<span class="doccomment">//!             // occurred that orphaned some of those blocks.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!             // d) If there is some separate thread or service downloading</span>
-<span class="doccomment">//!             // CompactBlocks, tell it to go back and download from rewind_height</span>
-<span class="doccomment">//!             // onwards.</span>
-<span class="doccomment">//!         }</span>
-<span class="doccomment">//!         e =&gt; {</span>
-<span class="doccomment">//!             // Handle or return other errors.</span>
-<span class="doccomment">//!             return Err(e);</span>
-<span class="doccomment">//!         }</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // 3) Scan (any remaining) cached blocks.</span>
-<span class="doccomment">//! //</span>
-<span class="doccomment">//! // At this point, the cache and scanned data are locally consistent (though not</span>
-<span class="doccomment">//! // necessarily consistent with the latest chain tip - this would be discovered the</span>
-<span class="doccomment">//! // next time this codepath is executed after new blocks are received).</span>
-<span class="doccomment">//! scan_cached_blocks(&amp;network, &amp;db_cache, &amp;mut db_data, None)</span>
-<span class="doccomment">//! # }</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::needless_doctest_main)]
+</span><span class="doccomment">//! Tools for blockchain validation &amp; scanning
+//!
+//! # Examples
+//!
+//! ```
+//! # #[cfg(feature = &quot;test-dependencies&quot;)]
+//! # {
+//! use zcash_primitives::{
+//!     consensus::{BlockHeight, Network, Parameters}
+//! };
+//!
+//! use zcash_client_backend::{
+//!     data_api::{
+//!         BlockSource, WalletRead, WalletWrite,
+//!         chain::{
+//!             validate_chain,
+//!             scan_cached_blocks,
+//!         },
+//!         error::Error,
+//!         testing,
+//!     },
+//! };
+//!
+//! # fn main() {
+//! #   test();
+//! # }
+//! #
+//! # fn test() -&gt; Result&lt;(), Error&lt;u32&gt;&gt; {
+//! let network = Network::TestNetwork;
+//! let db_cache = testing::MockBlockSource {};
+//! let mut db_data = testing::MockWalletDb {};
+//!
+//! // 1) Download new CompactBlocks into db_cache.
+//!
+//! // 2) Run the chain validator on the received blocks.
+//! //
+//! // Given that we assume the server always gives us correct-at-the-time blocks, any
+//! // errors are in the blocks we have previously cached or scanned.
+//! if let Err(e) = validate_chain(&amp;network, &amp;db_cache, db_data.get_max_height_hash()?) {
+//!     match e {
+//!         Error::InvalidChain(lower_bound, _) =&gt; {
+//!             // a) Pick a height to rewind to.
+//!             //
+//!             // This might be informed by some external chain reorg information, or
+//!             // heuristics such as the platform, available bandwidth, size of recent
+//!             // CompactBlocks, etc.
+//!             let rewind_height = lower_bound - 10;
+//!
+//!             // b) Rewind scanned block information.
+//!             db_data.rewind_to_height(rewind_height);
+//!
+//!             // c) Delete cached blocks from rewind_height onwards.
+//!             //
+//!             // This does imply that assumed-valid blocks will be re-downloaded, but it
+//!             // is also possible that in the intervening time, a chain reorg has
+//!             // occurred that orphaned some of those blocks.
+//!
+//!             // d) If there is some separate thread or service downloading
+//!             // CompactBlocks, tell it to go back and download from rewind_height
+//!             // onwards.
+//!         },
+//!         e =&gt; {
+//!             // handle or return other errors
+//!
+//!         }
+//!     }
+//! }
+//!
+//! // 3) Scan (any remaining) cached blocks.
+//! //
+//! // At this point, the cache and scanned data are locally consistent (though not
+//! // necessarily consistent with the latest chain tip - this would be discovered the
+//! // next time this codepath is executed after new blocks are received).
+//! scan_cached_blocks(&amp;network, &amp;db_cache, &amp;mut db_data, None)
+//! # }
+//! # }
+//! ```
 
-<span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
+</span><span class="kw">use </span>std::fmt::Debug;
 
-<span class="kw">use</span> <span class="ident">zcash_primitives</span>::{
-    <span class="ident">block::BlockHash</span>,
-    <span class="ident">consensus</span>::{<span class="self">self</span>, <span class="ident">BlockHeight</span>, <span class="ident">NetworkUpgrade</span>},
-    <span class="ident">merkle_tree::CommitmentTree</span>,
-    <span class="ident">sapling::Nullifier</span>,
-    <span class="ident">zip32::ExtendedFullViewingKey</span>,
+<span class="kw">use </span>zcash_primitives::{
+    block::BlockHash,
+    consensus::{<span class="self">self</span>, BlockHeight, NetworkUpgrade},
+    merkle_tree::CommitmentTree,
+    sapling::{keys::Scope, Nullifier},
 };
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">data_api</span>::{
-        <span class="ident">error</span>::{<span class="ident">ChainInvalid</span>, <span class="ident">Error</span>},
-        <span class="ident">BlockSource</span>, <span class="ident">PrunedBlock</span>, <span class="ident">WalletWrite</span>,
+<span class="kw">use crate</span>::{
+    data_api::{
+        error::{ChainInvalid, Error},
+        BlockSource, PrunedBlock, WalletWrite,
     },
-    <span class="ident">proto::compact_formats::CompactBlock</span>,
-    <span class="ident">wallet</span>::{<span class="ident">AccountId</span>, <span class="ident">WalletTx</span>},
-    <span class="ident">welding_rig::scan_block</span>,
+    proto::compact_formats::CompactBlock,
+    scan::BatchRunner,
+    wallet::WalletTx,
+    welding_rig::{add_block_to_runner, scan_block_with_runner},
 };
 
-<span class="doccomment">/// Checks that the scanned blocks in the data database, when combined with the recent</span>
-<span class="doccomment">/// `CompactBlock`s in the cache database, form a valid chain.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function is built on the core assumption that the information provided in the</span>
-<span class="doccomment">/// cache database is more likely to be accurate than the previously-scanned information.</span>
-<span class="doccomment">/// This follows from the design (and trust) assumption that the `lightwalletd` server</span>
-<span class="doccomment">/// provides accurate block information as of the time it was requested.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Arguments:</span>
-<span class="doccomment">/// - `parameters` Network parameters</span>
-<span class="doccomment">/// - `cache` Source of compact blocks</span>
-<span class="doccomment">/// - `from_tip` Height &amp; hash of last validated block; if no validation has previously</span>
-<span class="doccomment">///    been performed, this will begin scanning from `sapling_activation_height - 1`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Returns:</span>
-<span class="doccomment">/// - `Ok(())` if the combined chain is valid.</span>
-<span class="doccomment">/// - `Err(ErrorKind::InvalidChain(upper_bound, cause))` if the combined chain is invalid.</span>
-<span class="doccomment">///   `upper_bound` is the height of the highest invalid block (on the assumption that the</span>
-<span class="doccomment">///   highest block in the cache database is correct).</span>
-<span class="doccomment">/// - `Err(e)` if there was an error during validation unrelated to chain validity.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function does not mutate either of the databases.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate_chain</span><span class="op">&lt;</span><span class="ident">N</span>, <span class="ident">E</span>, <span class="ident">P</span>, <span class="ident">C</span><span class="op">&gt;</span>(
-    <span class="ident">parameters</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    <span class="ident">cache</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>,
-    <span class="ident">validate_from</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">BlockHeight</span>, <span class="ident">BlockHash</span>)<span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">E</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">E</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">P</span>: <span class="ident">consensus::Parameters</span>,
-    <span class="ident">C</span>: <span class="ident">BlockSource</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">E</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Checks that the scanned blocks in the data database, when combined with the recent
+/// `CompactBlock`s in the cache database, form a valid chain.
+///
+/// This function is built on the core assumption that the information provided in the
+/// cache database is more likely to be accurate than the previously-scanned information.
+/// This follows from the design (and trust) assumption that the `lightwalletd` server
+/// provides accurate block information as of the time it was requested.
+///
+/// Arguments:
+/// - `parameters` Network parameters
+/// - `cache` Source of compact blocks
+/// - `from_tip` Height &amp; hash of last validated block; if no validation has previously
+///    been performed, this will begin scanning from `sapling_activation_height - 1`
+///
+/// Returns:
+/// - `Ok(())` if the combined chain is valid.
+/// - `Err(ErrorKind::InvalidChain(upper_bound, cause))` if the combined chain is invalid.
+///   `upper_bound` is the height of the highest invalid block (on the assumption that the
+///   highest block in the cache database is correct).
+/// - `Err(e)` if there was an error during validation unrelated to chain validity.
+///
+/// This function does not mutate either of the databases.
+</span><span class="kw">pub fn </span>validate_chain&lt;N, E, P, C&gt;(
+    parameters: <span class="kw-2">&amp;</span>P,
+    cache: <span class="kw-2">&amp;</span>C,
+    validate_from: <span class="prelude-ty">Option</span>&lt;(BlockHeight, BlockHash)&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), E&gt;
+<span class="kw">where
+    </span>E: From&lt;Error&lt;N&gt;&gt;,
+    P: consensus::Parameters,
+    C: BlockSource&lt;Error = E&gt;,
 {
-    <span class="kw">let</span> <span class="ident">sapling_activation_height</span> <span class="op">=</span> <span class="ident">parameters</span>
-        .<span class="ident">activation_height</span>(<span class="ident">NetworkUpgrade::Sapling</span>)
-        .<span class="ident">ok_or</span>(<span class="ident">Error::SaplingNotActive</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>sapling_activation_height = parameters
+        .activation_height(NetworkUpgrade::Sapling)
+        .ok_or(Error::SaplingNotActive)<span class="question-mark">?</span>;
 
-    <span class="comment">// The cache will contain blocks above the `validate_from` height.  Validate from that maximum</span>
-    <span class="comment">// height up to the chain tip, returning the hash of the block found in the cache at the</span>
-    <span class="comment">// `validate_from` height, which can then be used to verify chain integrity by comparing</span>
-    <span class="comment">// against the `validate_from` hash.</span>
-    <span class="kw">let</span> <span class="ident">from_height</span> <span class="op">=</span> <span class="ident">validate_from</span>
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">height</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">height</span>)
-        .<span class="ident">unwrap_or</span>(<span class="ident">sapling_activation_height</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="comment">// The cache will contain blocks above the `validate_from` height.  Validate from that maximum
+    // height up to the chain tip, returning the hash of the block found in the cache at the
+    // `validate_from` height, which can then be used to verify chain integrity by comparing
+    // against the `validate_from` hash.
+    </span><span class="kw">let </span>from_height = validate_from
+        .map(|(height, <span class="kw">_</span>)| height)
+        .unwrap_or(sapling_activation_height - <span class="number">1</span>);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_height</span> <span class="op">=</span> <span class="ident">from_height</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_hash</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BlockHash</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">validate_from</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">hash</span>)<span class="op">|</span> <span class="ident">hash</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>prev_height = from_height;
+    <span class="kw">let </span><span class="kw-2">mut </span>prev_hash: <span class="prelude-ty">Option</span>&lt;BlockHash&gt; = validate_from.map(|(<span class="kw">_</span>, hash)| hash);
 
-    <span class="ident">cache</span>.<span class="ident">with_blocks</span>(<span class="ident">from_height</span>, <span class="prelude-val">None</span>, <span class="kw">move</span> <span class="op">|</span><span class="ident">block</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="ident">block</span>.<span class="ident">height</span>();
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">current_height</span> <span class="op">!</span><span class="op">=</span> <span class="ident">prev_height</span> <span class="op">+</span> <span class="number">1</span> {
-            <span class="prelude-val">Err</span>(<span class="ident">ChainInvalid::block_height_discontinuity</span>(
-                <span class="ident">prev_height</span> <span class="op">+</span> <span class="number">1</span>,
-                <span class="ident">current_height</span>,
+    cache.with_blocks(from_height, <span class="prelude-val">None</span>, <span class="kw">move </span>|block| {
+        <span class="kw">let </span>current_height = block.height();
+        <span class="kw">let </span>result = <span class="kw">if </span>current_height != prev_height + <span class="number">1 </span>{
+            <span class="prelude-val">Err</span>(ChainInvalid::block_height_discontinuity(
+                prev_height + <span class="number">1</span>,
+                current_height,
             ))
-        } <span class="kw">else</span> {
-            <span class="kw">match</span> <span class="ident">prev_hash</span> {
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
-                <span class="prelude-val">Some</span>(<span class="ident">h</span>) <span class="kw">if</span> <span class="ident">h</span> <span class="op">=</span><span class="op">=</span> <span class="ident">block</span>.<span class="ident">prev_hash</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
-                <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">ChainInvalid::prev_hash_mismatch</span>(<span class="ident">current_height</span>)),
+        } <span class="kw">else </span>{
+            <span class="kw">match </span>prev_hash {
+                <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(()),
+                <span class="prelude-val">Some</span>(h) <span class="kw">if </span>h == block.prev_hash() =&gt; <span class="prelude-val">Ok</span>(()),
+                <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(ChainInvalid::prev_hash_mismatch(current_height)),
             }
         };
 
-        <span class="ident">prev_height</span> <span class="op">=</span> <span class="ident">current_height</span>;
-        <span class="ident">prev_hash</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">block</span>.<span class="ident">hash</span>());
-        <span class="ident">result</span>.<span class="ident">map_err</span>(<span class="ident">E::from</span>)
+        prev_height = current_height;
+        prev_hash = <span class="prelude-val">Some</span>(block.hash());
+        result.map_err(E::from)
     })
 }
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_doctest_main</span>)]</span>
-<span class="doccomment">/// Scans at most `limit` new blocks added to the cache for any transactions received by</span>
-<span class="doccomment">/// the tracked accounts.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function will return without error after scanning at most `limit` new blocks, to</span>
-<span class="doccomment">/// enable the caller to update their UI with scanning progress. Repeatedly calling this</span>
-<span class="doccomment">/// function will process sequential ranges of blocks, and is equivalent to calling</span>
-<span class="doccomment">/// `scan_cached_blocks` and passing `None` for the optional `limit` value.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function pays attention only to cached blocks with heights greater than the</span>
-<span class="doccomment">/// highest scanned block in `data`. Cached blocks with lower heights are not verified</span>
-<span class="doccomment">/// against previously-scanned blocks. In particular, this function **assumes** that the</span>
-<span class="doccomment">/// caller is handling rollbacks.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For brand-new light client databases, this function starts scanning from the Sapling</span>
-<span class="doccomment">/// activation height. This height can be fast-forwarded to a more recent block by</span>
-<span class="doccomment">/// initializing the client database with a starting block (for example, calling</span>
-<span class="doccomment">/// `init_blocks_table` before this function if using `zcash_client_sqlite`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Scanned blocks are required to be height-sequential. If a block is missing from the</span>
-<span class="doccomment">/// cache, an error will be returned with kind [`ChainInvalid::BlockHeightDiscontinuity`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use tempfile::NamedTempFile;</span>
-<span class="doccomment">/// use zcash_primitives::consensus::{</span>
-<span class="doccomment">///     Network,</span>
-<span class="doccomment">///     Parameters,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">/// use zcash_client_backend::{</span>
-<span class="doccomment">///     data_api::chain::scan_cached_blocks,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">/// use zcash_client_sqlite::{</span>
-<span class="doccomment">///     BlockDb,</span>
-<span class="doccomment">///     WalletDb,</span>
-<span class="doccomment">///     error::SqliteClientError,</span>
-<span class="doccomment">///     wallet::init::init_wallet_db,</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # // doctests have a problem with sqlite IO, so we ignore errors</span>
-<span class="doccomment">/// # // generated in this example code as it&#39;s not really testing anything</span>
-<span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// #   test();</span>
-<span class="doccomment">/// # }</span>
-<span class="doccomment">/// #</span>
-<span class="doccomment">/// # fn test() -&gt; Result&lt;(), SqliteClientError&gt; {</span>
-<span class="doccomment">/// let cache_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let cache = BlockDb::for_path(cache_file).unwrap();</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data_file = NamedTempFile::new().unwrap();</span>
-<span class="doccomment">/// let db_read = WalletDb::for_path(data_file, Network::TestNetwork)?;</span>
-<span class="doccomment">/// init_wallet_db(&amp;db_read)?;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let mut data = db_read.get_update_ops()?;</span>
-<span class="doccomment">/// scan_cached_blocks(&amp;Network::TestNetwork, &amp;cache, &amp;mut data, None)?;</span>
-<span class="doccomment">/// # Ok(())</span>
-<span class="doccomment">/// # }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scan_cached_blocks</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">N</span>, <span class="ident">P</span>, <span class="ident">C</span>, <span class="ident">D</span><span class="op">&gt;</span>(
-    <span class="ident">params</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>,
-    <span class="ident">cache</span>: <span class="kw-2">&amp;</span><span class="ident">C</span>,
-    <span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">D</span>,
-    <span class="ident">limit</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">E</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">consensus::Parameters</span>,
-    <span class="ident">C</span>: <span class="ident">BlockSource</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">E</span><span class="op">&gt;</span>,
-    <span class="ident">D</span>: <span class="ident">WalletWrite</span><span class="op">&lt;</span><span class="ident">Error</span> <span class="op">=</span> <span class="ident">E</span>, <span class="ident">NoteRef</span> <span class="op">=</span> <span class="ident">N</span><span class="op">&gt;</span>,
-    <span class="ident">N</span>: <span class="ident">Copy</span> <span class="op">+</span> <span class="ident">Debug</span>,
-    <span class="ident">E</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&lt;</span><span class="ident">N</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="attribute">#[allow(clippy::needless_doctest_main)]
+</span><span class="doccomment">/// Scans at most `limit` new blocks added to the cache for any transactions received by
+/// the tracked accounts.
+///
+/// This function will return without error after scanning at most `limit` new blocks, to
+/// enable the caller to update their UI with scanning progress. Repeatedly calling this
+/// function will process sequential ranges of blocks, and is equivalent to calling
+/// `scan_cached_blocks` and passing `None` for the optional `limit` value.
+///
+/// This function pays attention only to cached blocks with heights greater than the
+/// highest scanned block in `data`. Cached blocks with lower heights are not verified
+/// against previously-scanned blocks. In particular, this function **assumes** that the
+/// caller is handling rollbacks.
+///
+/// For brand-new light client databases, this function starts scanning from the Sapling
+/// activation height. This height can be fast-forwarded to a more recent block by
+/// initializing the client database with a starting block (for example, calling
+/// `init_blocks_table` before this function if using `zcash_client_sqlite`).
+///
+/// Scanned blocks are required to be height-sequential. If a block is missing from the
+/// cache, an error will be returned with kind [`ChainInvalid::BlockHeightDiscontinuity`].
+</span><span class="kw">pub fn </span>scan_cached_blocks&lt;E, N, P, C, D&gt;(
+    params: <span class="kw-2">&amp;</span>P,
+    cache: <span class="kw-2">&amp;</span>C,
+    data: <span class="kw-2">&amp;mut </span>D,
+    limit: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), E&gt;
+<span class="kw">where
+    </span>P: consensus::Parameters + Send + <span class="lifetime">&#39;static</span>,
+    C: BlockSource&lt;Error = E&gt;,
+    D: WalletWrite&lt;Error = E, NoteRef = N&gt;,
+    N: Copy + Debug,
+    E: From&lt;Error&lt;N&gt;&gt;,
 {
-    <span class="kw">let</span> <span class="ident">sapling_activation_height</span> <span class="op">=</span> <span class="ident">params</span>
-        .<span class="ident">activation_height</span>(<span class="ident">NetworkUpgrade::Sapling</span>)
-        .<span class="ident">ok_or</span>(<span class="ident">Error::SaplingNotActive</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>sapling_activation_height = params
+        .activation_height(NetworkUpgrade::Sapling)
+        .ok_or(Error::SaplingNotActive)<span class="question-mark">?</span>;
 
-    <span class="comment">// Recall where we synced up to previously.</span>
-    <span class="comment">// If we have never synced, use sapling activation height to select all cached CompactBlocks.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_height</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">block_height_extrema</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">opt</span><span class="op">|</span> {
-        <span class="ident">opt</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">max</span>)<span class="op">|</span> <span class="ident">max</span>)
-            .<span class="ident">unwrap_or</span>(<span class="ident">sapling_activation_height</span> <span class="op">-</span> <span class="number">1</span>)
+    <span class="comment">// Recall where we synced up to previously.
+    // If we have never synced, use sapling activation height to select all cached CompactBlocks.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>last_height = data.block_height_extrema().map(|opt| {
+        opt.map(|(<span class="kw">_</span>, max)| max)
+            .unwrap_or(sapling_activation_height - <span class="number">1</span>)
     })<span class="question-mark">?</span>;
 
-    <span class="comment">// Fetch the ExtendedFullViewingKeys we are tracking</span>
-    <span class="kw">let</span> <span class="ident">extfvks</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">get_extended_full_viewing_keys</span>()<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">extfvks</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">AccountId</span>, <span class="kw-2">&amp;</span><span class="ident">ExtendedFullViewingKey</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">extfvks</span>.<span class="ident">iter</span>().<span class="ident">collect</span>();
+    <span class="comment">// Fetch the UnifiedFullViewingKeys we are tracking
+    </span><span class="kw">let </span>ufvks = data.get_unified_full_viewing_keys()<span class="question-mark">?</span>;
+    <span class="comment">// TODO: Change `scan_block` to also scan Orchard.
+    // https://github.com/zcash/librustzcash/issues/403
+    </span><span class="kw">let </span>dfvks: Vec&lt;<span class="kw">_</span>&gt; = ufvks
+        .iter()
+        .filter_map(|(account, ufvk)| ufvk.sapling().map(<span class="kw">move </span>|k| (account, k)))
+        .collect();
 
-    <span class="comment">// Get the most recent CommitmentTree</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">data</span>
-        .<span class="ident">get_commitment_tree</span>(<span class="ident">last_height</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="ident">unwrap_or_else</span>(<span class="ident">CommitmentTree::empty</span>))<span class="question-mark">?</span>;
+    <span class="comment">// Get the most recent CommitmentTree
+    </span><span class="kw">let </span><span class="kw-2">mut </span>tree = data
+        .get_commitment_tree(last_height)
+        .map(|t| t.unwrap_or_else(CommitmentTree::empty))<span class="question-mark">?</span>;
 
-    <span class="comment">// Get most recent incremental witnesses for the notes we are tracking</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">witnesses</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">get_witnesses</span>(<span class="ident">last_height</span>)<span class="question-mark">?</span>;
+    <span class="comment">// Get most recent incremental witnesses for the notes we are tracking
+    </span><span class="kw">let </span><span class="kw-2">mut </span>witnesses = data.get_witnesses(last_height)<span class="question-mark">?</span>;
 
-    <span class="comment">// Get the nullifiers for the notes we are tracking</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">nullifiers</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">get_nullifiers</span>()<span class="question-mark">?</span>;
+    <span class="comment">// Get the nullifiers for the notes we are tracking
+    </span><span class="kw">let </span><span class="kw-2">mut </span>nullifiers = data.get_nullifiers()<span class="question-mark">?</span>;
 
-    <span class="ident">cache</span>.<span class="ident">with_blocks</span>(<span class="ident">last_height</span>, <span class="ident">limit</span>, <span class="op">|</span><span class="ident">block</span>: <span class="ident">CompactBlock</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">current_height</span> <span class="op">=</span> <span class="ident">block</span>.<span class="ident">height</span>();
+    <span class="kw">let </span><span class="kw-2">mut </span>batch_runner = BatchRunner::new(
+        <span class="number">100</span>,
+        dfvks
+            .iter()
+            .flat_map(|(<span class="kw">_</span>, dfvk)| [dfvk.to_ivk(Scope::External), dfvk.to_ivk(Scope::Internal)])
+            .collect(),
+    );
 
-        <span class="comment">// Scanned blocks MUST be height-sequential.</span>
-        <span class="kw">if</span> <span class="ident">current_height</span> <span class="op">!</span><span class="op">=</span> (<span class="ident">last_height</span> <span class="op">+</span> <span class="number">1</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(
-                <span class="ident">ChainInvalid::block_height_discontinuity</span>(<span class="ident">last_height</span> <span class="op">+</span> <span class="number">1</span>, <span class="ident">current_height</span>).<span class="ident">into</span>(),
+    cache.with_blocks(last_height, limit, |block: CompactBlock| {
+        add_block_to_runner(params, block, <span class="kw-2">&amp;mut </span>batch_runner);
+        <span class="prelude-val">Ok</span>(())
+    })<span class="question-mark">?</span>;
+
+    batch_runner.flush();
+
+    cache.with_blocks(last_height, limit, |block: CompactBlock| {
+        <span class="kw">let </span>current_height = block.height();
+
+        <span class="comment">// Scanned blocks MUST be height-sequential.
+        </span><span class="kw">if </span>current_height != (last_height + <span class="number">1</span>) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(
+                ChainInvalid::block_height_discontinuity(last_height + <span class="number">1</span>, current_height).into(),
             );
         }
 
-        <span class="kw">let</span> <span class="ident">block_hash</span> <span class="op">=</span> <span class="ident">BlockHash::from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">block</span>.<span class="ident">hash</span>);
-        <span class="kw">let</span> <span class="ident">block_time</span> <span class="op">=</span> <span class="ident">block</span>.<span class="ident">time</span>;
+        <span class="kw">let </span>block_hash = BlockHash::from_slice(<span class="kw-2">&amp;</span>block.hash);
+        <span class="kw">let </span>block_time = block.time;
 
-        <span class="kw">let</span> <span class="ident">txs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">WalletTx</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">witness_refs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">witnesses</span>.<span class="ident">iter_mut</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">w</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">w</span>.<span class="number">1</span>).<span class="ident">collect</span>();
+        <span class="kw">let </span>txs: Vec&lt;WalletTx&lt;Nullifier&gt;&gt; = {
+            <span class="kw">let </span><span class="kw-2">mut </span>witness_refs: Vec&lt;<span class="kw">_</span>&gt; = witnesses.iter_mut().map(|w| <span class="kw-2">&amp;mut </span>w.<span class="number">1</span>).collect();
 
-            <span class="ident">scan_block</span>(
-                <span class="ident">params</span>,
-                <span class="ident">block</span>,
-                <span class="kw-2">&amp;</span><span class="ident">extfvks</span>,
-                <span class="kw-2">&amp;</span><span class="ident">nullifiers</span>,
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tree</span>,
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">witness_refs</span>[..],
+            scan_block_with_runner(
+                params,
+                block,
+                <span class="kw-2">&amp;</span>dfvks,
+                <span class="kw-2">&amp;</span>nullifiers,
+                <span class="kw-2">&amp;mut </span>tree,
+                <span class="kw-2">&amp;mut </span>witness_refs[..],
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut </span>batch_runner),
             )
         };
 
-        <span class="comment">// Enforce that all roots match. This is slow, so only include in debug builds.</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">debug_assertions</span>)]</span>
-        {
-            <span class="kw">let</span> <span class="ident">cur_root</span> <span class="op">=</span> <span class="ident">tree</span>.<span class="ident">root</span>();
-            <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">witnesses</span> {
-                <span class="kw">if</span> <span class="ident">row</span>.<span class="number">1</span>.<span class="ident">root</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">cur_root</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidWitnessAnchor</span>(<span class="ident">row</span>.<span class="number">0</span>, <span class="ident">current_height</span>).<span class="ident">into</span>());
+        <span class="comment">// Enforce that all roots match. This is slow, so only include in debug builds.
+        </span><span class="attribute">#[cfg(debug_assertions)]
+        </span>{
+            <span class="kw">let </span>cur_root = tree.root();
+            <span class="kw">for </span>row <span class="kw">in </span><span class="kw-2">&amp;</span>witnesses {
+                <span class="kw">if </span>row.<span class="number">1</span>.root() != cur_root {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidWitnessAnchor(row.<span class="number">0</span>, current_height).into());
                 }
             }
-            <span class="kw">for</span> <span class="ident">tx</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">txs</span> {
-                <span class="kw">for</span> <span class="ident">output</span> <span class="kw">in</span> <span class="ident">tx</span>.<span class="ident">shielded_outputs</span>.<span class="ident">iter</span>() {
-                    <span class="kw">if</span> <span class="ident">output</span>.<span class="ident">witness</span>.<span class="ident">root</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">cur_root</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::InvalidNewWitnessAnchor</span>(
-                            <span class="ident">output</span>.<span class="ident">index</span>,
-                            <span class="ident">tx</span>.<span class="ident">txid</span>,
-                            <span class="ident">current_height</span>,
-                            <span class="ident">output</span>.<span class="ident">witness</span>.<span class="ident">root</span>(),
+            <span class="kw">for </span>tx <span class="kw">in </span><span class="kw-2">&amp;</span>txs {
+                <span class="kw">for </span>output <span class="kw">in </span>tx.shielded_outputs.iter() {
+                    <span class="kw">if </span>output.witness.root() != cur_root {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(Error::InvalidNewWitnessAnchor(
+                            output.index,
+                            tx.txid,
+                            current_height,
+                            output.witness.root(),
                         )
-                        .<span class="ident">into</span>());
+                        .into());
                     }
                 }
             }
         }
 
-        <span class="kw">let</span> <span class="ident">new_witnesses</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">advance_by_block</span>(
-            <span class="kw-2">&amp;</span>(<span class="ident">PrunedBlock</span> {
-                <span class="ident">block_height</span>: <span class="ident">current_height</span>,
-                <span class="ident">block_hash</span>,
-                <span class="ident">block_time</span>,
-                <span class="ident">commitment_tree</span>: <span class="kw-2">&amp;</span><span class="ident">tree</span>,
-                <span class="ident">transactions</span>: <span class="kw-2">&amp;</span><span class="ident">txs</span>,
+        <span class="kw">let </span>new_witnesses = data.advance_by_block(
+            <span class="kw-2">&amp;</span>(PrunedBlock {
+                block_height: current_height,
+                block_hash,
+                block_time,
+                commitment_tree: <span class="kw-2">&amp;</span>tree,
+                transactions: <span class="kw-2">&amp;</span>txs,
             }),
-            <span class="kw-2">&amp;</span><span class="ident">witnesses</span>,
+            <span class="kw-2">&amp;</span>witnesses,
         )<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">spent_nf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Nullifier</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">txs</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">shielded_spends</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">spend</span><span class="op">|</span> <span class="ident">spend</span>.<span class="ident">nf</span>))
-            .<span class="ident">collect</span>();
-        <span class="ident">nullifiers</span>.<span class="ident">retain</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">nf</span>)<span class="op">|</span> <span class="op">!</span><span class="ident">spent_nf</span>.<span class="ident">contains</span>(<span class="ident">nf</span>));
-        <span class="ident">nullifiers</span>.<span class="ident">extend</span>(
-            <span class="ident">txs</span>.<span class="ident">iter</span>()
-                .<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">tx</span><span class="op">|</span> <span class="ident">tx</span>.<span class="ident">shielded_outputs</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">out</span><span class="op">|</span> (<span class="ident">out</span>.<span class="ident">account</span>, <span class="ident">out</span>.<span class="ident">nf</span>))),
+        <span class="kw">let </span>spent_nf: Vec&lt;Nullifier&gt; = txs
+            .iter()
+            .flat_map(|tx| tx.shielded_spends.iter().map(|spend| spend.nf))
+            .collect();
+        nullifiers.retain(|(<span class="kw">_</span>, nf)| !spent_nf.contains(nf));
+        nullifiers.extend(
+            txs.iter()
+                .flat_map(|tx| tx.shielded_outputs.iter().map(|out| (out.account, out.nf))),
         );
 
-        <span class="ident">witnesses</span>.<span class="ident">extend</span>(<span class="ident">new_witnesses</span>);
+        witnesses.extend(new_witnesses);
 
-        <span class="ident">last_height</span> <span class="op">=</span> <span class="ident">current_height</span>;
+        last_height = current_height;
 
         <span class="prelude-val">Ok</span>(())
     })<span class="question-mark">?</span>;
@@ -713,6 +655,4 @@
     <span class="prelude-val">Ok</span>(())
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_client_backend" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_client_backend" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

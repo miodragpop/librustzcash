@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives&#x2F;src&#x2F;transaction&#x2F;components&#x2F;tze.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tze.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../zcash_primitives/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives/src/transaction/components/tze.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>tze.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../zcash_primitives/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -247,256 +247,298 @@
 <span id="247">247</span>
 <span id="248">248</span>
 <span id="249">249</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Structs representing the TZE components within Zcash transactions.</span>
-<span class="attribute">#![<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;zfuture&quot;</span>)]</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Structs representing the TZE components within Zcash transactions.
+</span><span class="attribute">#![cfg(feature = <span class="string">&quot;zfuture&quot;</span>)]
 
-<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
-<span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
-<span class="kw">use</span> <span class="ident">std::fmt::Debug</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
+</span><span class="kw">use </span>byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+<span class="kw">use </span>std::convert::TryFrom;
+<span class="kw">use </span>std::fmt::Debug;
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
 
-<span class="kw">use</span> <span class="ident">zcash_encoding</span>::{<span class="ident">CompactSize</span>, <span class="ident">Vector</span>};
+<span class="kw">use </span>zcash_encoding::{CompactSize, Vector};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::amount::Amount</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">extensions::transparent</span> <span class="kw">as</span> <span class="ident">tze</span>, <span class="ident">transaction::TxId</span>};
+<span class="kw">use </span><span class="kw">super</span>::amount::Amount;
+<span class="kw">use crate</span>::{extensions::transparent <span class="kw">as </span>tze, transaction::TxId};
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builder</span>;
+<span class="kw">pub mod </span>builder;
 
-<span class="kw">fn</span> <span class="ident">to_io_error</span>(<span class="kw">_</span>: <span class="ident">std::num::TryFromIntError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Error</span> {
-    <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="string">&quot;value out of range&quot;</span>)
+<span class="kw">fn </span>to_io_error(<span class="kw">_</span>: std::num::TryFromIntError) -&gt; io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;value out of range&quot;</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Authorization</span>: <span class="ident">Debug</span> {
-    <span class="kw">type</span> <span class="ident">Witness</span>: <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">PartialEq</span>;
+<span class="kw">pub trait </span>Authorization: Debug {
+    <span class="kw">type </span>Witness: Debug + Clone + PartialEq;
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Authorized</span>;
+<span class="attribute">#[derive(Debug, Copy, Clone, PartialEq)]
+</span><span class="kw">pub struct </span>Authorized;
 
-<span class="kw">impl</span> <span class="ident">Authorization</span> <span class="kw">for</span> <span class="ident">Authorized</span> {
-    <span class="kw">type</span> <span class="ident">Witness</span> <span class="op">=</span> <span class="ident">tze::AuthData</span>;
+<span class="kw">impl </span>Authorization <span class="kw">for </span>Authorized {
+    <span class="kw">type </span>Witness = tze::AuthData;
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Bundle</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Authorization</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">vin</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TzeIn</span><span class="op">&lt;</span><span class="ident">A::Witness</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">vout</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TzeOut</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">authorization</span>: <span class="ident">A</span>,
+<span class="kw">pub trait </span>MapAuth&lt;A: Authorization, B: Authorization&gt; {
+    <span class="kw">fn </span>map_witness(<span class="kw-2">&amp;</span><span class="self">self</span>, s: A::Witness) -&gt; B::Witness;
+    <span class="kw">fn </span>map_authorization(<span class="kw-2">&amp;</span><span class="self">self</span>, s: A) -&gt; B;
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OutPoint</span> {
-    <span class="ident">txid</span>: <span class="ident">TxId</span>,
-    <span class="ident">n</span>: <span class="ident">u32</span>,
+<span class="attribute">#[derive(Debug, Clone, PartialEq)]
+</span><span class="kw">pub struct </span>Bundle&lt;A: Authorization&gt; {
+    <span class="kw">pub </span>vin: Vec&lt;TzeIn&lt;A::Witness&gt;&gt;,
+    <span class="kw">pub </span>vout: Vec&lt;TzeOut&gt;,
+    <span class="kw">pub </span>authorization: A,
 }
 
-<span class="kw">impl</span> <span class="ident">OutPoint</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">txid</span>: <span class="ident">TxId</span>, <span class="ident">n</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">OutPoint</span> { <span class="ident">txid</span>, <span class="ident">n</span> }
+<span class="kw">impl</span>&lt;A: Authorization&gt; Bundle&lt;A&gt; {
+    <span class="kw">pub fn </span>map_authorization&lt;B: Authorization, F: MapAuth&lt;A, B&gt;&gt;(<span class="self">self</span>, f: F) -&gt; Bundle&lt;B&gt; {
+        Bundle {
+            vin: <span class="self">self
+                </span>.vin
+                .into_iter()
+                .map(|tzein| TzeIn {
+                    prevout: tzein.prevout,
+                    witness: tzein.witness.map_payload(|p| f.map_witness(p)),
+                })
+                .collect(),
+            vout: <span class="self">self</span>.vout,
+            authorization: f.map_authorization(<span class="self">self</span>.authorization),
+        }
+    }
+}
+
+<span class="attribute">#[derive(Clone, Debug, PartialEq)]
+</span><span class="kw">pub struct </span>OutPoint {
+    txid: TxId,
+    n: u32,
+}
+
+<span class="kw">impl </span>OutPoint {
+    <span class="kw">pub fn </span>new(txid: TxId, n: u32) -&gt; <span class="self">Self </span>{
+        OutPoint { txid, n }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">txid</span> <span class="op">=</span> <span class="ident">TxId::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">OutPoint</span> { <span class="ident">txid</span>, <span class="ident">n</span> })
+    <span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>txid = TxId::read(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+        <span class="kw">let </span>n = reader.read_u32::&lt;LittleEndian&gt;()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(OutPoint { txid, n })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">txid</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>)<span class="question-mark">?</span>;
-        <span class="ident">writer</span>.<span class="ident">write_u32</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">n</span>)
+    <span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.txid.write(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
+        writer.write_u32::&lt;LittleEndian&gt;(<span class="self">self</span>.n)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="ident">n</span>
+    <span class="kw">pub fn </span>n(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="self">self</span>.n
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">txid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">TxId</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">txid</span>
+    <span class="kw">pub fn </span>txid(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>TxId {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.txid
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TzeIn</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="ident">prevout</span>: <span class="ident">OutPoint</span>,
-    <span class="kw">pub</span> <span class="ident">witness</span>: <span class="ident">tze::Witness</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Clone, Debug, PartialEq)]
+</span><span class="kw">pub struct </span>TzeIn&lt;Payload&gt; {
+    <span class="kw">pub </span>prevout: OutPoint,
+    <span class="kw">pub </span>witness: tze::Witness&lt;Payload&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> <span class="ident">TzeIn</span><span class="op">&lt;</span><span class="ident">Payload</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Write without witness data (for signature hashing)</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is also used as the prefix for the encoded form used</span>
-    <span class="doccomment">/// within a serialized transaction.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_without_witness</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">prevout</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>)<span class="question-mark">?</span>;
+<span class="kw">impl</span>&lt;Payload&gt; TzeIn&lt;Payload&gt; {
+    <span class="doccomment">/// Write without witness data (for signature hashing)
+    ///
+    /// This is also used as the prefix for the encoded form used
+    /// within a serialized transaction.
+    </span><span class="kw">pub fn </span>write_without_witness&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.prevout.write(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
 
-        <span class="ident">CompactSize::write</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-            <span class="ident">usize::try_from</span>(<span class="self">self</span>.<span class="ident">witness</span>.<span class="ident">extension_id</span>).<span class="ident">map_err</span>(<span class="ident">to_io_error</span>)<span class="question-mark">?</span>,
+        CompactSize::write(
+            <span class="kw-2">&amp;mut </span>writer,
+            usize::try_from(<span class="self">self</span>.witness.extension_id).map_err(to_io_error)<span class="question-mark">?</span>,
         )<span class="question-mark">?</span>;
 
-        <span class="ident">CompactSize::write</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-            <span class="ident">usize::try_from</span>(<span class="self">self</span>.<span class="ident">witness</span>.<span class="ident">mode</span>).<span class="ident">map_err</span>(<span class="ident">to_io_error</span>)<span class="question-mark">?</span>,
+        CompactSize::write(
+            <span class="kw-2">&amp;mut </span>writer,
+            usize::try_from(<span class="self">self</span>.witness.mode).map_err(to_io_error)<span class="question-mark">?</span>,
         )
     }
 }
 
-<span class="doccomment">/// Transaction encoding and decoding functions conforming to [ZIP 222].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [ZIP 222]: https://zips.z.cash/zip-0222#encoding-in-transactions</span>
-<span class="kw">impl</span> <span class="ident">TzeIn</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="doccomment">/// Convenience constructor</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">prevout</span>: <span class="ident">OutPoint</span>, <span class="ident">extension_id</span>: <span class="ident">u32</span>, <span class="ident">mode</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">TzeIn</span> {
-            <span class="ident">prevout</span>,
-            <span class="ident">witness</span>: <span class="ident">tze::Witness</span> {
-                <span class="ident">extension_id</span>,
-                <span class="ident">mode</span>,
-                <span class="ident">payload</span>: (),
+<span class="doccomment">/// Transaction encoding and decoding functions conforming to [ZIP 222].
+///
+/// [ZIP 222]: https://zips.z.cash/zip-0222#encoding-in-transactions
+</span><span class="kw">impl </span>TzeIn&lt;()&gt; {
+    <span class="doccomment">/// Convenience constructor
+    </span><span class="kw">pub fn </span>new(prevout: OutPoint, extension_id: u32, mode: u32) -&gt; <span class="self">Self </span>{
+        TzeIn {
+            prevout,
+            witness: tze::Witness {
+                extension_id,
+                mode,
+                payload: (),
             },
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TzeIn</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">Authorized</span> <span class="kw">as</span> <span class="ident">Authorization</span><span class="op">&gt;</span><span class="ident">::Witness</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Read witness metadata &amp; payload</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Used to decode the encoded form used within a serialized</span>
-    <span class="doccomment">/// transaction.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">prevout</span> <span class="op">=</span> <span class="ident">OutPoint::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
+<span class="kw">impl </span>TzeIn&lt;&lt;Authorized <span class="kw">as </span>Authorization&gt;::Witness&gt; {
+    <span class="doccomment">/// Read witness metadata &amp; payload
+    ///
+    /// Used to decode the encoded form used within a serialized
+    /// transaction.
+    </span><span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: <span class="kw-2">&amp;mut </span>R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>prevout = OutPoint::read(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">extension_id</span> <span class="op">=</span> <span class="ident">CompactSize::read_t</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">CompactSize::read_t</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">payload</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">read_u8</span>())<span class="question-mark">?</span>;
+        <span class="kw">let </span>extension_id = CompactSize::read_t(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+        <span class="kw">let </span>mode = CompactSize::read_t(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+        <span class="kw">let </span>payload = Vector::read(<span class="kw-2">&amp;mut </span>reader, |r| r.read_u8())<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">TzeIn</span> {
-            <span class="ident">prevout</span>,
-            <span class="ident">witness</span>: <span class="ident">tze::Witness</span> {
-                <span class="ident">extension_id</span>,
-                <span class="ident">mode</span>,
-                <span class="ident">payload</span>: <span class="ident">tze::AuthData</span>(<span class="ident">payload</span>),
+        <span class="prelude-val">Ok</span>(TzeIn {
+            prevout,
+            witness: tze::Witness {
+                extension_id,
+                mode,
+                payload: tze::AuthData(payload),
             },
         })
     }
 
-    <span class="doccomment">/// Write prevout, extension, and mode followed by witness data.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This calls [`write_without_witness`] to serialize witness metadata,</span>
-    <span class="doccomment">/// then appends the witness bytes themselves. This is the encoded</span>
-    <span class="doccomment">/// form that is used in a serialized transaction.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`write_without_witness`]: TzeIn::write_without_witness</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">write_without_witness</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>)<span class="question-mark">?</span>;
-        <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">witness</span>.<span class="ident">payload</span>.<span class="number">0</span>, <span class="op">|</span><span class="ident">w</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">w</span>.<span class="ident">write_u8</span>(<span class="kw-2">*</span><span class="ident">b</span>))
+    <span class="doccomment">/// Write prevout, extension, and mode followed by witness data.
+    ///
+    /// This calls [`write_without_witness`] to serialize witness metadata,
+    /// then appends the witness bytes themselves. This is the encoded
+    /// form that is used in a serialized transaction.
+    ///
+    /// [`write_without_witness`]: TzeIn::write_without_witness
+    </span><span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        <span class="self">self</span>.write_without_witness(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
+        Vector::write(<span class="kw-2">&amp;mut </span>writer, <span class="kw-2">&amp;</span><span class="self">self</span>.witness.payload.<span class="number">0</span>, |w, b| w.write_u8(<span class="kw-2">*</span>b))
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TzeOut</span> {
-    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">Amount</span>,
-    <span class="kw">pub</span> <span class="ident">precondition</span>: <span class="ident">tze::Precondition</span>,
+<span class="attribute">#[derive(Clone, Debug, PartialEq)]
+</span><span class="kw">pub struct </span>TzeOut {
+    <span class="kw">pub </span>value: Amount,
+    <span class="kw">pub </span>precondition: tze::Precondition,
 }
 
-<span class="kw">impl</span> <span class="ident">TzeOut</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">8</span>];
-            <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">tmp</span>)<span class="question-mark">?</span>;
-            <span class="ident">Amount::from_nonnegative_i64_le_bytes</span>(<span class="ident">tmp</span>)
+<span class="kw">impl </span>TzeOut {
+    <span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: <span class="kw-2">&amp;mut </span>R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>value = {
+            <span class="kw">let </span><span class="kw-2">mut </span>tmp = [<span class="number">0</span>; <span class="number">8</span>];
+            reader.read_exact(<span class="kw-2">&amp;mut </span>tmp)<span class="question-mark">?</span>;
+            Amount::from_nonnegative_i64_le_bytes(tmp)
         }
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="string">&quot;value out of range&quot;</span>))<span class="question-mark">?</span>;
+        .map_err(|<span class="kw">_</span>| io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;value out of range&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">extension_id</span> <span class="op">=</span> <span class="ident">CompactSize::read_t</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">mode</span> <span class="op">=</span> <span class="ident">CompactSize::read_t</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">payload</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span>.<span class="ident">read_u8</span>())<span class="question-mark">?</span>;
+        <span class="kw">let </span>extension_id = CompactSize::read_t(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+        <span class="kw">let </span>mode = CompactSize::read_t(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+        <span class="kw">let </span>payload = Vector::read(<span class="kw-2">&amp;mut </span>reader, |r| r.read_u8())<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">TzeOut</span> {
-            <span class="ident">value</span>,
-            <span class="ident">precondition</span>: <span class="ident">tze::Precondition</span> {
-                <span class="ident">extension_id</span>,
-                <span class="ident">mode</span>,
-                <span class="ident">payload</span>,
+        <span class="prelude-val">Ok</span>(TzeOut {
+            value,
+            precondition: tze::Precondition {
+                extension_id,
+                mode,
+                payload,
             },
         })
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">value</span>.<span class="ident">to_i64_le_bytes</span>())<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.value.to_i64_le_bytes())<span class="question-mark">?</span>;
 
-        <span class="ident">CompactSize::write</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-            <span class="ident">usize::try_from</span>(<span class="self">self</span>.<span class="ident">precondition</span>.<span class="ident">extension_id</span>).<span class="ident">map_err</span>(<span class="ident">to_io_error</span>)<span class="question-mark">?</span>,
+        CompactSize::write(
+            <span class="kw-2">&amp;mut </span>writer,
+            usize::try_from(<span class="self">self</span>.precondition.extension_id).map_err(to_io_error)<span class="question-mark">?</span>,
         )<span class="question-mark">?</span>;
-        <span class="ident">CompactSize::write</span>(
-            <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-            <span class="ident">usize::try_from</span>(<span class="self">self</span>.<span class="ident">precondition</span>.<span class="ident">mode</span>).<span class="ident">map_err</span>(<span class="ident">to_io_error</span>)<span class="question-mark">?</span>,
+        CompactSize::write(
+            <span class="kw-2">&amp;mut </span>writer,
+            usize::try_from(<span class="self">self</span>.precondition.mode).map_err(to_io_error)<span class="question-mark">?</span>,
         )<span class="question-mark">?</span>;
-        <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">precondition</span>.<span class="ident">payload</span>, <span class="op">|</span><span class="ident">w</span>, <span class="ident">b</span><span class="op">|</span> {
-            <span class="ident">w</span>.<span class="ident">write_u8</span>(<span class="kw-2">*</span><span class="ident">b</span>)
+        Vector::write(<span class="kw-2">&amp;mut </span>writer, <span class="kw-2">&amp;</span><span class="self">self</span>.precondition.payload, |w, b| {
+            w.write_u8(<span class="kw-2">*</span>b)
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;test-dependencies&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">testing</span> {
-    <span class="kw">use</span> <span class="ident">proptest::collection::vec</span>;
-    <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(any(test, feature = <span class="string">&quot;test-dependencies&quot;</span>))]
+</span><span class="kw">pub mod </span>testing {
+    <span class="kw">use </span>proptest::collection::vec;
+    <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
 
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">consensus::BranchId</span>,
-        <span class="ident">extensions::transparent</span>::{<span class="ident">AuthData</span>, <span class="ident">Precondition</span>, <span class="ident">Witness</span>},
-        <span class="ident">transaction::components::amount::testing::arb_nonnegative_amount</span>,
-        <span class="ident">transaction::testing::arb_txid</span>,
+    <span class="kw">use crate</span>::{
+        consensus::BranchId,
+        extensions::transparent::{AuthData, Precondition, Witness},
+        transaction::components::amount::testing::arb_nonnegative_amount,
+        transaction::testing::arb_txid,
     };
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Authorized</span>, <span class="ident">Bundle</span>, <span class="ident">OutPoint</span>, <span class="ident">TzeIn</span>, <span class="ident">TzeOut</span>};
+    <span class="kw">use super</span>::{Authorized, Bundle, OutPoint, TzeIn, TzeOut};
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_outpoint</span>()(<span class="ident">txid</span> <span class="kw">in</span> <span class="ident">arb_txid</span>(), <span class="ident">n</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">OutPoint</span> {
-            <span class="ident">OutPoint::new</span>(<span class="ident">txid</span>, <span class="ident">n</span>)
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_outpoint()(txid <span class="kw">in </span>arb_txid(), n <span class="kw">in </span><span class="number">0</span>..<span class="number">100u32</span>) -&gt; OutPoint {
+            OutPoint::new(txid, n)
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_witness</span>()(<span class="ident">extension_id</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100u32</span>, <span class="ident">mode</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100u32</span>, <span class="ident">payload</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>(), <span class="number">32</span>..<span class="number">256</span>).<span class="ident">prop_map</span>(<span class="ident">AuthData</span>))  <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Witness</span><span class="op">&lt;</span><span class="ident">AuthData</span><span class="op">&gt;</span> {
-            <span class="ident">Witness</span> { <span class="ident">extension_id</span>, <span class="ident">mode</span>, <span class="ident">payload</span> }
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_witness()(extension_id <span class="kw">in </span><span class="number">0</span>..<span class="number">100u32</span>, mode <span class="kw">in </span><span class="number">0</span>..<span class="number">100u32</span>, payload <span class="kw">in </span>vec(any::&lt;u8&gt;(), <span class="number">32</span>..<span class="number">256</span>).prop_map(AuthData))  -&gt; Witness&lt;AuthData&gt; {
+            Witness { extension_id, mode, payload }
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_tzein</span>()(<span class="ident">prevout</span> <span class="kw">in</span> <span class="ident">arb_outpoint</span>(), <span class="ident">witness</span> <span class="kw">in</span> <span class="ident">arb_witness</span>()) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TzeIn</span><span class="op">&lt;</span><span class="ident">AuthData</span><span class="op">&gt;</span> {
-            <span class="ident">TzeIn</span> { <span class="ident">prevout</span>, <span class="ident">witness</span> }
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_tzein()(prevout <span class="kw">in </span>arb_outpoint(), witness <span class="kw">in </span>arb_witness()) -&gt; TzeIn&lt;AuthData&gt; {
+            TzeIn { prevout, witness }
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_precondition</span>()(<span class="ident">extension_id</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100u32</span>, <span class="ident">mode</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100u32</span>, <span class="ident">payload</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">any</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>(), <span class="number">32</span>..<span class="number">256</span>))  <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Precondition</span> {
-            <span class="ident">Precondition</span> { <span class="ident">extension_id</span>, <span class="ident">mode</span>, <span class="ident">payload</span> }
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_precondition()(extension_id <span class="kw">in </span><span class="number">0</span>..<span class="number">100u32</span>, mode <span class="kw">in </span><span class="number">0</span>..<span class="number">100u32</span>, payload <span class="kw">in </span>vec(any::&lt;u8&gt;(), <span class="number">32</span>..<span class="number">256</span>))  -&gt; Precondition {
+            Precondition { extension_id, mode, payload }
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_tzeout</span>()(<span class="ident">value</span> <span class="kw">in</span> <span class="ident">arb_nonnegative_amount</span>(), <span class="ident">precondition</span> <span class="kw">in</span> <span class="ident">arb_precondition</span>()) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TzeOut</span> {
-            <span class="ident">TzeOut</span> { <span class="ident">value</span>, <span class="ident">precondition</span> }
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_tzeout()(value <span class="kw">in </span>arb_nonnegative_amount(), precondition <span class="kw">in </span>arb_precondition()) -&gt; TzeOut {
+            TzeOut { value, precondition }
         }
     }
 
-    <span class="macro">prop_compose!</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">arb_bundle</span>(<span class="ident">branch_id</span>: <span class="ident">BranchId</span>)(
-            <span class="ident">vin</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">arb_tzein</span>(), <span class="number">0</span>..<span class="number">10</span>),
-            <span class="ident">vout</span> <span class="kw">in</span> <span class="ident">vec</span>(<span class="ident">arb_tzeout</span>(), <span class="number">0</span>..<span class="number">10</span>),
-        ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bundle</span><span class="op">&lt;</span><span class="ident">Authorized</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-            <span class="kw">if</span> <span class="ident">branch_id</span> <span class="op">!</span><span class="op">=</span> <span class="ident">BranchId::ZFuture</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">vin</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="ident">vout</span>.<span class="ident">is_empty</span>()) {
-                <span class="prelude-val">None</span>
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Bundle</span> { <span class="ident">vin</span>, <span class="ident">vout</span>, <span class="ident">authorization</span>: <span class="ident">Authorized</span> })
+    <span class="macro">prop_compose! </span>{
+        <span class="kw">pub fn </span>arb_bundle(branch_id: BranchId)(
+            vin <span class="kw">in </span>vec(arb_tzein(), <span class="number">0</span>..<span class="number">10</span>),
+            vout <span class="kw">in </span>vec(arb_tzeout(), <span class="number">0</span>..<span class="number">10</span>),
+        ) -&gt; <span class="prelude-ty">Option</span>&lt;Bundle&lt;Authorized&gt;&gt; {
+            <span class="kw">if </span>branch_id != BranchId::ZFuture || (vin.is_empty() &amp;&amp; vout.is_empty()) {
+                <span class="prelude-val">None
+            </span>} <span class="kw">else </span>{
+                <span class="prelude-val">Some</span>(Bundle { vin, vout, authorization: Authorized })
             }
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="zcash_primitives" data-search-index-js="../../../../search-index.js" data-search-js="../../../../search.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

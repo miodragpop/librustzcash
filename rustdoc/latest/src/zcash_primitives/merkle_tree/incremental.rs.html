@@ -1,102 +1,102 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives&#x2F;src&#x2F;merkle_tree&#x2F;incremental.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>incremental.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../zcash_primitives/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
-<span id="2">  2</span>
-<span id="3">  3</span>
-<span id="4">  4</span>
-<span id="5">  5</span>
-<span id="6">  6</span>
-<span id="7">  7</span>
-<span id="8">  8</span>
-<span id="9">  9</span>
-<span id="10"> 10</span>
-<span id="11"> 11</span>
-<span id="12"> 12</span>
-<span id="13"> 13</span>
-<span id="14"> 14</span>
-<span id="15"> 15</span>
-<span id="16"> 16</span>
-<span id="17"> 17</span>
-<span id="18"> 18</span>
-<span id="19"> 19</span>
-<span id="20"> 20</span>
-<span id="21"> 21</span>
-<span id="22"> 22</span>
-<span id="23"> 23</span>
-<span id="24"> 24</span>
-<span id="25"> 25</span>
-<span id="26"> 26</span>
-<span id="27"> 27</span>
-<span id="28"> 28</span>
-<span id="29"> 29</span>
-<span id="30"> 30</span>
-<span id="31"> 31</span>
-<span id="32"> 32</span>
-<span id="33"> 33</span>
-<span id="34"> 34</span>
-<span id="35"> 35</span>
-<span id="36"> 36</span>
-<span id="37"> 37</span>
-<span id="38"> 38</span>
-<span id="39"> 39</span>
-<span id="40"> 40</span>
-<span id="41"> 41</span>
-<span id="42"> 42</span>
-<span id="43"> 43</span>
-<span id="44"> 44</span>
-<span id="45"> 45</span>
-<span id="46"> 46</span>
-<span id="47"> 47</span>
-<span id="48"> 48</span>
-<span id="49"> 49</span>
-<span id="50"> 50</span>
-<span id="51"> 51</span>
-<span id="52"> 52</span>
-<span id="53"> 53</span>
-<span id="54"> 54</span>
-<span id="55"> 55</span>
-<span id="56"> 56</span>
-<span id="57"> 57</span>
-<span id="58"> 58</span>
-<span id="59"> 59</span>
-<span id="60"> 60</span>
-<span id="61"> 61</span>
-<span id="62"> 62</span>
-<span id="63"> 63</span>
-<span id="64"> 64</span>
-<span id="65"> 65</span>
-<span id="66"> 66</span>
-<span id="67"> 67</span>
-<span id="68"> 68</span>
-<span id="69"> 69</span>
-<span id="70"> 70</span>
-<span id="71"> 71</span>
-<span id="72"> 72</span>
-<span id="73"> 73</span>
-<span id="74"> 74</span>
-<span id="75"> 75</span>
-<span id="76"> 76</span>
-<span id="77"> 77</span>
-<span id="78"> 78</span>
-<span id="79"> 79</span>
-<span id="80"> 80</span>
-<span id="81"> 81</span>
-<span id="82"> 82</span>
-<span id="83"> 83</span>
-<span id="84"> 84</span>
-<span id="85"> 85</span>
-<span id="86"> 86</span>
-<span id="87"> 87</span>
-<span id="88"> 88</span>
-<span id="89"> 89</span>
-<span id="90"> 90</span>
-<span id="91"> 91</span>
-<span id="92"> 92</span>
-<span id="93"> 93</span>
-<span id="94"> 94</span>
-<span id="95"> 95</span>
-<span id="96"> 96</span>
-<span id="97"> 97</span>
-<span id="98"> 98</span>
-<span id="99"> 99</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `zcash_primitives/src/merkle_tree/incremental.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>incremental.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../zcash_primitives/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../zcash_primitives/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
@@ -250,379 +250,257 @@
 <span id="250">250</span>
 <span id="251">251</span>
 <span id="252">252</span>
-<span id="253">253</span>
-<span id="254">254</span>
-<span id="255">255</span>
-<span id="256">256</span>
-<span id="257">257</span>
-<span id="258">258</span>
-<span id="259">259</span>
-<span id="260">260</span>
-<span id="261">261</span>
-<span id="262">262</span>
-<span id="263">263</span>
-<span id="264">264</span>
-<span id="265">265</span>
-<span id="266">266</span>
-<span id="267">267</span>
-<span id="268">268</span>
-<span id="269">269</span>
-<span id="270">270</span>
-<span id="271">271</span>
-<span id="272">272</span>
-<span id="273">273</span>
-<span id="274">274</span>
-<span id="275">275</span>
-<span id="276">276</span>
-<span id="277">277</span>
-<span id="278">278</span>
-<span id="279">279</span>
-<span id="280">280</span>
-<span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
-<span id="287">287</span>
-<span id="288">288</span>
-<span id="289">289</span>
-<span id="290">290</span>
-<span id="291">291</span>
-<span id="292">292</span>
-<span id="293">293</span>
-<span id="294">294</span>
-<span id="295">295</span>
-<span id="296">296</span>
-<span id="297">297</span>
-<span id="298">298</span>
-<span id="299">299</span>
-<span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Implementations of serialization and parsing for Orchard note commitment trees.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Implementations of serialization and parsing for Orchard note commitment trees.
 
-<span class="kw">use</span> <span class="ident">byteorder</span>::{<span class="ident">LittleEndian</span>, <span class="ident">ReadBytesExt</span>, <span class="ident">WriteBytesExt</span>};
-<span class="kw">use</span> <span class="ident">std::convert::TryFrom</span>;
-<span class="kw">use</span> <span class="ident">std::hash::Hash</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Read</span>, <span class="ident">Write</span>};
+</span><span class="kw">use </span>byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+<span class="kw">use </span>std::convert::{TryFrom, TryInto};
+<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
 
-<span class="kw">use</span> <span class="ident">incrementalmerkletree</span>::{
-    <span class="ident">bridgetree</span>::{
-        <span class="ident">AuthFragment</span>, <span class="ident">BridgeTree</span>, <span class="ident">Checkpoint</span>, <span class="ident">Frontier</span>, <span class="ident">Leaf</span>, <span class="ident">MerkleBridge</span>, <span class="ident">NonEmptyFrontier</span>,
-    },
-    <span class="ident">Hashable</span>, <span class="ident">Position</span>,
+<span class="kw">use </span>incrementalmerkletree::{
+    bridgetree::{AuthFragment, Frontier, Leaf, MerkleBridge, NonEmptyFrontier},
+    Hashable, Position,
 };
-<span class="kw">use</span> <span class="ident">orchard::tree::MerkleHashOrchard</span>;
-<span class="kw">use</span> <span class="ident">zcash_encoding</span>::{<span class="ident">Optional</span>, <span class="ident">Vector</span>};
+<span class="kw">use </span>orchard::tree::MerkleHashOrchard;
+<span class="kw">use </span>zcash_encoding::{Optional, Vector};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">CommitmentTree</span>, <span class="ident">HashSer</span>};
+<span class="kw">use super</span>::{CommitmentTree, HashSer};
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SER_V1</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
+<span class="kw">pub const </span>SER_V1: u8 = <span class="number">1</span>;
+<span class="kw">pub const </span>SER_V2: u8 = <span class="number">2</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_frontier_v0</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hashable</span> <span class="op">+</span> <span class="ident"><span class="kw">super</span>::Hashable</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">tree</span> <span class="op">=</span> <span class="ident">CommitmentTree::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(<span class="ident">tree</span>.<span class="ident">to_frontier</span>())
-}
-
-<span class="kw">impl</span> <span class="ident">HashSer</span> <span class="kw">for</span> <span class="ident">MerkleHashOrchard</span> {
-    <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="ident">Sized</span>,
+<span class="kw">impl </span>HashSer <span class="kw">for </span>MerkleHashOrchard {
+    <span class="kw">fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt;
+    <span class="kw">where
+        </span><span class="self">Self</span>: Sized,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">repr</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">32</span>];
-        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">repr</span>)<span class="question-mark">?</span>;
-        <span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident"><span class="self">Self</span>::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">repr</span>)).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-            <span class="ident">io::Error::new</span>(
-                <span class="ident">io::ErrorKind::InvalidInput</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>repr = [<span class="number">0u8</span>; <span class="number">32</span>];
+        reader.read_exact(<span class="kw-2">&amp;mut </span>repr)<span class="question-mark">?</span>;
+        &lt;<span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt;&gt;::from(<span class="self">Self</span>::from_bytes(<span class="kw-2">&amp;</span>repr)).ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
                 <span class="string">&quot;Non-canonical encoding of Pallas base field value.&quot;</span>,
             )
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">write</span><span class="op">&lt;</span><span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to_bytes</span>())
+    <span class="kw">fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.to_bytes())
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_nonempty_frontier_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">frontier</span>: <span class="kw-2">&amp;</span><span class="ident">NonEmptyFrontier</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">writer</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">frontier</span>.<span class="ident">position</span>()))<span class="question-mark">?</span>;
-    <span class="kw">match</span> <span class="ident">frontier</span>.<span class="ident">leaf</span>() {
-        <span class="ident">Leaf::Left</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">a</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>)<span class="question-mark">?</span>;
-            <span class="ident">Optional::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="prelude-val">None</span>, <span class="op">|</span><span class="ident">w</span>, <span class="ident">n</span>: <span class="kw-2">&amp;</span><span class="ident">H</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">write</span>(<span class="ident">w</span>))<span class="question-mark">?</span>;
-        }
-        <span class="ident">Leaf::Right</span>(<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">a</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>)<span class="question-mark">?</span>;
-            <span class="ident">Optional::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="prelude-val">Some</span>(<span class="ident">b</span>), <span class="op">|</span><span class="ident">w</span>, <span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">write</span>(<span class="ident">w</span>))<span class="question-mark">?</span>;
-        }
-    }
-    <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="kw-2">&amp;</span><span class="ident">frontier</span>.<span class="ident">ommers</span>(), <span class="op">|</span><span class="ident">w</span>, <span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">write</span>(<span class="ident">w</span>))<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(())
+<span class="doccomment">/// Writes a usize value encoded as a u64 in little-endian order. Since usize
+/// is platform-dependent, we consistently represent it as u64 in serialized
+/// formats.
+</span><span class="kw">pub fn </span>write_usize_leu64&lt;W: Write&gt;(<span class="kw-2">mut </span>writer: W, value: usize) -&gt; io::Result&lt;()&gt; {
+    <span class="comment">// Panic if we get a usize value that can&#39;t fit into a u64.
+    </span>writer.write_u64::&lt;LittleEndian&gt;(value.try_into().unwrap())
 }
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::redundant_closure</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_nonempty_frontier_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">NonEmptyFrontier</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">position</span> <span class="op">=</span> <span class="ident">read_position</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">left</span> <span class="op">=</span> <span class="ident">H::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">right</span> <span class="op">=</span> <span class="ident">Optional::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">H::read</span>)<span class="question-mark">?</span>;
-
-    <span class="kw">let</span> <span class="ident">leaf</span> <span class="op">=</span> <span class="ident">right</span>.<span class="ident">map_or_else</span>(
-        <span class="op">|</span><span class="op">|</span> <span class="ident">Leaf::Left</span>(<span class="ident">left</span>.<span class="ident">clone</span>()),
-        <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">Leaf::Right</span>(<span class="ident">left</span>.<span class="ident">clone</span>(), <span class="ident">r</span>),
-    );
-    <span class="kw">let</span> <span class="ident">ommers</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">H::read</span>(<span class="ident">r</span>))<span class="question-mark">?</span>;
-
-    <span class="ident">NonEmptyFrontier::from_parts</span>(<span class="ident">position</span>, <span class="ident">leaf</span>, <span class="ident">ommers</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-        <span class="ident">io::Error::new</span>(
-            <span class="ident">io::ErrorKind::InvalidInput</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;Parsing resulted in an invalid Merkle frontier: {:?}&quot;</span>, <span class="ident">err</span>),
-        )
-    })
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_frontier_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">frontier</span>: <span class="kw-2">&amp;</span><span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">Optional::write</span>(<span class="ident">writer</span>, <span class="ident">frontier</span>.<span class="ident">value</span>(), <span class="ident">write_nonempty_frontier_v1</span>)
-}
-
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::redundant_closure</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_frontier_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">Optional::read</span>(<span class="ident">reader</span>, <span class="ident">read_nonempty_frontier_v1</span>)<span class="question-mark">?</span> {
-        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Frontier::empty</span>()),
-        <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Frontier::try_from</span>(<span class="ident">f</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-            <span class="ident">io::Error::new</span>(
-                <span class="ident">io::ErrorKind::InvalidInput</span>,
-                <span class="macro">format!</span>(<span class="string">&quot;Parsing resulted in an invalid Merkle frontier: {:?}&quot;</span>, <span class="ident">err</span>),
-            )
-        }),
-    }
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_auth_fragment_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">fragment</span>: <span class="kw-2">&amp;</span><span class="ident">AuthFragment</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">writer</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">fragment</span>.<span class="ident">position</span>()))<span class="question-mark">?</span>;
-    <span class="ident">writer</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">fragment</span>.<span class="ident">altitudes_observed</span>() <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
-    <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">fragment</span>.<span class="ident">values</span>(), <span class="op">|</span><span class="ident">w</span>, <span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">write</span>(<span class="ident">w</span>))
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_position</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Position</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="ident">Position::from</span>(<span class="ident">reader</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>))
-}
-
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::redundant_closure</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_auth_fragment_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">AuthFragment</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">position</span> <span class="op">=</span> <span class="ident">read_position</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">alts_observed</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>;
-    <span class="kw">let</span> <span class="ident">values</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">H::read</span>(<span class="ident">r</span>))<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(<span class="ident">AuthFragment::from_parts</span>(<span class="ident">position</span>, <span class="ident">alts_observed</span>, <span class="ident">values</span>))
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_bridge_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">bridge</span>: <span class="kw-2">&amp;</span><span class="ident">MerkleBridge</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">Optional::write</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-        <span class="ident">bridge</span>.<span class="ident">prior_position</span>().<span class="ident">map</span>(<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span><span class="ident">::from</span>),
-        <span class="op">|</span><span class="ident">w</span>, <span class="ident">n</span><span class="op">|</span> <span class="ident">w</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">n</span>),
-    )<span class="question-mark">?</span>;
-    <span class="ident">Vector::write</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-        <span class="kw-2">&amp;</span><span class="ident">bridge</span>.<span class="ident">auth_fragments</span>().<span class="ident">iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-        <span class="op">|</span><span class="ident">w</span>, (<span class="ident">i</span>, <span class="ident">a</span>)<span class="op">|</span> {
-            <span class="ident">w</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
-            <span class="ident">write_auth_fragment_v1</span>(<span class="ident">w</span>, <span class="ident">a</span>)
-        },
-    )<span class="question-mark">?</span>;
-    <span class="ident">write_nonempty_frontier_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">bridge</span>.<span class="ident">frontier</span>())<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_bridge_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">MerkleBridge</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">prior_position</span> <span class="op">=</span> <span class="ident">Optional::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">read_position</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">auth_fragments</span> <span class="op">=</span> <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> {
-        <span class="prelude-val">Ok</span>((
-            <span class="ident">r</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>,
-            <span class="ident">read_auth_fragment_v1</span>(<span class="ident">r</span>)<span class="question-mark">?</span>,
-        ))
-    })<span class="question-mark">?</span>
-    .<span class="ident">into_iter</span>()
-    .<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">frontier</span> <span class="op">=</span> <span class="ident">read_nonempty_frontier_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(<span class="ident">MerkleBridge::from_parts</span>(
-        <span class="ident">prior_position</span>,
-        <span class="ident">auth_fragments</span>,
-        <span class="ident">frontier</span>,
-    ))
-}
-
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EMPTY_CHECKPOINT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BRIDGE_CHECKPOINT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_checkpoint_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">checkpoint</span>: <span class="kw-2">&amp;</span><span class="ident">Checkpoint</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">checkpoint</span> {
-        <span class="ident">Checkpoint::Empty</span> <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">writer</span>.<span class="ident">write_u8</span>(<span class="ident">EMPTY_CHECKPOINT</span>)<span class="question-mark">?</span>;
-        }
-        <span class="ident">Checkpoint::AtIndex</span>(<span class="ident">i</span>, <span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> {
-            <span class="ident">writer</span>.<span class="ident">write_u8</span>(<span class="ident">BRIDGE_CHECKPOINT</span>)<span class="question-mark">?</span>;
-            <span class="ident">writer</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="kw-2">*</span><span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
-            <span class="ident">write_bridge_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">b</span>)<span class="question-mark">?</span>;
-        }
-    }
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_checkpoint_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Checkpoint</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">reader</span>.<span class="ident">read_u8</span>()<span class="question-mark">?</span> {
-        <span class="ident">EMPTY_CHECKPOINT</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Checkpoint::Empty</span>),
-        <span class="ident">BRIDGE_CHECKPOINT</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Checkpoint::AtIndex</span>(
-            <span class="ident">reader</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>,
-            <span class="ident">read_bridge_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>)<span class="question-mark">?</span>,
-        )),
-        <span class="ident">flag</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::new</span>(
-            <span class="ident">io::ErrorKind::InvalidInput</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;Unrecognized checkpoint variant identifier: {:?}&quot;</span>, <span class="ident">flag</span>),
-        )),
-    }
-}
-
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_tree_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">tree</span>: <span class="kw-2">&amp;</span><span class="ident">BridgeTree</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">tree</span>.<span class="ident">bridges</span>(), <span class="op">|</span><span class="ident">w</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">write_bridge_v1</span>(<span class="ident">w</span>, <span class="ident">b</span>))<span class="question-mark">?</span>;
-    <span class="ident">Vector::write</span>(
-        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>,
-        <span class="kw-2">&amp;</span><span class="ident">tree</span>.<span class="ident">witnessable_leaves</span>().<span class="ident">iter</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
-        <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">w</span>, (<span class="ident">a</span>, <span class="ident">i</span>)<span class="op">|</span> {
-            <span class="ident">a</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">w</span>)<span class="question-mark">?</span>;
-            <span class="ident">w</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(())
-        },
-    )<span class="question-mark">?</span>;
-    <span class="ident">Vector::write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">tree</span>.<span class="ident">checkpoints</span>(), <span class="op">|</span><span class="ident">w</span>, <span class="ident">c</span><span class="op">|</span> {
-        <span class="ident">write_checkpoint_v1</span>(<span class="ident">w</span>, <span class="ident">c</span>)
-    })<span class="question-mark">?</span>;
-    <span class="ident">writer</span>.<span class="ident">write_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>(<span class="ident">tree</span>.<span class="ident">max_checkpoints</span>() <span class="kw">as</span> <span class="ident">u64</span>)<span class="question-mark">?</span>;
-
-    <span class="prelude-val">Ok</span>(())
-}
-
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::redundant_closure</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_tree_v1</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hashable</span> <span class="op">+</span> <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">BridgeTree</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="ident">BridgeTree::from_parts</span>(
-        <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">read_bridge_v1</span>(<span class="ident">r</span>))<span class="question-mark">?</span>,
-        <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">r</span><span class="op">|</span> {
-            <span class="prelude-val">Ok</span>((<span class="ident">H::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">r</span>)<span class="question-mark">?</span>, <span class="ident">r</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>))
-        })<span class="question-mark">?</span>
-        .<span class="ident">into_iter</span>()
-        .<span class="ident">collect</span>(),
-        <span class="ident">Vector::read</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">read_checkpoint_v1</span>(<span class="ident">r</span>))<span class="question-mark">?</span>,
-        <span class="ident">reader</span>.<span class="ident">read_u64</span>::<span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>,
-    )
-    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> {
-        <span class="ident">io::Error::new</span>(
-            <span class="ident">io::ErrorKind::InvalidInput</span>,
+<span class="doccomment">/// Reads a usize value encoded as a u64 in little-endian order. Since usize
+/// is platform-dependent, we consistently represent it as u64 in serialized
+/// formats.
+</span><span class="kw">pub fn </span>read_leu64_usize&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;usize&gt; {
+    reader.read_u64::&lt;LittleEndian&gt;()<span class="question-mark">?</span>.try_into().map_err(|e| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
             <span class="macro">format!</span>(
-                <span class="string">&quot;Consistency violation found when attempting to deserialize Merkle tree: {:?}&quot;</span>,
-                <span class="ident">err</span>
+                <span class="string">&quot;usize could not be decoded from a 64-bit value on this platform: {:?}&quot;</span>,
+                e
             ),
         )
     })
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_tree</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span>, <span class="ident">W</span>: <span class="ident">Write</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="ident">W</span>,
-    <span class="ident">tree</span>: <span class="kw-2">&amp;</span><span class="ident">BridgeTree</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="ident">writer</span>.<span class="ident">write_u8</span>(<span class="ident">SER_V1</span>)<span class="question-mark">?</span>;
-    <span class="ident">write_tree_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">writer</span>, <span class="ident">tree</span>)
+<span class="kw">pub fn </span>write_position&lt;W: Write&gt;(<span class="kw-2">mut </span>writer: W, position: Position) -&gt; io::Result&lt;()&gt; {
+    write_usize_leu64(<span class="kw-2">&amp;mut </span>writer, position.into())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_tree</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hashable</span> <span class="op">+</span> <span class="ident">HashSer</span> <span class="op">+</span> <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Clone</span>, <span class="ident">R</span>: <span class="ident">Read</span><span class="op">&gt;</span>(
-    <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>,
-) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">BridgeTree</span><span class="op">&lt;</span><span class="ident">H</span>, <span class="number">32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">reader</span>.<span class="ident">read_u8</span>()<span class="question-mark">?</span> {
-        <span class="ident">SER_V1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">read_tree_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">reader</span>),
-        <span class="ident">flag</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::new</span>(
-            <span class="ident">io::ErrorKind::InvalidInput</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;Unrecognized tree serialization version: {:?}&quot;</span>, <span class="ident">flag</span>),
+<span class="kw">pub fn </span>read_position&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;Position&gt; {
+    read_leu64_usize(<span class="kw-2">&amp;mut </span>reader).map(Position::from)
+}
+
+<span class="kw">pub fn </span>read_frontier_v0&lt;H: Hashable + <span class="kw">super</span>::Hashable, R: Read&gt;(
+    <span class="kw-2">mut </span>reader: R,
+) -&gt; io::Result&lt;Frontier&lt;H, <span class="number">32</span>&gt;&gt; {
+    <span class="kw">let </span>tree = CommitmentTree::read(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(tree.to_frontier())
+}
+
+<span class="kw">pub fn </span>write_nonempty_frontier_v1&lt;H: HashSer, W: Write&gt;(
+    <span class="kw-2">mut </span>writer: W,
+    frontier: <span class="kw-2">&amp;</span>NonEmptyFrontier&lt;H&gt;,
+) -&gt; io::Result&lt;()&gt; {
+    write_position(<span class="kw-2">&amp;mut </span>writer, frontier.position())<span class="question-mark">?</span>;
+    <span class="kw">match </span>frontier.leaf() {
+        Leaf::Left(a) =&gt; {
+            a.write(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
+            Optional::write(<span class="kw-2">&amp;mut </span>writer, <span class="prelude-val">None</span>, |w, n: <span class="kw-2">&amp;</span>H| n.write(w))<span class="question-mark">?</span>;
+        }
+        Leaf::Right(a, b) =&gt; {
+            a.write(<span class="kw-2">&amp;mut </span>writer)<span class="question-mark">?</span>;
+            Optional::write(<span class="kw-2">&amp;mut </span>writer, <span class="prelude-val">Some</span>(b), |w, n| n.write(w))<span class="question-mark">?</span>;
+        }
+    }
+    Vector::write(<span class="kw-2">&amp;mut </span>writer, frontier.ommers(), |w, e| e.write(w))<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="attribute">#[allow(clippy::redundant_closure)]
+</span><span class="kw">pub fn </span>read_nonempty_frontier_v1&lt;H: HashSer + Clone, R: Read&gt;(
+    <span class="kw-2">mut </span>reader: R,
+) -&gt; io::Result&lt;NonEmptyFrontier&lt;H&gt;&gt; {
+    <span class="kw">let </span>position = read_position(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+    <span class="kw">let </span>left = H::read(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+    <span class="kw">let </span>right = Optional::read(<span class="kw-2">&amp;mut </span>reader, H::read)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>leaf = right.map_or_else(
+        || Leaf::Left(left.clone()),
+        |r| Leaf::Right(left.clone(), r),
+    );
+    <span class="kw">let </span>ommers = Vector::read(<span class="kw-2">&amp;mut </span>reader, |r| H::read(r))<span class="question-mark">?</span>;
+
+    NonEmptyFrontier::from_parts(position, leaf, ommers).map_err(|err| {
+        io::Error::new(
+            io::ErrorKind::InvalidInput,
+            <span class="macro">format!</span>(<span class="string">&quot;Parsing resulted in an invalid Merkle frontier: {:?}&quot;</span>, err),
+        )
+    })
+}
+
+<span class="kw">pub fn </span>write_frontier_v1&lt;H: HashSer, W: Write&gt;(
+    writer: W,
+    frontier: <span class="kw-2">&amp;</span>Frontier&lt;H, <span class="number">32</span>&gt;,
+) -&gt; io::Result&lt;()&gt; {
+    Optional::write(writer, frontier.value(), write_nonempty_frontier_v1)
+}
+
+<span class="attribute">#[allow(clippy::redundant_closure)]
+</span><span class="kw">pub fn </span>read_frontier_v1&lt;H: HashSer + Clone, R: Read&gt;(reader: R) -&gt; io::Result&lt;Frontier&lt;H, <span class="number">32</span>&gt;&gt; {
+    <span class="kw">match </span>Optional::read(reader, read_nonempty_frontier_v1)<span class="question-mark">? </span>{
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Ok</span>(Frontier::empty()),
+        <span class="prelude-val">Some</span>(f) =&gt; Frontier::try_from(f).map_err(|err| {
+            io::Error::new(
+                io::ErrorKind::InvalidInput,
+                <span class="macro">format!</span>(<span class="string">&quot;Parsing resulted in an invalid Merkle frontier: {:?}&quot;</span>, err),
+            )
+        }),
+    }
+}
+
+<span class="kw">pub fn </span>write_auth_fragment_v1&lt;H: HashSer, W: Write&gt;(
+    <span class="kw-2">mut </span>writer: W,
+    fragment: <span class="kw-2">&amp;</span>AuthFragment&lt;H&gt;,
+) -&gt; io::Result&lt;()&gt; {
+    write_position(<span class="kw-2">&amp;mut </span>writer, fragment.position())<span class="question-mark">?</span>;
+    write_usize_leu64(<span class="kw-2">&amp;mut </span>writer, fragment.altitudes_observed())<span class="question-mark">?</span>;
+    Vector::write(<span class="kw-2">&amp;mut </span>writer, fragment.values(), |w, a| a.write(w))
+}
+
+<span class="attribute">#[allow(clippy::redundant_closure)]
+</span><span class="kw">pub fn </span>read_auth_fragment_v1&lt;H: HashSer, R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;AuthFragment&lt;H&gt;&gt; {
+    <span class="kw">let </span>position = read_position(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+    <span class="kw">let </span>alts_observed = read_leu64_usize(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+    <span class="kw">let </span>values = Vector::read(<span class="kw-2">&amp;mut </span>reader, |r| H::read(r))<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(AuthFragment::from_parts(position, alts_observed, values))
+}
+
+<span class="kw">pub fn </span>write_bridge_v1&lt;H: HashSer + Ord, W: Write&gt;(
+    <span class="kw-2">mut </span>writer: W,
+    bridge: <span class="kw-2">&amp;</span>MerkleBridge&lt;H&gt;,
+) -&gt; io::Result&lt;()&gt; {
+    Optional::write(<span class="kw-2">&amp;mut </span>writer, bridge.prior_position(), |w, pos| {
+        write_position(w, pos)
+    })<span class="question-mark">?</span>;
+    Vector::write(
+        <span class="kw-2">&amp;mut </span>writer,
+        <span class="kw-2">&amp;</span>bridge.auth_fragments().iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+        |<span class="kw-2">mut </span>w, (pos, a)| {
+            write_position(<span class="kw-2">&amp;mut </span>w, <span class="kw-2">**</span>pos)<span class="question-mark">?</span>;
+            write_auth_fragment_v1(w, a)
+        },
+    )<span class="question-mark">?</span>;
+    write_nonempty_frontier_v1(<span class="kw-2">&amp;mut </span>writer, bridge.frontier())<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(())
+}
+
+<span class="kw">pub fn </span>read_bridge_v1&lt;H: HashSer + Ord + Clone, R: Read&gt;(
+    <span class="kw-2">mut </span>reader: R,
+) -&gt; io::Result&lt;MerkleBridge&lt;H&gt;&gt; {
+    <span class="kw">let </span>prior_position = Optional::read(<span class="kw-2">&amp;mut </span>reader, read_position)<span class="question-mark">?</span>;
+    <span class="kw">let </span>auth_fragments = Vector::read(<span class="kw-2">&amp;mut </span>reader, |<span class="kw-2">mut </span>r| {
+        <span class="prelude-val">Ok</span>((read_position(<span class="kw-2">&amp;mut </span>r)<span class="question-mark">?</span>, read_auth_fragment_v1(r)<span class="question-mark">?</span>))
+    })<span class="question-mark">?
+    </span>.into_iter()
+    .collect();
+    <span class="kw">let </span>frontier = read_nonempty_frontier_v1(<span class="kw-2">&amp;mut </span>reader)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(MerkleBridge::from_parts(
+        prior_position,
+        auth_fragments,
+        frontier,
+    ))
+}
+
+<span class="kw">pub fn </span>write_bridge&lt;H: HashSer + Ord, W: Write&gt;(
+    <span class="kw-2">mut </span>writer: W,
+    bridge: <span class="kw-2">&amp;</span>MerkleBridge&lt;H&gt;,
+) -&gt; io::Result&lt;()&gt; {
+    writer.write_u8(SER_V1)<span class="question-mark">?</span>;
+    write_bridge_v1(writer, bridge)
+}
+
+<span class="kw">pub fn </span>read_bridge&lt;H: HashSer + Ord + Clone, R: Read&gt;(
+    <span class="kw-2">mut </span>reader: R,
+) -&gt; io::Result&lt;MerkleBridge&lt;H&gt;&gt; {
+    <span class="kw">match </span>reader.read_u8()<span class="question-mark">? </span>{
+        SER_V1 =&gt; read_bridge_v1(<span class="kw-2">&amp;mut </span>reader),
+        flag =&gt; <span class="prelude-val">Err</span>(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            <span class="macro">format!</span>(<span class="string">&quot;Unrecognized serialization version: {:?}&quot;</span>, flag),
         )),
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident">proptest::prelude</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
 
-    <span class="kw">use</span> <span class="ident">incrementalmerkletree::bridgetree::Frontier</span>;
+    <span class="kw">use </span>incrementalmerkletree::bridgetree::Frontier;
 
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::{
-        <span class="ident">merkle_tree::testing::arb_commitment_tree</span>,
-        <span class="ident">sapling</span>::{<span class="ident">testing</span> <span class="kw">as</span> <span class="ident">sapling</span>, <span class="ident">Node</span>},
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use crate</span>::{
+        merkle_tree::testing::arb_commitment_tree,
+        sapling::{testing <span class="kw">as </span>sapling, Node},
     };
 
-    <span class="macro">proptest!</span> {
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">frontier_serialization_v0</span>(<span class="ident">t</span> <span class="kw">in</span> <span class="ident">arb_commitment_tree</span>(<span class="number">0</span>, <span class="ident">sapling::arb_node</span>()))
+    <span class="macro">proptest! </span>{
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>frontier_serialization_v0(t <span class="kw">in </span>arb_commitment_tree(<span class="number">0</span>, sapling::arb_node(), <span class="number">32</span>))
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-            <span class="ident">t</span>.<span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">frontier</span>: <span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">Node</span>, <span class="number">32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">read_frontier_v0</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[..]).<span class="ident">unwrap</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>buffer = <span class="macro">vec!</span>[];
+            t.write(<span class="kw-2">&amp;mut </span>buffer).unwrap();
+            <span class="kw">let </span>frontier: Frontier&lt;Node, <span class="number">32</span>&gt; = read_frontier_v0(<span class="kw-2">&amp;</span>buffer[..]).unwrap();
 
-            <span class="kw">let</span> <span class="ident">expected</span>: <span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">Node</span>, <span class="number">32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">to_frontier</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">frontier</span>, <span class="ident">expected</span>);
+            <span class="kw">let </span>expected: Frontier&lt;Node, <span class="number">32</span>&gt; = t.to_frontier();
+            <span class="macro">assert_eq!</span>(frontier, expected);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">frontier_serialization_v1</span>(<span class="ident">t</span> <span class="kw">in</span> <span class="ident">arb_commitment_tree</span>(<span class="number">1</span>, <span class="ident">sapling::arb_node</span>()))
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>frontier_serialization_v1(t <span class="kw">in </span>arb_commitment_tree(<span class="number">1</span>, sapling::arb_node(), <span class="number">32</span>))
         {
-            <span class="kw">let</span> <span class="ident">original</span>: <span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">Node</span>, <span class="number">32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">t</span>.<span class="ident">to_frontier</span>();
+            <span class="kw">let </span>original: Frontier&lt;Node, <span class="number">32</span>&gt; = t.to_frontier();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-            <span class="ident">write_frontier_v1</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>, <span class="kw-2">&amp;</span><span class="ident">original</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">read</span>: <span class="ident">Frontier</span><span class="op">&lt;</span><span class="ident">Node</span>, <span class="number">32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">read_frontier_v1</span>(<span class="kw-2">&amp;</span><span class="ident">buffer</span>[..]).<span class="ident">unwrap</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>buffer = <span class="macro">vec!</span>[];
+            write_frontier_v1(<span class="kw-2">&amp;mut </span>buffer, <span class="kw-2">&amp;</span>original).unwrap();
+            <span class="kw">let </span>read: Frontier&lt;Node, <span class="number">32</span>&gt; = read_frontier_v1(<span class="kw-2">&amp;</span>buffer[..]).unwrap();
 
-            <span class="macro">assert_eq!</span>(<span class="ident">read</span>, <span class="ident">original</span>);
+            <span class="macro">assert_eq!</span>(read, original);
         }
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>

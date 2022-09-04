@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["arb_extended_spending_key",""],["arb_shielded_addr",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["arb_extended_spending_key",""],["arb_shielded_addr",""]]};
