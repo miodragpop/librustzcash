@@ -3,7 +3,7 @@ var sourcesIndex = JSON.parse('{\
 "f4jumble":["",[],["lib.rs"]],\
 "zcash_address":["",[["kind",[["unified",[],["address.rs","fvk.rs","ivk.rs"]]],["p2pkh.rs","p2sh.rs","sapling.rs","sprout.rs","unified.rs"]]],["convert.rs","encoding.rs","kind.rs","lib.rs"]],\
 "zcash_client_backend":["",[["data_api",[],["chain.rs","error.rs","wallet.rs"]],["proto",[],["compact_formats.rs"]]],["address.rs","data_api.rs","decrypt.rs","encoding.rs","keys.rs","lib.rs","proto.rs","scan.rs","wallet.rs","welding_rig.rs","zip321.rs"]],\
-"zcash_client_sqlite":["",[["chain",[],["init.rs"]],["wallet",[],["init.rs","transact.rs"]]],["chain.rs","error.rs","lib.rs","prepared.rs","wallet.rs"]],\
+"zcash_client_sqlite":["",[["chain",[],["init.rs"]],["wallet",[["init",[["migrations",[],["addresses_table.rs"]]],["migrations.rs"]]],["init.rs","transact.rs"]]],["chain.rs","error.rs","lib.rs","prepared.rs","wallet.rs"]],\
 "zcash_encoding":["",[],["lib.rs"]],\
 "zcash_extensions":["",[["consensus",[],["transparent.rs"]],["transparent",[],["demo.rs"]]],["consensus.rs","lib.rs","transparent.rs"]],\
 "zcash_history":["",[],["entry.rs","lib.rs","node_data.rs","tree.rs","version.rs"]],\

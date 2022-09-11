@@ -1275,8 +1275,6 @@
 <span id="1275">1275</span>
 <span id="1276">1276</span>
 <span id="1277">1277</span>
-<span id="1278">1278</span>
-<span id="1279">1279</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implementation of a Merkle tree of commitments used to prove the existence of notes.
 
 </span><span class="kw">use </span>byteorder::{LittleEndian, ReadBytesExt};
@@ -1286,7 +1284,6 @@
     Altitude,
 };
 <span class="kw">use </span>std::collections::VecDeque;
-<span class="kw">use </span>std::convert::TryFrom;
 <span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
 <span class="kw">use </span>std::iter::repeat;
 <span class="kw">use </span>zcash_encoding::{Optional, Vector};
@@ -1899,7 +1896,6 @@
 </span><span class="kw">mod </span>tests {
     <span class="kw">use </span>incrementalmerkletree::bridgetree::Frontier;
     <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
-    <span class="kw">use </span>std::convert::TryInto;
     <span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
 
     <span class="kw">use </span><span class="kw">crate</span>::sapling::{testing::arb_node, Node};
@@ -2557,4 +2553,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

@@ -503,11 +503,29 @@
 <span id="503">503</span>
 <span id="504">504</span>
 <span id="505">505</span>
-</pre><pre class="rust"><code><span class="kw">use </span>hdwallet::{ExtendedPrivKey, ExtendedPubKey, KeyIndex};
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+</pre><pre class="rust"><code><span class="kw">use </span>hdwallet::{
+    traits::{Deserialize, Serialize},
+    ExtendedPrivKey, ExtendedPubKey, KeyIndex,
+};
 <span class="kw">use </span>ripemd::Digest <span class="kw">as </span>RipemdDigest;
 <span class="kw">use </span>secp256k1::PublicKey;
 <span class="kw">use </span>sha2::{Digest <span class="kw">as </span>Sha2Digest, Sha256};
-<span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use crate</span>::{consensus, keys::prf_expand_vec, zip32::AccountId};
 
@@ -568,6 +586,20 @@
             </span>.derive_private_key(KeyIndex::Normal(<span class="number">1</span>))<span class="question-mark">?
             </span>.derive_private_key(KeyIndex::Normal(child_index))
             .map(|k| k.private_key)
+    }
+
+    <span class="doccomment">/// Returns the `AccountPrivKey` serialized using the encoding for a
+    /// [BIP 32](https://en.bitcoin.it/wiki/BIP_0032) ExtendedPrivKey
+    </span><span class="kw">pub fn </span>to_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.serialize()
+    }
+
+    <span class="doccomment">/// Decodes the `AccountPrivKey` from the encoding specified for a
+    /// [BIP 32](https://en.bitcoin.it/wiki/BIP_0032) ExtendedPrivKey
+    </span><span class="kw">pub fn </span>from_bytes(b: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        ExtendedPrivKey::deserialize(b)
+            .map(AccountPrivKey::from_extended_privkey)
+            .ok()
     }
 }
 
@@ -1009,4 +1041,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

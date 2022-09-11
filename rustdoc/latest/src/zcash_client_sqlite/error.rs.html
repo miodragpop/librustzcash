@@ -137,6 +137,18 @@
 <span id="137">137</span>
 <span id="138">138</span>
 <span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Error types for problems that may arise when reading or storing wallet data to SQLite.
 
 </span><span class="kw">use </span>std::error;
@@ -181,6 +193,9 @@
 
     <span class="doccomment">/// Base58 decoding error
     </span>Base58(bs58::decode::Error),
+
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    </span>HdwalletError(hdwallet::error::Error),
 
     <span class="doccomment">/// Base58 decoding error
     </span>TransparentAddress(TransparentCodecError),
@@ -229,6 +244,8 @@
                 <span class="macro">write!</span>(f, <span class="string">&quot;A rewind must be either of less than {} blocks, or at least back to block {} for your wallet; the requested height was {}.&quot;</span>, PRUNING_HEIGHT, h, r),
             SqliteClientError::Bech32DecodeError(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, e),
             SqliteClientError::Base58(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, e),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+            </span>SqliteClientError::HdwalletError(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{:?}&quot;</span>, e),
             SqliteClientError::TransparentAddress(e) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, e),
             SqliteClientError::TableNotEmpty =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Table is not empty&quot;</span>),
             <span class="attribute">#[cfg(feature = <span class="string">&quot;unstable&quot;</span>)]
@@ -265,6 +282,13 @@
     }
 }
 
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">impl </span>From&lt;hdwallet::error::Error&gt; <span class="kw">for </span>SqliteClientError {
+    <span class="kw">fn </span>from(e: hdwallet::error::Error) -&gt; <span class="self">Self </span>{
+        SqliteClientError::HdwalletError(e)
+    }
+}
+
 <span class="kw">impl </span>From&lt;zcash_primitives::memo::Error&gt; <span class="kw">for </span>SqliteClientError {
     <span class="kw">fn </span>from(e: zcash_primitives::memo::Error) -&gt; <span class="self">Self </span>{
         SqliteClientError::InvalidMemo(e)
@@ -277,4 +301,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

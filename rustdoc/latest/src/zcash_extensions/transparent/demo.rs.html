@@ -898,8 +898,6 @@
 <span id="898">898</span>
 <span id="899">899</span>
 <span id="900">900</span>
-<span id="901">901</span>
-<span id="902">902</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Demo implementation of TZE consensus rules.
 //!
 //! The demo program implements a dual-hash-lock encumbrance with the following form:
@@ -920,9 +918,7 @@
 //! - `tx_b`: `[ TzeIn(tx_a, preimage_1) -&gt; TzeOut(value, hash_2) ]`
 //! - `tx_c`: `[ TzeIn(tx_b, preimage_2) -&gt; [any output types...] ]`
 
-</span><span class="kw">use </span>std::convert::TryFrom;
-<span class="kw">use </span>std::convert::TryInto;
-<span class="kw">use </span>std::fmt;
+</span><span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::ops::{Deref, DerefMut};
 
 <span class="kw">use </span>blake2b_simd::Params;
@@ -1803,4 +1799,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_extensions" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_extensions" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

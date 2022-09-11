@@ -302,7 +302,7 @@
 }
 
 <span class="doccomment">/// A transparent address corresponding to either a public key or a `Script`.
-</span><span class="attribute">#[derive(Debug, PartialEq, PartialOrd, Hash, Clone)]
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 </span><span class="kw">pub enum </span>TransparentAddress {
     PublicKey([u8; <span class="number">20</span>]), <span class="comment">// TODO: Rename to PublicKeyHash
     </span>Script([u8; <span class="number">20</span>]),    <span class="comment">// TODO: Rename to ScriptHash
@@ -413,4 +413,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

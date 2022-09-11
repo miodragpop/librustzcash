@@ -751,6 +751,7 @@
 <span id="751">751</span>
 <span id="752">752</span>
 <span id="753">753</span>
+<span id="754">754</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Structs for building transactions.
 
 </span><span class="kw">use </span>std::error;
@@ -1019,7 +1020,8 @@
                 .ok_or(Error::InvalidAmount)<span class="question-mark">?</span>,
         ];
 
-        IntoIterator::into_iter(<span class="kw-2">&amp;</span>value_balances)
+        value_balances
+            .into_iter()
             .sum::&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt;&gt;()
             .ok_or(Error::InvalidAmount)
     }
@@ -1505,4 +1507,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

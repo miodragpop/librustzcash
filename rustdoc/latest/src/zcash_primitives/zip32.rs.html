@@ -1653,6 +1653,74 @@
 <span id="1653">1653</span>
 <span id="1654">1654</span>
 <span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
+<span id="1659">1659</span>
+<span id="1660">1660</span>
+<span id="1661">1661</span>
+<span id="1662">1662</span>
+<span id="1663">1663</span>
+<span id="1664">1664</span>
+<span id="1665">1665</span>
+<span id="1666">1666</span>
+<span id="1667">1667</span>
+<span id="1668">1668</span>
+<span id="1669">1669</span>
+<span id="1670">1670</span>
+<span id="1671">1671</span>
+<span id="1672">1672</span>
+<span id="1673">1673</span>
+<span id="1674">1674</span>
+<span id="1675">1675</span>
+<span id="1676">1676</span>
+<span id="1677">1677</span>
+<span id="1678">1678</span>
+<span id="1679">1679</span>
+<span id="1680">1680</span>
+<span id="1681">1681</span>
+<span id="1682">1682</span>
+<span id="1683">1683</span>
+<span id="1684">1684</span>
+<span id="1685">1685</span>
+<span id="1686">1686</span>
+<span id="1687">1687</span>
+<span id="1688">1688</span>
+<span id="1689">1689</span>
+<span id="1690">1690</span>
+<span id="1691">1691</span>
+<span id="1692">1692</span>
+<span id="1693">1693</span>
+<span id="1694">1694</span>
+<span id="1695">1695</span>
+<span id="1696">1696</span>
+<span id="1697">1697</span>
+<span id="1698">1698</span>
+<span id="1699">1699</span>
+<span id="1700">1700</span>
+<span id="1701">1701</span>
+<span id="1702">1702</span>
+<span id="1703">1703</span>
+<span id="1704">1704</span>
+<span id="1705">1705</span>
+<span id="1706">1706</span>
+<span id="1707">1707</span>
+<span id="1708">1708</span>
+<span id="1709">1709</span>
+<span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Implementation of [ZIP 32] for hierarchical deterministic key management.
 //!
 //! [ZIP 32]: https://zips.z.cash/zip-0032
@@ -1661,7 +1729,6 @@
 <span class="kw">use </span>blake2b_simd::Params <span class="kw">as </span>Blake2bParams;
 <span class="kw">use </span>byteorder::{ByteOrder, LittleEndian, ReadBytesExt, WriteBytesExt};
 <span class="kw">use </span>fpe::ff1::{BinaryNumeralString, FF1};
-<span class="kw">use </span>std::convert::TryInto;
 <span class="kw">use </span>std::ops::AddAssign;
 <span class="kw">use </span>subtle::{Choice, ConditionallySelectable};
 
@@ -1674,7 +1741,7 @@
 <span class="kw">use crate</span>::{
     keys::{prf_expand, prf_expand_vec, OutgoingViewingKey},
     sapling::{
-        keys::{ExpandedSpendingKey, FullViewingKey},
+        keys::{DecodingError, ExpandedSpendingKey, FullViewingKey},
         NullifierDerivingKey,
     },
 };
@@ -1747,6 +1814,10 @@
     <span class="kw">fn </span>master() -&gt; <span class="self">Self </span>{
         FvkTag([<span class="number">0u8</span>; <span class="number">4</span>])
     }
+
+    <span class="kw">fn </span>as_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8; <span class="number">4</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
 }
 
 <span class="doccomment">/// A child index for a derived key
@@ -1779,6 +1850,14 @@
 <span class="doccomment">/// A BIP-32 chain code
 </span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq)]
 </span><span class="kw">pub struct </span>ChainCode([u8; <span class="number">32</span>]);
+
+<span class="kw">impl </span>ChainCode {
+    <span class="doccomment">/// Returns byte representation of the chain code, as required for
+    /// [ZIP 32](https://zips.z.cash/zip-0032) encoding.
+    </span><span class="kw">fn </span>as_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8; <span class="number">32</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
+}
 
 <span class="attribute">#[derive(Clone, Copy, Debug, PartialEq)]
 </span><span class="kw">pub struct </span>DiversifierIndex(<span class="kw">pub </span>[u8; <span class="number">11</span>]);
@@ -1823,7 +1902,7 @@
 
 <span class="doccomment">/// A key used to derive diversifiers for a particular child key
 </span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq)]
-</span><span class="kw">pub struct </span>DiversifierKey(<span class="kw">pub </span>[u8; <span class="number">32</span>]);
+</span><span class="kw">pub struct </span>DiversifierKey([u8; <span class="number">32</span>]);
 
 <span class="kw">impl </span>DiversifierKey {
     <span class="kw">pub fn </span>master(sk_m: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self </span>{
@@ -1831,6 +1910,16 @@
         dk_m.copy_from_slice(<span class="kw-2">&amp;</span>prf_expand(sk_m, <span class="kw-2">&amp;</span>[<span class="number">0x10</span>]).as_bytes()[..<span class="number">32</span>]);
         DiversifierKey(dk_m)
     }
+
+    <span class="doccomment">/// Constructs the diversifier key from its constituent bytes.
+    </span><span class="kw">pub fn </span>from_bytes(key: [u8; <span class="number">32</span>]) -&gt; <span class="self">Self </span>{
+        DiversifierKey(key)
+    }
+
+    <span class="doccomment">/// Returns the byte representation of the diversifier key.
+    </span><span class="kw">pub fn </span>as_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8; <span class="number">32</span>] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
 
     <span class="kw">fn </span>derive_child(<span class="kw-2">&amp;</span><span class="self">self</span>, i_l: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>dk = [<span class="number">0u8</span>; <span class="number">32</span>];
@@ -2058,7 +2147,46 @@
         }
     }
 
-    <span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
+    <span class="doccomment">/// Decodes the extended spending key from its serialized representation as defined in
+    /// [ZIP 32](https://zips.z.cash/zip-0032)
+    </span><span class="kw">pub fn </span>from_bytes(b: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, DecodingError&gt; {
+        <span class="kw">if </span>b.len() != <span class="number">169 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(DecodingError::LengthInvalid {
+                expected: <span class="number">169</span>,
+                actual: b.len(),
+            });
+        }
+
+        <span class="kw">let </span>depth = b[<span class="number">0</span>];
+
+        <span class="kw">let </span><span class="kw-2">mut </span>parent_fvk_tag = FvkTag([<span class="number">0</span>; <span class="number">4</span>]);
+        (<span class="kw-2">&amp;mut </span>parent_fvk_tag.<span class="number">0</span>[..]).copy_from_slice(<span class="kw-2">&amp;</span>b[<span class="number">1</span>..<span class="number">5</span>]);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>ci_bytes = [<span class="number">0u8</span>; <span class="number">4</span>];
+        (<span class="kw-2">&amp;mut </span>ci_bytes[..]).copy_from_slice(<span class="kw-2">&amp;</span>b[<span class="number">5</span>..<span class="number">9</span>]);
+        <span class="kw">let </span>child_index = ChildIndex::from_index(u32::from_le_bytes(ci_bytes));
+
+        <span class="kw">let </span><span class="kw-2">mut </span>chain_code = ChainCode([<span class="number">0u8</span>; <span class="number">32</span>]);
+        (<span class="kw-2">&amp;mut </span>chain_code.<span class="number">0</span>[..]).copy_from_slice(<span class="kw-2">&amp;</span>b[<span class="number">9</span>..<span class="number">41</span>]);
+
+        <span class="kw">let </span>expsk = ExpandedSpendingKey::from_bytes(<span class="kw-2">&amp;</span>b[<span class="number">41</span>..<span class="number">137</span>])<span class="question-mark">?</span>;
+
+        <span class="kw">let </span><span class="kw-2">mut </span>dk = DiversifierKey([<span class="number">0u8</span>; <span class="number">32</span>]);
+        (<span class="kw-2">&amp;mut </span>dk.<span class="number">0</span>[..]).copy_from_slice(<span class="kw-2">&amp;</span>b[<span class="number">137</span>..<span class="number">169</span>]);
+
+        <span class="prelude-val">Ok</span>(ExtendedSpendingKey {
+            depth,
+            parent_fvk_tag,
+            child_index,
+            chain_code,
+            expsk,
+            dk,
+        })
+    }
+
+    <span class="doccomment">/// Reads and decodes the encoded form of the extended spending key as define in
+    /// [ZIP 32](https://zips.z.cash/zip-0032) from the provided reader.
+    </span><span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
         <span class="kw">let </span>depth = reader.read_u8()<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>tag = [<span class="number">0</span>; <span class="number">4</span>];
         reader.read_exact(<span class="kw-2">&amp;mut </span>tag)<span class="question-mark">?</span>;
@@ -2079,15 +2207,23 @@
         })
     }
 
-    <span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
-        writer.write_u8(<span class="self">self</span>.depth)<span class="question-mark">?</span>;
-        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.parent_fvk_tag.<span class="number">0</span>)<span class="question-mark">?</span>;
-        writer.write_u32::&lt;LittleEndian&gt;(<span class="self">self</span>.child_index.value())<span class="question-mark">?</span>;
-        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.chain_code.<span class="number">0</span>)<span class="question-mark">?</span>;
-        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.expsk.to_bytes())<span class="question-mark">?</span>;
-        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.dk.<span class="number">0</span>)<span class="question-mark">?</span>;
+    <span class="doccomment">/// Encodes the extended spending key to the its seralized representation as defined in
+    /// [ZIP 32](https://zips.z.cash/zip-0032)
+    </span><span class="kw">pub fn </span>to_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [u8; <span class="number">169</span>] {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = [<span class="number">0u8</span>; <span class="number">169</span>];
+        result[<span class="number">0</span>] = <span class="self">self</span>.depth;
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">1</span>..<span class="number">5</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.parent_fvk_tag.as_bytes()[..]);
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">5</span>..<span class="number">9</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.child_index.value().to_le_bytes()[..]);
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">9</span>..<span class="number">41</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.chain_code.as_bytes()[..]);
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">41</span>..<span class="number">137</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.expsk.to_bytes()[..]);
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">137</span>..<span class="number">169</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.dk.as_bytes()[..]);
+        result
+    }
 
-        <span class="prelude-val">Ok</span>(())
+    <span class="doccomment">/// Writes the encoded form of the extended spending key as define in
+    /// [ZIP 32](https://zips.z.cash/zip-0032) to the provided writer.
+    </span><span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.to_bytes())
     }
 
     <span class="doccomment">/// Returns the child key corresponding to the path derived from the master key
@@ -3309,4 +3445,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

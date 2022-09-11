@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["sapling",""]]};
+window.SIDEBAR_ITEMS = {"enum":[["DecodingError","A type for errors that can occur when decoding keys from their serialized representations."],["Era","A version identifier for the encoding of unified spending keys."]],"mod":[["sapling",""],["testing",""]]};

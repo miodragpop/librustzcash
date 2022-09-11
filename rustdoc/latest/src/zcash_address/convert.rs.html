@@ -475,7 +475,7 @@
 /// ```
 </span><span class="kw">pub trait </span>TryFromRawAddress: Sized {
     <span class="doccomment">/// Conversion errors for the user type (e.g. failing to parse the data passed to
-    /// [`Self::try_from_sapling`] as a valid Sapling address).
+    /// [`Self::try_from_raw_sapling`] as a valid Sapling address).
     </span><span class="kw">type </span>Error;
 
     <span class="kw">fn </span>try_from_raw_sprout(data: sprout::Data) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, ConversionError&lt;<span class="self">Self</span>::Error&gt;&gt; {
@@ -741,4 +741,4 @@
     <span class="kw">impl </span>Sealed <span class="kw">for </span>ZcashAddress {}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_address" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_address" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

@@ -406,14 +406,35 @@
 <span id="406">406</span>
 <span id="407">407</span>
 <span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Sapling key components.
 //!
 //! Implements [section 4.2.2] of the Zcash Protocol Specification.
 //!
 //! [section 4.2.2]: https://zips.z.cash/protocol/protocol.pdf#saplingkeycomponents
 
-</span><span class="kw">use </span>std::convert::TryInto;
-<span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
+</span><span class="kw">use </span>std::io::{<span class="self">self</span>, Read, Write};
 
 <span class="kw">use crate</span>::{
     constants::{PROOF_GENERATION_KEY_GENERATOR, SPENDING_KEY_GENERATOR},
@@ -425,6 +446,16 @@
 <span class="kw">use </span>subtle::CtOption;
 
 <span class="kw">use super</span>::{NullifierDerivingKey, PaymentAddress, ProofGenerationKey, SaplingIvk, ViewingKey};
+
+<span class="doccomment">/// Errors that can occur in the decoding of Sapling spending keys.
+</span><span class="kw">pub enum </span>DecodingError {
+    <span class="doccomment">/// The length of the byte slice provided for decoding was incorrect.
+    </span>LengthInvalid { expected: usize, actual: usize },
+    <span class="doccomment">/// Could not decode the `ask` bytes to a jubjub field element.
+    </span>InvalidAsk,
+    <span class="doccomment">/// Could not decode the `nsk` bytes to a jubjub field element.
+    </span>InvalidNsk,
+}
 
 <span class="doccomment">/// A Sapling expanded spending key
 </span><span class="attribute">#[derive(Clone)]
@@ -458,39 +489,52 @@
         }
     }
 
+    <span class="doccomment">/// Decodes the expanded spending key from its serialized representation
+    /// as part of the encoding of the extended spending key as defined in
+    /// [ZIP 32](https://zips.z.cash/zip-0032)
+    </span><span class="kw">pub fn </span>from_bytes(b: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, DecodingError&gt; {
+        <span class="kw">if </span>b.len() != <span class="number">96 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(DecodingError::LengthInvalid {
+                expected: <span class="number">96</span>,
+                actual: b.len(),
+            });
+        }
+
+        <span class="kw">let </span>ask = Option::from(jubjub::Fr::from_repr(b[<span class="number">0</span>..<span class="number">32</span>].try_into().unwrap()))
+            .ok_or(DecodingError::InvalidAsk)<span class="question-mark">?</span>;
+        <span class="kw">let </span>nsk = Option::from(jubjub::Fr::from_repr(b[<span class="number">32</span>..<span class="number">64</span>].try_into().unwrap()))
+            .ok_or(DecodingError::InvalidNsk)<span class="question-mark">?</span>;
+        <span class="kw">let </span>ovk = OutgoingViewingKey(b[<span class="number">64</span>..<span class="number">96</span>].try_into().unwrap());
+
+        <span class="prelude-val">Ok</span>(ExpandedSpendingKey { ask, nsk, ovk })
+    }
+
     <span class="kw">pub fn </span>read&lt;R: Read&gt;(<span class="kw-2">mut </span>reader: R) -&gt; io::Result&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>ask_repr = [<span class="number">0u8</span>; <span class="number">32</span>];
-        reader.read_exact(ask_repr.as_mut())<span class="question-mark">?</span>;
-        <span class="kw">let </span>ask = Option::from(jubjub::Fr::from_repr(ask_repr))
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;ask not in field&quot;</span>))<span class="question-mark">?</span>;
-
-        <span class="kw">let </span><span class="kw-2">mut </span>nsk_repr = [<span class="number">0u8</span>; <span class="number">32</span>];
-        reader.read_exact(nsk_repr.as_mut())<span class="question-mark">?</span>;
-        <span class="kw">let </span>nsk = Option::from(jubjub::Fr::from_repr(nsk_repr))
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;nsk not in field&quot;</span>))<span class="question-mark">?</span>;
-
-        <span class="kw">let </span><span class="kw-2">mut </span>ovk = [<span class="number">0u8</span>; <span class="number">32</span>];
-        reader.read_exact(<span class="kw-2">&amp;mut </span>ovk)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(ExpandedSpendingKey {
-            ask,
-            nsk,
-            ovk: OutgoingViewingKey(ovk),
+        <span class="kw">let </span><span class="kw-2">mut </span>repr = [<span class="number">0u8</span>; <span class="number">96</span>];
+        reader.read_exact(repr.as_mut())<span class="question-mark">?</span>;
+        <span class="self">Self</span>::from_bytes(<span class="kw-2">&amp;</span>repr).map_err(|e| <span class="kw">match </span>e {
+            DecodingError::InvalidAsk =&gt; {
+                io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;ask not in field&quot;</span>)
+            }
+            DecodingError::InvalidNsk =&gt; {
+                io::Error::new(io::ErrorKind::InvalidData, <span class="string">&quot;nsk not in field&quot;</span>)
+            }
+            DecodingError::LengthInvalid { .. } =&gt; <span class="macro">unreachable!</span>(),
         })
     }
 
     <span class="kw">pub fn </span>write&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>writer: W) -&gt; io::Result&lt;()&gt; {
-        writer.write_all(<span class="self">self</span>.ask.to_repr().as_ref())<span class="question-mark">?</span>;
-        writer.write_all(<span class="self">self</span>.nsk.to_repr().as_ref())<span class="question-mark">?</span>;
-        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.ovk.<span class="number">0</span>)<span class="question-mark">?</span>;
-
-        <span class="prelude-val">Ok</span>(())
+        writer.write_all(<span class="kw-2">&amp;</span><span class="self">self</span>.to_bytes())
     }
 
-    <span class="kw">pub fn </span>to_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [u8; <span class="number">96</span>] {
+    <span class="doccomment">/// Encodes the expanded spending key to the its seralized representation
+    /// as part of the encoding of the extended spending key as defined in
+    /// [ZIP 32](https://zips.z.cash/zip-0032)
+    </span><span class="kw">pub fn </span>to_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; [u8; <span class="number">96</span>] {
         <span class="kw">let </span><span class="kw-2">mut </span>result = [<span class="number">0u8</span>; <span class="number">96</span>];
-        <span class="self">self</span>.write(<span class="kw-2">&amp;mut </span>result[..])
-            .expect(<span class="string">&quot;should be able to serialize an ExpandedSpendingKey&quot;</span>);
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">0</span>..<span class="number">32</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.ask.to_repr());
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">32</span>..<span class="number">64</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.nsk.to_repr());
+        (<span class="kw-2">&amp;mut </span>result[<span class="number">64</span>..<span class="number">96</span>]).copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.ovk.<span class="number">0</span>);
         result
     }
 }
@@ -619,7 +663,7 @@
     </span><span class="kw">pub fn </span>from_bytes(bytes: <span class="kw-2">&amp;</span>[u8; <span class="number">128</span>]) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
         FullViewingKey::read(<span class="kw-2">&amp;</span>bytes[..<span class="number">96</span>]).ok().map(|fvk| <span class="self">Self </span>{
             fvk,
-            dk: zip32::DiversifierKey(bytes[<span class="number">96</span>..].try_into().unwrap()),
+            dk: zip32::DiversifierKey::from_bytes(bytes[<span class="number">96</span>..].try_into().unwrap()),
         })
     }
 
@@ -629,7 +673,7 @@
         <span class="self">self</span>.fvk
             .write(<span class="kw-2">&amp;mut </span>bytes[..<span class="number">96</span>])
             .expect(<span class="string">&quot;slice should be the correct length&quot;</span>);
-        bytes[<span class="number">96</span>..].copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.dk.<span class="number">0</span>);
+        bytes[<span class="number">96</span>..].copy_from_slice(<span class="kw-2">&amp;</span><span class="self">self</span>.dk.as_bytes()[..]);
         bytes
     }
 
@@ -815,4 +859,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="zcash_primitives" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>

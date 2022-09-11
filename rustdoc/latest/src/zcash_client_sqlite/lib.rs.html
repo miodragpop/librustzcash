@@ -1013,6 +1013,60 @@
 <span id="1013">1013</span>
 <span id="1014">1014</span>
 <span id="1015">1015</span>
+<span id="1016">1016</span>
+<span id="1017">1017</span>
+<span id="1018">1018</span>
+<span id="1019">1019</span>
+<span id="1020">1020</span>
+<span id="1021">1021</span>
+<span id="1022">1022</span>
+<span id="1023">1023</span>
+<span id="1024">1024</span>
+<span id="1025">1025</span>
+<span id="1026">1026</span>
+<span id="1027">1027</span>
+<span id="1028">1028</span>
+<span id="1029">1029</span>
+<span id="1030">1030</span>
+<span id="1031">1031</span>
+<span id="1032">1032</span>
+<span id="1033">1033</span>
+<span id="1034">1034</span>
+<span id="1035">1035</span>
+<span id="1036">1036</span>
+<span id="1037">1037</span>
+<span id="1038">1038</span>
+<span id="1039">1039</span>
+<span id="1040">1040</span>
+<span id="1041">1041</span>
+<span id="1042">1042</span>
+<span id="1043">1043</span>
+<span id="1044">1044</span>
+<span id="1045">1045</span>
+<span id="1046">1046</span>
+<span id="1047">1047</span>
+<span id="1048">1048</span>
+<span id="1049">1049</span>
+<span id="1050">1050</span>
+<span id="1051">1051</span>
+<span id="1052">1052</span>
+<span id="1053">1053</span>
+<span id="1054">1054</span>
+<span id="1055">1055</span>
+<span id="1056">1056</span>
+<span id="1057">1057</span>
+<span id="1058">1058</span>
+<span id="1059">1059</span>
+<span id="1060">1060</span>
+<span id="1061">1061</span>
+<span id="1062">1062</span>
+<span id="1063">1063</span>
+<span id="1064">1064</span>
+<span id="1065">1065</span>
+<span id="1066">1066</span>
+<span id="1067">1067</span>
+<span id="1068">1068</span>
+<span id="1069">1069</span>
 </pre><pre class="rust"><code><span class="doccomment">//! *An SQLite-based Zcash light client.*
 //!
 //! `zcash_client_sqlite` contains complete SQLite-based implementations of the [`WalletRead`],
@@ -1051,6 +1105,9 @@
 <span class="kw">use </span>std::fmt;
 <span class="kw">use </span>std::path::Path;
 
+<span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+</span><span class="kw">use </span>std::collections::HashSet;
+
 <span class="kw">use </span>rusqlite::{Connection, NO_PARAMS};
 
 <span class="kw">use </span>zcash_primitives::{
@@ -1058,13 +1115,13 @@
     consensus::{<span class="self">self</span>, BlockHeight},
     memo::Memo,
     merkle_tree::{CommitmentTree, IncrementalWitness},
-    sapling::{Node, Nullifier, PaymentAddress},
+    sapling::{Node, Nullifier},
     transaction::{components::Amount, Transaction, TxId},
     zip32::{AccountId, ExtendedFullViewingKey},
 };
 
 <span class="kw">use </span>zcash_client_backend::{
-    address::RecipientAddress,
+    address::{RecipientAddress, UnifiedAddress},
     data_api::{
         BlockSource, DecryptedTransaction, PrunedBlock, SentTransaction, WalletRead, WalletWrite,
     },
@@ -1165,9 +1222,8 @@
         </span>wallet::get_unified_full_viewing_keys(<span class="self">self</span>)
     }
 
-    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;, <span class="self">Self</span>::Error&gt; {
-        <span class="attribute">#[allow(deprecated)]
-        </span>wallet::get_address(<span class="self">self</span>, account)
+    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;UnifiedAddress&gt;, <span class="self">Self</span>::Error&gt; {
+        wallet::get_address_ua(<span class="self">self</span>, account)
     }
 
     <span class="kw">fn </span>is_valid_account_extfvk(
@@ -1250,6 +1306,13 @@
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
 </span><span class="kw">impl</span>&lt;P: consensus::Parameters&gt; WalletReadTransparent <span class="kw">for </span>WalletDb&lt;P&gt; {
+    <span class="kw">fn </span>get_transparent_receivers(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashSet&lt;TransparentAddress&gt;, <span class="self">Self</span>::Error&gt; {
+        wallet::get_transparent_receivers(<span class="self">self</span>, account)
+    }
+
     <span class="kw">fn </span>get_unspent_transparent_outputs(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         address: <span class="kw-2">&amp;</span>TransparentAddress,
@@ -1282,7 +1345,7 @@
         <span class="self">self</span>.wallet_db.get_unified_full_viewing_keys()
     }
 
-    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PaymentAddress&gt;, <span class="self">Self</span>::Error&gt; {
+    <span class="kw">fn </span>get_address(<span class="kw-2">&amp;</span><span class="self">self</span>, account: AccountId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;UnifiedAddress&gt;, <span class="self">Self</span>::Error&gt; {
         <span class="self">self</span>.wallet_db.get_address(account)
     }
 
@@ -1355,6 +1418,13 @@
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
 </span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, P: consensus::Parameters&gt; WalletReadTransparent <span class="kw">for </span>DataConnStmtCache&lt;<span class="lifetime">&#39;a</span>, P&gt; {
+    <span class="kw">fn </span>get_transparent_receivers(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        account: AccountId,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashSet&lt;TransparentAddress&gt;, <span class="self">Self</span>::Error&gt; {
+        <span class="self">self</span>.wallet_db.get_transparent_receivers(account)
+    }
+
     <span class="kw">fn </span>get_unspent_transparent_outputs(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         address: <span class="kw-2">&amp;</span>TransparentAddress,
@@ -1740,6 +1810,14 @@
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>init_test_accounts_table(
         db_data: <span class="kw-2">&amp;</span>WalletDb&lt;Network&gt;,
     ) -&gt; (DiversifiableFullViewingKey, <span class="prelude-ty">Option</span>&lt;TransparentAddress&gt;) {
+        <span class="kw">let </span>(ufvk, taddr) = init_test_accounts_table_ufvk(db_data);
+        (ufvk.sapling().unwrap().clone(), taddr)
+    }
+
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>init_test_accounts_table_ufvk(
+        db_data: <span class="kw-2">&amp;</span>WalletDb&lt;Network&gt;,
+    ) -&gt; (UnifiedFullViewingKey, <span class="prelude-ty">Option</span>&lt;TransparentAddress&gt;) {
         <span class="kw">let </span>seed = [<span class="number">0u8</span>; <span class="number">32</span>];
         <span class="kw">let </span>account = AccountId::from(<span class="number">0</span>);
         <span class="kw">let </span>extsk = sapling::spending_key(<span class="kw-2">&amp;</span>seed, network().coin_type(), account);
@@ -1760,15 +1838,15 @@
         <span class="kw">let </span>ufvk = UnifiedFullViewingKey::new(
             <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
             </span>tkey,
-            <span class="prelude-val">Some</span>(dfvk.clone()),
+            <span class="prelude-val">Some</span>(dfvk),
             <span class="prelude-val">None</span>,
         )
         .unwrap();
 
-        <span class="kw">let </span>ufvks = HashMap::from([(account, ufvk)]);
+        <span class="kw">let </span>ufvks = HashMap::from([(account, ufvk.clone())]);
         init_accounts_table(db_data, <span class="kw-2">&amp;</span>ufvks).unwrap();
 
-        (dfvk, taddr)
+        (ufvk, taddr)
     }
 
     <span class="doccomment">/// Create a fake CompactBlock at the given height, containing a single output paying
@@ -1916,6 +1994,36 @@
             .unwrap();
     }
 
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;transparent-inputs&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>transparent_receivers() {
+        <span class="kw">use </span>secrecy::Secret;
+        <span class="kw">use </span>tempfile::NamedTempFile;
+        <span class="kw">use </span>zcash_client_backend::data_api::WalletReadTransparent;
+
+        <span class="kw">use crate</span>::{chain::init::init_cache_database, wallet::init::init_wallet_db};
+
+        <span class="kw">let </span>cache_file = NamedTempFile::new().unwrap();
+        <span class="kw">let </span>db_cache = BlockDb::for_path(cache_file.path()).unwrap();
+        init_cache_database(<span class="kw-2">&amp;</span>db_cache).unwrap();
+
+        <span class="kw">let </span>data_file = NamedTempFile::new().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>db_data = WalletDb::for_path(data_file.path(), network()).unwrap();
+        init_wallet_db(<span class="kw-2">&amp;mut </span>db_data, <span class="prelude-val">Some</span>(Secret::new(<span class="macro">vec!</span>[]))).unwrap();
+
+        <span class="comment">// Add an account to the wallet.
+        </span><span class="kw">let </span>(ufvk, taddr) = init_test_accounts_table_ufvk(<span class="kw-2">&amp;</span>db_data);
+        <span class="kw">let </span>taddr = taddr.unwrap();
+
+        <span class="kw">let </span>receivers = db_data.get_transparent_receivers(<span class="number">0</span>.into()).unwrap();
+
+        <span class="comment">// The receiver for the default UA should be in the set.
+        </span><span class="macro">assert!</span>(receivers.contains(ufvk.default_address().<span class="number">0</span>.transparent().unwrap()));
+
+        <span class="comment">// The default t-addr should be in the set.
+        </span><span class="macro">assert!</span>(receivers.contains(<span class="kw-2">&amp;</span>taddr));
+    }
+
     <span class="attribute">#[cfg(feature = <span class="string">&quot;unstable&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>remove_unmined_tx_reverts_balance() {
@@ -2029,4 +2137,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (84f0c3f79 2022-09-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="zcash_client_sqlite" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (228710758 2022-09-10)" ></div></body></html>
