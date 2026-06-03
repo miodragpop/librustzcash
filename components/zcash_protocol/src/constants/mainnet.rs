@@ -1,9 +1,9 @@
-//! Constants for the Zcash main network.
+//! Constants for the Ycash main network.
 
-/// The mainnet coin type for ZEC, as defined by [SLIP 44].
+/// The mainnet coin type for YEC, as defined by [SLIP 44].
 ///
 /// [SLIP 44]: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
-pub const COIN_TYPE: u32 = 133;
+pub const COIN_TYPE: u32 = 347;
 
 /// The HRP for a Bech32-encoded mainnet Sapling [`ExtendedSpendingKey`].
 ///
@@ -27,14 +27,14 @@ pub const HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY: &str = "zxviews";
 ///
 /// [`PaymentAddress`]: https://docs.rs/sapling-crypto/latest/sapling_crypto/struct.PaymentAddress.html
 /// [Zcash Protocol Specification]: https://github.com/zcash/zips/blob/main/rendered/protocol/protocol.pdf
-pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "zs";
+pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "ys";
 
 /// The prefix for a Base58Check-encoded mainnet Sprout address.
 ///
 /// Defined in the [Zcash Protocol Specification section 5.6.3][sproutpaymentaddrencoding].
 ///
 /// [sproutpaymentaddrencoding]: https://zips.z.cash/protocol/protocol.pdf#sproutpaymentaddrencoding
-pub const B58_SPROUT_ADDRESS_PREFIX: [u8; 2] = [0x16, 0x9a];
+pub const B58_SPROUT_ADDRESS_PREFIX: [u8; 2] = [0x16, 0x36];
 
 /// The prefix for a Base58Check-encoded DER-encoded mainnet [`SecretKey`], as specified via the
 /// bitcoin-derived [`EncodeSecret`] format function.
@@ -46,12 +46,12 @@ pub const B58_SECRET_KEY_PREFIX: [u8; 1] = [0x80];
 /// The prefix for a Base58Check-encoded mainnet [`PublicKeyHash`].
 ///
 /// [`PublicKeyHash`]: https://docs.rs/zcash_transparent/latest/zcash_transparent/address/enum.TransparentAddress.html
-pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0xb8];
+pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0x28];
 
 /// The prefix for a Base58Check-encoded mainnet [`ScriptHash`].
 ///
 /// [`ScriptHash`]: https://docs.rs/zcash_transparent/latest/zcash_transparent/address/enum.TransparentAddress.html
-pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0xbd];
+pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0x2c];
 
 /// The HRP for a Bech32m-encoded mainnet [ZIP 320] TEX address.
 ///

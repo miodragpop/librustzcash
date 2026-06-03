@@ -31,7 +31,7 @@ pub const HRP_SAPLING_EXTENDED_FULL_VIEWING_KEY: &str = "zxviewregtestsapling";
 ///
 /// [`PaymentAddress`]: https://docs.rs/sapling-crypto/latest/sapling_crypto/struct.PaymentAddress.html
 /// [the `zcashd` codebase]: <https://github.com/zcash/zcash/blob/128d863fb8be39ee294fda397c1ce3ba3b889cb2/src/chainparams.cpp#L493>
-pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "zregtestsapling";
+pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "yregtestsapling";
 
 /// The prefix for a Base58Check-encoded regtest Sprout address.
 ///
@@ -39,7 +39,7 @@ pub const HRP_SAPLING_PAYMENT_ADDRESS: &str = "zregtestsapling";
 /// Same as the testnet prefix.
 ///
 /// [sproutpaymentaddrencoding]: https://zips.z.cash/protocol/protocol.pdf#sproutpaymentaddrencoding
-pub const B58_SPROUT_ADDRESS_PREFIX: [u8; 2] = [0x16, 0xb6];
+pub const B58_SPROUT_ADDRESS_PREFIX: [u8; 2] = [0x16, 0x52];
 
 /// The prefix for a Base58Check-encoded DER-encoded regtest [`SecretKey`], as specified via the
 /// bitcoin-derived [`EncodeSecret`] format function.
@@ -52,13 +52,13 @@ pub const B58_SECRET_KEY_PREFIX: [u8; 1] = [0xef];
 /// Same as the testnet prefix.
 ///
 /// [`PublicKeyHash`]: https://docs.rs/zcash_primitives/latest/zcash_primitives/legacy/enum.TransparentAddress.html
-pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x1d, 0x25];
+pub const B58_PUBKEY_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0x95];
 
 /// The prefix for a Base58Check-encoded regtest transparent [`ScriptHash`].
 /// Same as the testnet prefix.
 ///
 /// [`ScriptHash`]: https://docs.rs/zcash_primitives/latest/zcash_primitives/legacy/enum.TransparentAddress.html
-pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0xba];
+pub const B58_SCRIPT_ADDRESS_PREFIX: [u8; 2] = [0x1c, 0x2a];
 
 /// The HRP for a Bech32m-encoded regtest [ZIP 320] TEX address.
 ///

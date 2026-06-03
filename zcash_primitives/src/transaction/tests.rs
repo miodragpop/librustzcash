@@ -228,7 +228,14 @@ impl Authorization for TestUnauthorized {
     type TzeAuth = tze::Authorized;
 }
 
+// Ycash reassigns the NU5 consensus branch id to its own value (0xf919a198)
+// and never activated NU5 on any Ycash network. The upstream ZIP-244 test
+// vectors are Zcash NU5 transactions whose txid/auth digests are computed over
+// Zcash's NU5 branch id (0xc2d6d0b4), so they cannot round-trip under the Ycash
+// branch-id assignment. This Zcash-specific vector test is therefore ignored on
+// the Ycash fork.
 #[test]
+#[ignore = "Zcash NU5 ZIP-244 vectors are incompatible with Ycash branch ids"]
 fn zip_0244() {
     fn to_test_txdata(
         tv: &self::data::zip_0244::TestVector,
