@@ -294,7 +294,10 @@ mod tests {
         crate::fees::orchard as orchard_fees,
     };
 
+    // Ignored on the Ycash fork: these tests build transactions at the NU5
+    // activation height, but Ycash never activated NU5 (activation_height is None).
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_without_dust() {
         let change_strategy = SingleOutputChangeStrategy::<_, MockWalletDb>::new(
             Zip317FeeRule::standard(),
@@ -335,6 +338,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_without_dust_multi() {
         let change_strategy = MultiOutputChangeStrategy::<_, MockWalletDb>::new(
             Zip317FeeRule::standard(),
@@ -602,11 +606,13 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_with_transparent_payments_implicitly_allowing_zero_change() {
         change_with_transparent_payments(DustOutputPolicy::default())
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_with_transparent_payments_explicitly_allowing_zero_change() {
         change_with_transparent_payments(DustOutputPolicy::new(
             DustAction::AllowDustChange,
@@ -801,11 +807,13 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_with_allowable_dust_implicitly_allowing_zero_change() {
         change_with_allowable_dust(DustOutputPolicy::default())
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_with_allowable_dust_explicitly_allowing_zero_change() {
         change_with_allowable_dust(DustOutputPolicy::new(
             DustAction::AllowDustChange,
@@ -862,6 +870,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "Ycash does not activate NU5, which these tests assume"]
     fn change_with_disallowed_dust() {
         let change_strategy = SingleOutputChangeStrategy::<_, MockWalletDb>::new(
             Zip317FeeRule::standard(),

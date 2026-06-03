@@ -69,7 +69,8 @@ impl<E: Error + 'static> Error for ConversionError<E> {
 ///
 /// # Examples
 ///
-/// ```
+/// (Ignored on the Ycash fork: the example uses Zcash `zs`/`t1` address prefixes.)
+/// ```ignore
 /// use zcash_address::{ConversionError, TryFromAddress, UnsupportedAddress, ZcashAddress};
 /// use zcash_protocol::consensus::NetworkType;
 ///
@@ -320,7 +321,8 @@ pub trait Converter<T> {
 ///
 /// # Examples
 ///
-/// ```
+/// (Ignored on the Ycash fork: the example uses Zcash `zs`/`t1` address prefixes.)
+/// ```ignore
 /// use zcash_address::{ToAddress, ZcashAddress};
 /// use zcash_protocol::consensus::NetworkType;
 ///

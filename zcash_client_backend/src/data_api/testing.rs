@@ -1466,6 +1466,7 @@ impl TestBuilder<(), ()> {
     pub const DEFAULT_NETWORK: LocalNetwork = LocalNetwork {
         overwinter: Some(BlockHeight::from_u32(1)),
         sapling: Some(BlockHeight::from_u32(100_000)),
+        ycash: Some(BlockHeight::from_u32(100_000)),
         blossom: Some(BlockHeight::from_u32(100_000)),
         heartwood: Some(BlockHeight::from_u32(100_000)),
         canopy: Some(BlockHeight::from_u32(100_000)),
